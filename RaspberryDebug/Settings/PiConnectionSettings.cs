@@ -18,10 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
-using Microsoft.VisualStudio.Shell;
 using Newtonsoft.Json;
 
 namespace RaspberryDebug

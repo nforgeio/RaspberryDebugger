@@ -17,12 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
-using System.Windows.Forms;
-
-using Microsoft.VisualStudio.Shell;
 
 namespace RaspberryDebug
 {
