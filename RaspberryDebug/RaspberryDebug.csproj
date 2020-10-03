@@ -46,6 +46,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DebugRaspberryCommand.cs" />
+    <Compile Include="DebugOptionsPage.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RaspberryDebugPackage.cs" />
   </ItemGroup>

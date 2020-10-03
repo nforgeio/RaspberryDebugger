@@ -33,6 +33,8 @@ namespace RaspberryDebug
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [Guid(RaspberryDebugPackage.PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
+    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
+    [ProvideOptionPage(typeof(DebugOptionsPage), "Raspberry Debug", "Settings", 0, 0, true)]
     public sealed class RaspberryDebugPackage : AsyncPackage
     {
         /// <summary>
