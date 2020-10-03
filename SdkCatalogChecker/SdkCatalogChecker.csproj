@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\RaspberryDebug\Models\SdkArchitecture.cs" Link="Models\SdkArchitecture.cs" />
+    <Compile Include="..\RaspberryDebug\Models\SdkCatalog.cs" Link="Models\SdkCatalog.cs" />
+    <Compile Include="..\RaspberryDebug\Models\SdkCatalogItem.cs" Link="Models\SdkCatalogItem.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Neon.Common" Version="2.2.0" />
+    <PackageReference Include="Neon.Cryptography" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+</Project>

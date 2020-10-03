@@ -22,6 +22,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Shell;
+using Newtonsoft.Json;
 
 namespace RaspberryDebug
 {
@@ -33,21 +34,43 @@ namespace RaspberryDebug
         /// <summary>
         /// The host IP address or DNS name.
         /// </summary>
+        [JsonProperty(PropertyName = "Host", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.Include)]
+        [DefaultValue("")]
         public string Host { get; set; }
 
         /// <summary>
         /// The target SSH port;
         /// </summary>
+        [JsonProperty(PropertyName = "Port", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.Include)]
+        [DefaultValue(22)]
         public int Port { get; set; } = 22;
 
         /// <summary>
         /// The SSH user name.
         /// </summary>
+        [JsonProperty(PropertyName = "Username", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.Include)]
+        [DefaultValue("")]
         public string Username { get; set; } = "pi";
 
         /// <summary>
-        /// The SSH password.
+        /// Specifies the authentication type.
         /// </summary>
-        public string Password { get; set; } = "raspberry";
+        [JsonProperty(PropertyName = "AuthenticationType", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.Include)]
+        [DefaultValue(PiAuthenticationType.Password)]
+        public PiAuthenticationType AuthenticationType { get; set; } = PiAuthenticationType.Password;
+
+        /// <summary>
+        /// The SSH password or an empty string.
+        /// </summary>
+        [JsonProperty(PropertyName = "Password", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.Include)]
+        [DefaultValue("")]
+        public string Password { get; set; } = "";
+
+        /// <summary>
+        /// The path to the SSH public key file or an empty string.
+        /// </summary>
+        [JsonProperty(PropertyName = "KeyPath", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.Include)]
+        [DefaultValue("")]
+        public string KeyPath { get; set; } = "";
     }
 }
