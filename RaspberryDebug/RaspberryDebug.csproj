@@ -45,10 +45,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="DebugRaspberryCommand.cs" />
-    <Compile Include="DebugOptionsPage.cs">
+    <Compile Include="Commands\DebugRaspberryCommand.cs" />
+    <Compile Include="Settings\PiConnectionSettings.cs" />
+    <Compile Include="Settings\PiDebugOptionsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Settings\PiDebugOptionsControl.Designer.cs">
+      <DependentUpon>PiDebugOptionsControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Settings\PiDebugOptionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Settings\PiRemoteSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RaspberryDebugPackage.cs" />
   </ItemGroup>

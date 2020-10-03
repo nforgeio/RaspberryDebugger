@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    DebugOptionsPage.cs
+// FILE:	    PiConnectionSettings.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -16,52 +16,38 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Shell;
 
-using Task = System.Threading.Tasks.Task;
-
 namespace RaspberryDebug
 {
     /// <summary>
-    /// Implements our custom debug options page.
+    /// Holds the connection settings for a remote Raspberry Pi.
     /// </summary>
-    public class DebugOptionsPage : DialogPage
+    public class PiConnectionSettings
     {
         /// <summary>
-        /// IP address or host name
+        /// The host IP address or DNS name.
         /// </summary>
-        [Category("Target Raspberry")]
-        [DisplayName("1: IP address or host name")]
-        [Description("Target Raspberry IP address or host name")]
-        public string Host { get; set; } = string.Empty;
+        public string Host { get; set; }
 
         /// <summary>
-        /// SSH port
+        /// The target SSH port;
         /// </summary>
-        [Category("Target Raspberry")]
-        [DisplayName("2: Port")]
-        [Description("Target Raspberry Pi SSH port")]
         public int Port { get; set; } = 22;
 
         /// <summary>
-        /// Username
+        /// The SSH user name.
         /// </summary>
-        [Category("Target Raspberry")]
-        [DisplayName("3: Username")]
-        [Description("Raspberry Pi username")]
-        public string Username { get; set; } = string.Empty;
+        public string Username { get; set; } = "pi";
 
         /// <summary>
-        /// Password
+        /// The SSH password.
         /// </summary>
-        [Category("Target Raspberry")]
-        [DisplayName("4: Password")]
-        [Description("User password password")]
-        public string Password { get; set; } = string.Empty;
+        public string Password { get; set; } = "raspberry";
     }
 }
