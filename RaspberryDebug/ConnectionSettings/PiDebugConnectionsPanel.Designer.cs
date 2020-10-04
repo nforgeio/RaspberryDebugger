@@ -31,12 +31,6 @@ namespace RaspberryDebug
         /// </summary>
         private IContainer components = null;
 
-        /// <summary>
-        /// The related Visual Studio connections options page that mediates
-        /// the persistence of settings to Visual Studio.
-        /// </summary>
-        public PiDebugConnectionsPage ConnectionsPage { get; set; }
-
         /// <summary> 
         /// Clean up any resources being used.
         /// </summary>

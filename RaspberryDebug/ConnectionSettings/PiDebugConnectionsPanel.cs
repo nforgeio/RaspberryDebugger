@@ -46,6 +46,7 @@ namespace RaspberryDebug
 
         private List<Connection>    connections = new List<Connection>();
 
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -53,6 +54,18 @@ namespace RaspberryDebug
         {
             InitializeComponent();
         }
+
+        /// <summary>
+        /// The related Visual Studio connections options page that mediates
+        /// the persistence of settings to Visual Studio.
+        /// </summary>
+        public PiDebugConnectionsPage ConnectionsPage { get; set; }
+
+        /// <summary>
+        /// Returns the parent window to be used when displaying message boxes
+        /// and dialogs.
+        /// </summary>
+        private IWin32Window dialogParent => ConnectionsPage.PanelWindow;
 
         /// <summary>
         /// Called when the panel is first loaded.
@@ -320,7 +333,19 @@ namespace RaspberryDebug
         /// <param name="args">The arguments.</param>
         private void addButton_Click(object sender, EventArgs e)
         {
-            ReloadConnections();
+            var newConnection =
+                new Connection()
+                {
+                    ConnectionsPanel = this
+                };
+
+            var connectionDialog = new ConnectionDialog(newConnection, edit: false, connections);
+
+            if (connectionDialog.ShowDialog(dialogParent) == DialogResult.OK)
+            {
+                connections.Add(newConnection);
+                ReloadConnections();
+            }
         }
 
         /// <summary>
@@ -335,7 +360,12 @@ namespace RaspberryDebug
                 return;
             }
 
-            ReloadConnections();
+            var connectionDialog = new ConnectionDialog(SelectedConnection, edit: true, connections);
+
+            if (connectionDialog.ShowDialog(dialogParent) == DialogResult.OK)
+            {
+                ReloadConnections();
+            }
         }
 
         /// <summary>
@@ -363,7 +393,8 @@ namespace RaspberryDebug
                 return;
             }
 
-            if (MessageBox.Show($"Delete the debug connection for [{SelectedConnection.Host}]?",
+            if (MessageBox.Show(dialogParent,
+                                $"Delete the debug connection for [{SelectedConnection.Host}]?",
                                 $"Delete Connection",
                                 MessageBoxButtons.YesNo,
                                 MessageBoxIcon.Warning,

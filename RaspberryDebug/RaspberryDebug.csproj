@@ -46,22 +46,28 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Commands\DebugRaspberryCommand.cs" />
+    <Compile Include="Dialogs\ConnectionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\ConnectionDialog.Designer.cs">
+      <DependentUpon>ConnectionDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\Connection\Connection.cs" />
     <Compile Include="Models\Sdk\SdkArchitecture.cs" />
     <Compile Include="Models\Sdk\SdkCatalog.cs" />
     <Compile Include="Models\Sdk\SdkCatalogItem.cs" />
-    <Compile Include="DebugOptions\PiAuthenticationType.cs" />
-    <Compile Include="DebugOptions\PiConnectionSettings.cs" />
-    <Compile Include="DebugOptions\PiDebugConnectionsPanel.cs">
+    <Compile Include="ConnectionSettings\PiAuthenticationType.cs" />
+    <Compile Include="ConnectionSettings\PiConnectionSettings.cs" />
+    <Compile Include="ConnectionSettings\PiDebugConnectionsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="DebugOptions\PiDebugConnectionsPanel.Designer.cs">
+    <Compile Include="ConnectionSettings\PiDebugConnectionsPanel.Designer.cs">
       <DependentUpon>PiDebugConnectionsPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="DebugOptions\PiDebugConnectionsPage.cs">
+    <Compile Include="ConnectionSettings\PiDebugConnectionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="DebugOptions\PiRemoteSettings.cs" />
+    <Compile Include="ConnectionSettings\PiRemoteSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RaspberryDebugPackage.cs" />
   </ItemGroup>
@@ -105,8 +111,11 @@
     <Content Include="Resources\DebugRaspberryCommand.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DebugOptions\PiDebugConnectionsPanel.resx">
+    <EmbeddedResource Include="ConnectionSettings\PiDebugConnectionsPanel.resx">
       <DependentUpon>PiDebugConnectionsPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\ConnectionDialog.resx">
+      <DependentUpon>ConnectionDialog.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

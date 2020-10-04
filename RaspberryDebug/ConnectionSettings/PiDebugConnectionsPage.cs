@@ -51,5 +51,12 @@ namespace RaspberryDebug
                 return panel;
             }
         }
+
+        /// <summary>
+        /// Returns the panel window that can be used for ensuring that
+        /// dialogs and message boxes are properly located over Visual
+        /// Studio.
+        /// </summary>
+        public IWin32Window PanelWindow => Window;
     }
 }
