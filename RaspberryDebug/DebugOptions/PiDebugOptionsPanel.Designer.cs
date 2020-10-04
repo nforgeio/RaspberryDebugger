@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    PiDebugOptionsControl.cs
+// FILE:	    PiDebugOptionsPanel.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -24,7 +24,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Implements the custom debug options panel.
     /// </summary>
-    partial class PiDebugOptionsControl
+    partial class PiDebugOptionsPanel
     {
         /// <summary> 
         /// Required designer variable.

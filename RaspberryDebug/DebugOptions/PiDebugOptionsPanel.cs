@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace RaspberryDebug
 {
-    public partial class PiDebugOptionsControl : UserControl
+    public partial class PiDebugOptionsPanel : UserControl
     {
-        public PiDebugOptionsControl()
+        public PiDebugOptionsPanel()
         {
             InitializeComponent();
         }

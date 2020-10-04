@@ -42,7 +42,7 @@ namespace RaspberryDebug
         {
             get
             {
-                var page = new PiDebugOptionsControl();
+                var page = new PiDebugOptionsPanel();
 
                 page.OptionsPage = this;
                 page.Initialize();
