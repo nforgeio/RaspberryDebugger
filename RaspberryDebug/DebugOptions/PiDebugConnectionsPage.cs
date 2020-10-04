@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    PiDebugOptionsPage.cs
+// FILE:	    PiDebugConnectionsPage.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -25,10 +25,10 @@ using Microsoft.VisualStudio.Shell;
 namespace RaspberryDebug
 {
     /// <summary>
-    /// Implements our custom debug options page.
+    /// Implements our custom debug connections options page.
     /// </summary>
     [Guid("00000000-0000-0000-0000-000000000000")]
-    public class PiDebugOptionsPage : DialogPage
+    public class PiDebugConnectionsPage : DialogPage
     {
         /// <summary>
         /// The <see cref="PiRemoteSettings"/> serialized as JSON.
@@ -42,7 +42,7 @@ namespace RaspberryDebug
         {
             get
             {
-                var page = new PiDebugOptionsPanel();
+                var page = new PiDebugConnectionsPanel();
 
                 page.OptionsPage = this;
                 page.Initialize();

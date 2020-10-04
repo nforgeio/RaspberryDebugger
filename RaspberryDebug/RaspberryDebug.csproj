@@ -51,13 +51,13 @@
     <Compile Include="Models\SdkCatalogItem.cs" />
     <Compile Include="DebugOptions\PiAuthenticationType.cs" />
     <Compile Include="DebugOptions\PiConnectionSettings.cs" />
-    <Compile Include="DebugOptions\PiDebugOptionsPanel.cs">
+    <Compile Include="DebugOptions\PiDebugConnectionsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="DebugOptions\PiDebugOptionsPanel.Designer.cs">
-      <DependentUpon>PiDebugOptionsPanel.cs</DependentUpon>
+    <Compile Include="DebugOptions\PiDebugConnectionsPanel.Designer.cs">
+      <DependentUpon>PiDebugConnectionsPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="DebugOptions\PiDebugOptionsPage.cs">
+    <Compile Include="DebugOptions\PiDebugConnectionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="DebugOptions\PiRemoteSettings.cs" />
@@ -101,8 +101,8 @@
     <Content Include="Resources\DebugRaspberryCommand.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DebugOptions\PiDebugOptionsPanel.resx">
-      <DependentUpon>PiDebugOptionsPanel.cs</DependentUpon>
+    <EmbeddedResource Include="DebugOptions\PiDebugConnectionsPanel.resx">
+      <DependentUpon>PiDebugConnectionsPanel.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
