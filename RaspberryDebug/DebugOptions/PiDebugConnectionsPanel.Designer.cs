@@ -32,9 +32,10 @@ namespace RaspberryDebug
         private IContainer components = null;
 
         /// <summary>
-        /// The related Visual Studio options page.
+        /// The related Visual Studio connections options page that mediates
+        /// the persistence of settings to Visual Studio.
         /// </summary>
-        public PiDebugConnectionsPage OptionsPage { get; set; }
+        public PiDebugConnectionsPage ConnectionsPage { get; set; }
 
         /// <summary> 
         /// Clean up any resources being used.
@@ -67,11 +68,12 @@ namespace RaspberryDebug
         private void InitializeComponent()
         {
             this.titleLabel = new System.Windows.Forms.Label();
-            this.connectionsList = new System.Windows.Forms.ListView();
             this.addButton = new System.Windows.Forms.Button();
             this.editButton = new System.Windows.Forms.Button();
             this.testButton = new System.Windows.Forms.Button();
             this.removeButton = new System.Windows.Forms.Button();
+            this.connectionsView = new BrightIdeasSoftware.ObjectListView();
+            ((System.ComponentModel.ISupportInitialize)(this.connectionsView)).BeginInit();
             this.SuspendLayout();
             // 
             // titleLabel
@@ -79,18 +81,9 @@ namespace RaspberryDebug
             this.titleLabel.AutoSize = true;
             this.titleLabel.Location = new System.Drawing.Point(3, 2);
             this.titleLabel.Name = "titleLabel";
-            this.titleLabel.Size = new System.Drawing.Size(298, 13);
+            this.titleLabel.Size = new System.Drawing.Size(263, 13);
             this.titleLabel.TabIndex = 0;
-            this.titleLabel.Text = "Add or Remove SSH connections for Raspberry Pi debugging";
-            // 
-            // connectionsList
-            // 
-            this.connectionsList.HideSelection = false;
-            this.connectionsList.Location = new System.Drawing.Point(3, 21);
-            this.connectionsList.Name = "connectionsList";
-            this.connectionsList.Size = new System.Drawing.Size(408, 329);
-            this.connectionsList.TabIndex = 1;
-            this.connectionsList.UseCompatibleStateImageBehavior = false;
+            this.titleLabel.Text = "Manage SSH connections for Raspberry Pi debugging";
             // 
             // addButton
             // 
@@ -100,6 +93,7 @@ namespace RaspberryDebug
             this.addButton.TabIndex = 2;
             this.addButton.Text = "Add";
             this.addButton.UseVisualStyleBackColor = true;
+            this.addButton.Click += new System.EventHandler(this.addButton_Click);
             // 
             // editButton
             // 
@@ -109,6 +103,7 @@ namespace RaspberryDebug
             this.editButton.TabIndex = 3;
             this.editButton.Text = "Edit";
             this.editButton.UseVisualStyleBackColor = true;
+            this.editButton.Click += new System.EventHandler(this.editButton_Click);
             // 
             // testButton
             // 
@@ -118,6 +113,7 @@ namespace RaspberryDebug
             this.testButton.TabIndex = 4;
             this.testButton.Text = "Test";
             this.testButton.UseVisualStyleBackColor = true;
+            this.testButton.Click += new System.EventHandler(this.testButton_Click);
             // 
             // removeButton
             // 
@@ -127,21 +123,47 @@ namespace RaspberryDebug
             this.removeButton.TabIndex = 5;
             this.removeButton.Text = "Remove";
             this.removeButton.UseVisualStyleBackColor = true;
+            this.removeButton.Click += new System.EventHandler(this.removeButton_Click);
+            // 
+            // connectionsView
+            // 
+            this.connectionsView.CellEditUseWholeCell = false;
+            this.connectionsView.CheckBoxes = true;
+            this.connectionsView.CopySelectionOnControlC = false;
+            this.connectionsView.CopySelectionOnControlCUsesDragSource = false;
+            this.connectionsView.Cursor = System.Windows.Forms.Cursors.Default;
+            this.connectionsView.EmptyListMsg = "Click ADD to specify a target Raspberry Pi for debugging.";
+            this.connectionsView.EmptyListMsgFont = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.connectionsView.FullRowSelect = true;
+            this.connectionsView.GridLines = true;
+            this.connectionsView.HasCollapsibleGroups = false;
+            this.connectionsView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.connectionsView.HideSelection = false;
+            this.connectionsView.Location = new System.Drawing.Point(6, 18);
+            this.connectionsView.MultiSelect = false;
+            this.connectionsView.Name = "connectionsView";
+            this.connectionsView.ShowSortIndicators = false;
+            this.connectionsView.Size = new System.Drawing.Size(405, 337);
+            this.connectionsView.TabIndex = 1;
+            this.connectionsView.UseCompatibleStateImageBehavior = false;
+            this.connectionsView.View = System.Windows.Forms.View.Details;
+            this.connectionsView.ColumnWidthChanging += new System.Windows.Forms.ColumnWidthChangingEventHandler(this.connectionsView_ColumnWidthChanging);
             // 
             // PiDebugConnectionsPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.connectionsView);
             this.Controls.Add(this.removeButton);
             this.Controls.Add(this.testButton);
             this.Controls.Add(this.editButton);
             this.Controls.Add(this.addButton);
-            this.Controls.Add(this.connectionsList);
             this.Controls.Add(this.titleLabel);
             this.Name = "PiDebugConnectionsPanel";
-            this.Size = new System.Drawing.Size(505, 404);
+            this.Size = new System.Drawing.Size(505, 367);
             this.Load += new System.EventHandler(this.PiDebugOptionsPanel_Load);
             this.SizeChanged += new System.EventHandler(this.PiDebugOptionsPanel_SizeChanged);
+            ((System.ComponentModel.ISupportInitialize)(this.connectionsView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -150,10 +172,10 @@ namespace RaspberryDebug
         #endregion
 
         private System.Windows.Forms.Label titleLabel;
-        private System.Windows.Forms.ListView connectionsList;
         private System.Windows.Forms.Button addButton;
         private System.Windows.Forms.Button editButton;
         private System.Windows.Forms.Button testButton;
         private System.Windows.Forms.Button removeButton;
+        private BrightIdeasSoftware.ObjectListView connectionsView;
     }
 }

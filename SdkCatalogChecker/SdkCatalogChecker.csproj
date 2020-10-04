@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\RaspberryDebug\Models\SdkArchitecture.cs" Link="Models\SdkArchitecture.cs" />
-    <Compile Include="..\RaspberryDebug\Models\SdkCatalog.cs" Link="Models\SdkCatalog.cs" />
-    <Compile Include="..\RaspberryDebug\Models\SdkCatalogItem.cs" Link="Models\SdkCatalogItem.cs" />
+    <Compile Include="..\RaspberryDebug\Models\Sdk\SdkArchitecture.cs" Link="Models\SdkArchitecture.cs" />
+    <Compile Include="..\RaspberryDebug\Models\Sdk\SdkCatalog.cs" Link="Models\SdkCatalog.cs" />
+    <Compile Include="..\RaspberryDebug\Models\Sdk\SdkCatalogItem.cs" Link="Models\SdkCatalogItem.cs" />
   </ItemGroup>
 
   <ItemGroup>
