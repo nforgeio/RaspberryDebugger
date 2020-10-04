@@ -83,10 +83,13 @@
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.206" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.7.3069" />
     <PackageReference Include="Neon.Common">
-      <Version>2.2.0</Version>
+      <Version>2.3.0</Version>
     </PackageReference>
     <PackageReference Include="Neon.Cryptography">
-      <Version>2.2.0</Version>
+      <Version>2.3.0</Version>
+    </PackageReference>
+    <PackageReference Include="Neon.SSH.NET">
+      <Version>2.3.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

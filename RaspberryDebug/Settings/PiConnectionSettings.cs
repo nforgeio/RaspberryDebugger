@@ -18,6 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.Contracts;
+
+using Neon.Net;
 
 using Newtonsoft.Json;
 
@@ -69,5 +72,18 @@ namespace RaspberryDebug
         [JsonProperty(PropertyName = "KeyPath", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.Include)]
         [DefaultValue("")]
         public string KeyPath { get; set; } = "";
+
+        /// <summary>
+        /// Validates the connection settings.
+        /// </summary>
+        /// <exception cref="ArgumentException">Thrown for invalid settings.</exception>
+        public void Validate()
+        {
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(Host), nameof(Host));
+            Covenant.Requires<ArgumentNullException>(!NetHelper.IsValidPort(Port), nameof(Port));
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(Username), nameof(Username));
+            Covenant.Requires<ArgumentNullException>(AuthenticationType == PiAuthenticationType.Password && !string.IsNullOrEmpty(Password), nameof(Password));
+            Covenant.Requires<ArgumentNullException>(AuthenticationType == PiAuthenticationType.PublicKey && !string.IsNullOrEmpty(KeyPath), nameof(KeyPath));
+        }
     }
 }

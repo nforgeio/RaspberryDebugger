@@ -44,6 +44,17 @@ namespace RaspberryDebug
         public const string PackageGuidString = "fed3a92c-c8e2-40a3-a38f-ce7d35088ea5";
 
         /// <summary>
+        /// Directory on the Raspberry Pi where .NET Core SDKs will be installed along with the
+        /// <b>vsdbg</b> remote debugger.
+        /// </summary>
+        public const string RemoteSdkInstallPath = "/lib/dotnet";
+
+        /// <summary>
+        /// Directory on the Raspberry Pi where the <b>vsdbg</b> remote debugger will be installed.
+        /// </summary>
+        public const string RemoteDebuggerPath = RemoteSdkInstallPath + "/vsdbg";
+
+        /// <summary>
         /// Initializes the package.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to monitor for initialization cancellation, which can occur when VS is shutting down.</param>
