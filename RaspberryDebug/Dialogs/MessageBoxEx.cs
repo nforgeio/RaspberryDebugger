@@ -190,7 +190,9 @@ namespace RaspberryDebug
 
             if (_owner != null)
             {
+#pragma warning disable CS0618
                 _hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, AppDomain.GetCurrentThreadId());
+#pragma warning restore CS0618
             }
         }
 
