@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="BaseOptionModel.cs" />
     <Compile Include="Commands\DebugRaspberryCommand.cs" />
+    <Compile Include="Connection\PiConnection.cs" />
     <Compile Include="Dialogs\ConnectionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -61,8 +62,7 @@
     <Compile Include="Models\Sdk\SdkArchitecture.cs" />
     <Compile Include="Models\Sdk\SdkCatalog.cs" />
     <Compile Include="Models\Sdk\SdkCatalogItem.cs" />
-    <Compile Include="ConnectionSettings\PiAuthenticationType.cs" />
-    <Compile Include="ConnectionSettings\PiConnection.cs" />
+    <Compile Include="Models\Connection\AuthenticationType.cs" />
     <Compile Include="ConnectionSettings\PiDebugConnectionsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -72,7 +72,6 @@
     <Compile Include="ConnectionSettings\PiDebugConnectionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ConnectionSettings\PiConnectionSettings.cs" />
     <Compile Include="PackageHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RaspberryDebugPackage.cs" />

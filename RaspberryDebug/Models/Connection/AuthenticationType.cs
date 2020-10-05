@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    PiConnectionSettings.cs
+// FILE:	    AuthenticationType.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -17,18 +17,25 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace RaspberryDebug
 {
     /// <summary>
-    /// The deserialized connection settings.  These are serialized to JSON
-    /// when persisted by Visual Studio.
+    /// Enumerates the supported SSH authentication types.
     /// </summary>
-    public class PiConnectionSettings
+    public enum AuthenticationType
     {
         /// <summary>
-        /// The remote Raspberry Pi connection settings.
+        /// Password based authentication.
         /// </summary>
-        public List<PiConnection> Connections { get; set; } = new List<PiConnection>();
+        [EnumMember(Value = "password")]
+        Password = 0,
+
+        /// <summary>
+        /// Public SSH key based authentication.
+        /// </summary>
+        [EnumMember(Value = "public-key")]
+        PublicKey
     }
 }

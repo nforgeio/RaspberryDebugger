@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    PiAuthenticationType.cs
+// FILE:	    PiConnection.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -17,25 +17,32 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.ComponentModel;
+using System.Diagnostics.Contracts;
+using System.IO;
+using System.Net;
+using Neon.Common;
+using Neon.SSH;
+
+using Newtonsoft.Json;
 
 namespace RaspberryDebug
 {
     /// <summary>
-    /// Enumerates the supported SSH authentication types.
+    /// Implements a SSH connection to the remote Raspberry Pi.
     /// </summary>
-    public enum PiAuthenticationType
+    public class PiConnection : SshLinuxProxy
     {
         /// <summary>
-        /// Password based authentication.
+        /// Private constructor.
         /// </summary>
-        [EnumMember(Value = "password")]
-        Password = 0,
-
-        /// <summary>
-        /// Public SSH key based authentication.
-        /// </summary>
-        [EnumMember(Value = "public-key")]
-        PublicKey
+        /// <param name="name">The server name.</param>
+        /// <param name="address">The IP address.</param>
+        /// <param name="credentials">The SSH credentials.</param>
+        /// <param name="logWriter">Optional log writer.</param>
+        private PiConnection(string name, IPAddress address, SshCredentials credentials, TextWriter logWriter = null) 
+            : base(name, address, credentials, logWriter)
+        {
+        }
     }
 }
