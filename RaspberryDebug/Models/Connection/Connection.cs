@@ -28,7 +28,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Describes a Raspberry Pi host connection.
     /// </summary>
-    public class Connection
+    internal class Connection
     {
         private bool    isDefault;
 

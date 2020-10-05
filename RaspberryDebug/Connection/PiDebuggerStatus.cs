@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    AuthenticationType.cs
+// FILE:	    PiDebuggerStatus.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -17,25 +17,38 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.ComponentModel;
+using System.Diagnostics.Contracts;
+using System.IO;
+using System.Linq;
+using System.Net;
+using Neon.Common;
+using Neon.Net;
+using Neon.SSH;
+
+using Newtonsoft.Json;
 
 namespace RaspberryDebug
 {
     /// <summary>
-    /// Enumerates the supported SSH authentication types.
+    /// Enumerates the possible states of the **vsdbg** debugger on a
+    /// remote Raspberry Pi.
     /// </summary>
-    internal enum AuthenticationType
+    internal enum PiDebuggerStatus
     {
         /// <summary>
-        /// Password based authentication.
+        /// The debugger is not installed.
         /// </summary>
-        [EnumMember(Value = "password")]
-        Password = 0,
+        NotInstalled = 0,
 
         /// <summary>
-        /// Public SSH key based authentication.
+        /// The debugger is installed but is not running.
         /// </summary>
-        [EnumMember(Value = "public-key")]
-        PublicKey
+        Installed,
+
+        /// <summary>
+        /// The debugger is installed and running.
+        /// </summary>
+        Running
     }
 }

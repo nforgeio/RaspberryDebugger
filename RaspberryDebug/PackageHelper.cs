@@ -36,7 +36,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Package specific constants.
     /// </summary>
-    public static class PackageHelper
+    internal static class PackageHelper
     {
         /// <summary>
         /// The path to the <b>%USERPROFILE%\.pi-debug</b> folder where the package

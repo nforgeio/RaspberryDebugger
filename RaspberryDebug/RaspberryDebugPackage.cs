@@ -19,9 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-
+using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebug
@@ -36,8 +36,11 @@ namespace RaspberryDebug
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideOptionPage(typeof(PiDebugConnectionsPage), "Raspberry Debugger", "Connections", 0, 0, true)]
-    public sealed class RaspberryDebugPackage : AsyncPackage
+    internal sealed class RaspberryDebugPackage : AsyncPackage
     {
+        //---------------------------------------------------------------------
+        // Static members
+
         /// <summary>
         /// Unique package ID.
         /// </summary>
@@ -54,6 +57,84 @@ namespace RaspberryDebug
         /// </summary>
         public const string RemoteDebuggerPath = RemoteSdkInstallPath + "/vsdbg";
 
+        private static object               debugSyncLock      = new object();
+        private static IVsOutputWindowPane  debugPane          = null;
+        private static bool                 debugPaneActivated = false;
+        private static Queue<string>        debugLogQueue      = new Queue<string>();
+
+        /// <summary>
+        /// Returns the package instance.
+        /// </summary>
+        public static RaspberryDebugPackage Instance { get; private set; }
+
+        /// <summary>
+        /// Logs text to the Visual Studio debug panel.
+        /// </summary>
+        /// <param name="text">The output text.</param>
+        public static void Log(string text)
+        {
+            if (Instance == null || debugPane == null)
+            {
+                return;     // Logging hasn't been initialized yet.
+            }
+
+            if (string.IsNullOrEmpty(text))
+            {
+                return;     // Nothing to log
+            }
+
+            // We're going to queue log messages in the current thread and 
+            // then execute a fire-and-forget action on the UI thread to
+            // write any queued log lines.  We'll use a lock to protect
+            // the queue.
+            // 
+            // This pattern is nice because it ensures that the log lines
+            // are written in the correct order while ensuring this all
+            // happens on the UI thread in addition to not using a 
+            // [Task.Run(...).Wait()] which would probably result in
+            // background thread exhaustion.
+
+            lock (debugSyncLock)
+            {
+                debugLogQueue.Enqueue(text);
+            }
+
+            Instance.JoinableTaskFactory.RunAsync(
+                async () =>
+                {
+                    await Task.Yield();     // Get off of the callers stack
+                    await Instance.JoinableTaskFactory.SwitchToMainThreadAsync(Instance.DisposalToken);
+
+                    lock (debugSyncLock)
+                    {
+                        if (debugLogQueue.Count == 0)
+                        {
+                            return;     // Nothing to do
+                        }
+
+                        if (!debugPaneActivated)
+                        {
+                            // We're going to activate the Visual Studio debug panel just once,
+                            // the first time a message is logged.
+
+                            debugPane.Activate();
+
+                            debugPaneActivated = true;
+                        }
+
+                        // Log any queued messages.
+
+                        while (debugLogQueue.Count > 0)
+                        {
+                            debugPane.OutputString(debugLogQueue.Dequeue());
+                        }
+                    }
+                });
+        }
+
+        //---------------------------------------------------------------------
+        // Instance members
+
         /// <summary>
         /// Initializes the package.
         /// </summary>
@@ -62,10 +143,22 @@ namespace RaspberryDebug
         /// <returns>The tracking <see cref="Task"/>.</returns>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            Instance = this;
+
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
 
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            // Initialize the log panel.
+
+            var debugWindow     = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
+            var generalPaneGuid = VSConstants.GUID_OutWindowDebugPane;
+
+            debugWindow.GetPane(ref generalPaneGuid, out debugPane);
+
+            // Initialize the new commands.
+
             await DebugRaspberryCommand.InitializeAsync(this);
         }
     }

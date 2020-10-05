@@ -35,7 +35,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Implements the Add/Remove connection dialogs.
     /// </summary>
-    public partial class ConnectionDialog : Form
+    internal partial class ConnectionDialog : Form
     {
         private const char passwordChar = '•';
 
@@ -73,7 +73,7 @@ namespace RaspberryDebug
         /// <summary>
         /// Returns the connection being created or edited.
         /// </summary>
-        public Connection Connection { get; private set; }
+        internal Connection Connection { get; private set; }
 
         /// <summary>
         /// Handles the OK button.

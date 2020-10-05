@@ -33,7 +33,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Implements the debug connections options panel.
     /// </summary>
-    public partial class PiDebugConnectionsPanel : UserControl
+    internal partial class PiDebugConnectionsPanel : UserControl
     {
         private const int spacing     = 8;
 
@@ -58,7 +58,7 @@ namespace RaspberryDebug
         /// <summary>
         /// The related Visual Studio connections options page.
         /// </summary>
-        public PiDebugConnectionsPage ConnectionsPage { get; set; }
+        internal PiDebugConnectionsPage ConnectionsPage { get; set; }
 
         /// <summary>
         /// Returns the parent window to be used when displaying message boxes

@@ -32,7 +32,7 @@ namespace RaspberryDebug
     /// Implements our custom debug connections options page.
     /// </summary>
     [Guid("00000000-0000-0000-0000-000000000000")]
-    public class PiDebugConnectionsPage : DialogPage
+    internal class PiDebugConnectionsPage : DialogPage
     {
         /// <summary>
         /// Constructs and returns the custom control used to implement this options page.

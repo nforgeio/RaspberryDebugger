@@ -27,7 +27,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Describes the available .NET Core SDK binary downloads for ARM.
     /// </summary>
-    public class SdkCatalog
+    internal class SdkCatalog
     {
         /// <summary>
         /// The list of SDK catalog items.

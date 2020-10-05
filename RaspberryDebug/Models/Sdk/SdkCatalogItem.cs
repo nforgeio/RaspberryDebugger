@@ -27,7 +27,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Describes an .NET Core SDK download.
     /// </summary>
-    public class SdkCatalogItem
+    internal class SdkCatalogItem
     {
         /// <summary>
         /// The SDK name (like "3.1.402").

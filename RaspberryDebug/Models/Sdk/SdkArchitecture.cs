@@ -28,7 +28,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Enumerates the supported ARM architectures.
     /// </summary>
-    public enum SdkArchitecture
+    internal enum SdkArchitecture
     {
         /// <summary>
         /// 32-bit ARM

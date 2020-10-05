@@ -106,7 +106,10 @@ namespace RaspberryDebug
             string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
             string title   = "DebugRaspberryCommand";
 
+            Log.WriteLine("Start Raspberry Pi debugging");
+
             // Show a message box to prove we were here
+            
             VsShellUtilities.ShowMessageBox(
                 this.package,
                 message,

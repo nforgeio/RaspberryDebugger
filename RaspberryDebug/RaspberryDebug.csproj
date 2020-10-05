@@ -50,7 +50,9 @@
   <ItemGroup>
     <Compile Include="BaseOptionModel.cs" />
     <Compile Include="Commands\DebugRaspberryCommand.cs" />
+    <Compile Include="Connection\PiDebuggerStatus.cs" />
     <Compile Include="Connection\PiConnection.cs" />
+    <Compile Include="Connection\PiStatus.cs" />
     <Compile Include="Dialogs\ConnectionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -58,18 +60,19 @@
       <DependentUpon>ConnectionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\MessageBoxEx.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="Models\Connection\Connection.cs" />
     <Compile Include="Models\Sdk\SdkArchitecture.cs" />
     <Compile Include="Models\Sdk\SdkCatalog.cs" />
     <Compile Include="Models\Sdk\SdkCatalogItem.cs" />
     <Compile Include="Models\Connection\AuthenticationType.cs" />
-    <Compile Include="ConnectionSettings\PiDebugConnectionsPanel.cs">
+    <Compile Include="VSConnections\PiDebugConnectionsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ConnectionSettings\PiDebugConnectionsPanel.Designer.cs">
+    <Compile Include="VSConnections\PiDebugConnectionsPanel.Designer.cs">
       <DependentUpon>PiDebugConnectionsPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="ConnectionSettings\PiDebugConnectionsPage.cs">
+    <Compile Include="VSConnections\PiDebugConnectionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PackageHelper.cs" />
@@ -118,7 +121,7 @@
     <Content Include="Resources\DebugRaspberryCommand.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ConnectionSettings\PiDebugConnectionsPanel.resx">
+    <EmbeddedResource Include="VSConnections\PiDebugConnectionsPanel.resx">
       <DependentUpon>PiDebugConnectionsPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\ConnectionDialog.resx">

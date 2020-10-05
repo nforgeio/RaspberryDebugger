@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    AuthenticationType.cs
+// FILE:	    PiStatus.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -17,25 +17,23 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.ComponentModel;
+using System.Diagnostics.Contracts;
+using System.IO;
+using System.Linq;
+using System.Net;
+using Neon.Common;
+using Neon.Net;
+using Neon.SSH;
+
+using Newtonsoft.Json;
 
 namespace RaspberryDebug
 {
     /// <summary>
-    /// Enumerates the supported SSH authentication types.
+    /// Describes the current status of a remote Raspberry Pi.
     /// </summary>
-    internal enum AuthenticationType
+    internal class PiStatus
     {
-        /// <summary>
-        /// Password based authentication.
-        /// </summary>
-        [EnumMember(Value = "password")]
-        Password = 0,
-
-        /// <summary>
-        /// Public SSH key based authentication.
-        /// </summary>
-        [EnumMember(Value = "public-key")]
-        PublicKey
     }
 }

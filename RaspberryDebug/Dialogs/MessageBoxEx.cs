@@ -30,7 +30,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Extended message box that can center itself over a parent window.
     /// </summary>
-    public class MessageBoxEx
+    internal class MessageBoxEx
     {
         private static IWin32Window     _owner;
         private static HookProc         _hookProc;

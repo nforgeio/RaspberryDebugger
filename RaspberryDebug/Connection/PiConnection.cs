@@ -26,14 +26,12 @@ using Neon.Common;
 using Neon.Net;
 using Neon.SSH;
 
-using Newtonsoft.Json;
-
 namespace RaspberryDebug
 {
     /// <summary>
     /// Implements a SSH connection to the remote Raspberry Pi.
     /// </summary>
-    public class PiConnection : LinuxSshProxy
+    internal class PiConnection : LinuxSshProxy
     {
         //---------------------------------------------------------------------
         // Static members
@@ -48,33 +46,61 @@ namespace RaspberryDebug
         {
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
 
-            if (!IPAddress.TryParse(connectionInfo.Host, out var address))
-            {
-                address = Dns.GetHostAddresses(connectionInfo.Host).FirstOrDefault();
-            }
-
-            if (address == null)
-            {
-                // $todo(jefflill): Log this somewhere.
-
-                return null;
-            }
-
-            var credentials = SshCredentials.FromUserPassword(connectionInfo.User, connectionInfo.Password);
-            var connection  = new PiConnection(connectionInfo.Host, address, credentials, connectionInfo.Port);
-
             try
             {
+                if (!IPAddress.TryParse(connectionInfo.Host, out var address))
+                {
+                    Log($"DNS lookup for: {connectionInfo.Host}");
+
+                    address = Dns.GetHostAddresses(connectionInfo.Host).FirstOrDefault();
+                }
+
+                if (address == null)
+                {
+                    LogError("DNS lookup failed.");
+                    return null;
+                }
+
+                var credentials = SshCredentials.FromUserPassword(connectionInfo.User, connectionInfo.Password);
+                var connection  = new PiConnection(connectionInfo.Host, address, credentials, connectionInfo.Port);
+
                 connection.Connect();
 
                 return connection;
             }
             catch (Exception e)
             {
-                // $todo(jefflill): Log this somewhere.
+                LogException(e);
 
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Logs a line of text to the Visual Studio debug pane.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        private new static void Log(string text = "")
+        {
+            RaspberryDebug.Log.WriteLine(text);
+        }
+
+        /// <summary>
+        /// Logs an error to the Visual Studio debug pane.
+        /// </summary>
+        /// <param name="text">The error text.</param>
+        private static void LogError(string text)
+        {
+            RaspberryDebug.Log.Error(text);
+        }
+
+        /// <summary>
+        /// Logs an exception to the Visual Studio debug pane.
+        /// </summary>
+        /// <param name="e">The exception.</param>
+        private new static void LogException(Exception e)
+        {
+            RaspberryDebug.Log.Exception(e);
         }
 
         //---------------------------------------------------------------------
@@ -92,5 +118,7 @@ namespace RaspberryDebug
             : base(name, address, credentials, port, logWriter)
         {
         }
+
+
     }
 }
