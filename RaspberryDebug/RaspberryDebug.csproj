@@ -55,6 +55,7 @@
     <Compile Include="Dialogs\ConnectionDialog.Designer.cs">
       <DependentUpon>ConnectionDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\MessageBoxEx.cs" />
     <Compile Include="Models\Connection\Connection.cs" />
     <Compile Include="Models\Sdk\SdkArchitecture.cs" />
     <Compile Include="Models\Sdk\SdkCatalog.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="RaspberryDebugPackage.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="sdk-catalog.json" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
