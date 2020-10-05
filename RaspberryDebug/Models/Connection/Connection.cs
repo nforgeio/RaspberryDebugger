@@ -72,13 +72,13 @@ namespace RaspberryDebug
         /// The user name.
         /// </summary>
         [JsonProperty(PropertyName = "User", Required = Required.Always)]
-        public string User { get; set; }
+        public string User { get; set; } = "pi";
 
         /// <summary>
         /// The password.
         /// </summary>
         [JsonProperty(PropertyName = "Password", Required = Required.Always)]
-        public string Password { get; set; }
+        public string Password { get; set; } = "raspberry";
 
         /// <summary>
         /// Describes the authentication method.

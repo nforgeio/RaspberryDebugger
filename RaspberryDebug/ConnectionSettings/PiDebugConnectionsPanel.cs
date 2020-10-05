@@ -44,8 +44,8 @@ namespace RaspberryDebug
         private const int authColumn    = 5;
         private const int blankColumn   = 6;
 
-        private List<Connection>    connections = new List<Connection>();
-
+        private PiDebugConnectionsPage  connectionsPage;
+        private List<Connection>        connections = new List<Connection>();
 
         /// <summary>
         /// Constructor.
@@ -59,7 +59,20 @@ namespace RaspberryDebug
         /// The related Visual Studio connections options page that mediates
         /// the persistence of settings to Visual Studio.
         /// </summary>
-        public PiDebugConnectionsPage ConnectionsPage { get; set; }
+        public PiDebugConnectionsPage ConnectionsPage
+        {
+            get => connectionsPage;
+
+            set
+            {
+                connectionsPage = value;
+
+                if (connectionsPage != null)
+                {
+                    connections = NeonHelper.JsonDeserialize<List<Connection>>(connectionsPage.ConnectionsJson);
+                }
+            }
+        }
 
         /// <summary>
         /// Returns the parent window to be used when displaying message boxes
@@ -179,37 +192,12 @@ namespace RaspberryDebug
         {
             ConnectionsPage.LoadSettingsFromStorage();
 
-            var connectionsJson = ConnectionsPage.SettingsJson;
+            var connectionsJson = ConnectionsPage.ConnectionsJson;
 
             if (!string.IsNullOrEmpty(connectionsJson))
             {
                 connections = NeonHelper.JsonDeserialize<List<Connection>>(connectionsJson);
             }
-
-            //------------------------------------------
-            // $debug(jefflill): DELETE THIS!
-
-            connections.Clear();
-            connections.Add(
-                new Connection()
-                {
-                    IsDefault = true,
-                    Host      = "10.0.0.7",
-                    Port      = 22,
-                    User      = "pi",
-                    Password  = "raspberry",
-                });
-            connections.Add(
-                new Connection()
-                {
-                    IsDefault = false,
-                    Host      = "foo.com",
-                    Port      = 22,
-                    User      = "pi",
-                    Password  = "raspberry",
-                });
-
-            //------------------------------------------
 
             // All connections must reference this panel so they can notify
             // when their [IsDefault] check state changes.
@@ -242,6 +230,14 @@ namespace RaspberryDebug
 
                 connectionsView.SelectedObject = orgSelection;
             }
+        }
+
+        /// <summary>
+        /// Persists the connections back to Visual Studio.
+        /// </summary>
+        private void SaveConnections()
+        {
+            ConnectionsPage.ConnectionsJson = NeonHelper.JsonSerialize(connections);
         }
 
         /// <summary>
@@ -306,6 +302,8 @@ namespace RaspberryDebug
                     connectionsView.UncheckObjects(uncheckThese);
                 }
             }
+
+            SaveConnections();
         }
 
         /// <summary>
@@ -345,6 +343,7 @@ namespace RaspberryDebug
             {
                 connections.Add(newConnection);
                 ReloadConnections();
+                SaveConnections();
             }
         }
 
@@ -365,6 +364,7 @@ namespace RaspberryDebug
             if (connectionDialog.ShowDialog(dialogParent) == DialogResult.OK)
             {
                 ReloadConnections();
+                SaveConnections();
             }
         }
 
@@ -393,15 +393,16 @@ namespace RaspberryDebug
                 return;
             }
 
-            if (MessageBox.Show(dialogParent,
-                                $"Delete the debug connection for [{SelectedConnection.Host}]?",
-                                $"Delete Connection",
-                                MessageBoxButtons.YesNo,
-                                MessageBoxIcon.Warning,
-                                MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+            if (MessageBoxEx.Show(this,
+                                  $"Delete the debug connection for [{SelectedConnection.Host}]?",
+                                  $"Delete Connection",
+                                  MessageBoxButtons.YesNo,
+                                  MessageBoxIcon.Warning,
+                                  MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
                 connections.Remove(SelectedConnection);
                 ReloadConnections();
+                SaveConnections();
             }
         }
     }

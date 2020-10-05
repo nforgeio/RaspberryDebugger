@@ -91,7 +91,7 @@ namespace RaspberryDebug
             {
                 hostTextBox.Focus();
                 hostTextBox.SelectAll();
-                MessageBox.Show(this, "You must specify a host name or IP address.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "You must specify a host name or IP address.", "Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -99,7 +99,7 @@ namespace RaspberryDebug
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();
-                MessageBox.Show(this, $"[{hostText}] is not a valid IPv4 address or host name.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, $"[{hostText}] is not a valid IPv4 address or host name.", "Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -107,7 +107,7 @@ namespace RaspberryDebug
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();
-                MessageBox.Show(this, $"[{hostText}] is already being used by another connection.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, $"[{hostText}] is already being used by another connection.", "Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -120,7 +120,7 @@ namespace RaspberryDebug
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();
-                MessageBox.Show(this, "You must specify the SSH port.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "You must specify the SSH port.", "Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -128,7 +128,7 @@ namespace RaspberryDebug
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();
-                MessageBox.Show(this, $"[{portText}] is not a valid SSH port.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, $"[{portText}] is not a valid SSH port.", "Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -141,7 +141,7 @@ namespace RaspberryDebug
             {
                 userTextBox.Focus();
                 userTextBox.SelectAll();
-                MessageBox.Show(this, "You must specify a username.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "You must specify a username.", "Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -154,7 +154,7 @@ namespace RaspberryDebug
             {
                 passwordTextBox.Focus();
                 passwordTextBox.SelectAll();
-                MessageBox.Show(this, "You must specify a password.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "You must specify a password.", "Error", MessageBoxButtons.OK);
                 return;
             }
 

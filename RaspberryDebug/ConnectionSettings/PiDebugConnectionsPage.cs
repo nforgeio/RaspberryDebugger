@@ -34,7 +34,7 @@ namespace RaspberryDebug
         /// The <see cref="PiRemoteSettings"/> serialized as JSON.  This serializes
         /// as an array of <see cref="Connection"/> objects.
         /// </summary>
-        public string SettingsJson { get; set; } = "[]";
+        public string ConnectionsJson { get; set; } = "[]";
 
         /// <summary>
         /// Constructs and returns the custom control used to implement this options page.

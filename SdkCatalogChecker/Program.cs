@@ -22,6 +22,9 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using Microsoft.VisualStudio.Settings;
+using Microsoft.VisualStudio.Shell.Settings;
+
 using Neon.Common;
 using Neon.Cryptography;
 
