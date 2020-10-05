@@ -21,13 +21,13 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Neon.Common;
 using BrightIdeasSoftware;
-using System.Net;
 using Neon.Net;
 
 namespace RaspberryDebug

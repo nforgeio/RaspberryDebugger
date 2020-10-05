@@ -44,8 +44,8 @@ namespace RaspberryDebug
         private const int authColumn    = 5;
         private const int blankColumn   = 6;
 
-        private PiDebugConnectionsPage  connectionsPage;
-        private List<Connection>        connections = new List<Connection>();
+        private bool                isInitialized = false;
+        private List<Connection>    connections;
 
         /// <summary>
         /// Constructor.
@@ -56,23 +56,9 @@ namespace RaspberryDebug
         }
 
         /// <summary>
-        /// The related Visual Studio connections options page that mediates
-        /// the persistence of settings to Visual Studio.
+        /// The related Visual Studio connections options page.
         /// </summary>
-        public PiDebugConnectionsPage ConnectionsPage
-        {
-            get => connectionsPage;
-
-            set
-            {
-                connectionsPage = value;
-
-                if (connectionsPage != null)
-                {
-                    connections = NeonHelper.JsonDeserialize<List<Connection>>(connectionsPage.ConnectionsJson);
-                }
-            }
-        }
+        public PiDebugConnectionsPage ConnectionsPage { get; set; }
 
         /// <summary>
         /// Returns the parent window to be used when displaying message boxes
@@ -98,7 +84,18 @@ namespace RaspberryDebug
 
             // Initialize the list view columns.
 
-            connectionsView.CheckBoxes        = true;
+            if (!isInitialized)
+            {
+                // $hack(jefflill):
+                //
+                // This crashes is called when the options panel is displayed for a second
+                // time in Visual Studio.  VS mush cache the instance or something and then
+                // reload it.  We'll use a state variable to avoid this.
+
+                connectionsView.CheckBoxes = true;
+                isInitialized              = true;
+            }
+
             connectionsView.CheckedAspectName = nameof(Connection.IsDefault);
 
             connectionsView.Columns.Add(
@@ -190,14 +187,7 @@ namespace RaspberryDebug
         /// </summary>
         private void LoadConnections()
         {
-            ConnectionsPage.LoadSettingsFromStorage();
-
-            var connectionsJson = ConnectionsPage.ConnectionsJson;
-
-            if (!string.IsNullOrEmpty(connectionsJson))
-            {
-                connections = NeonHelper.JsonDeserialize<List<Connection>>(connectionsJson);
-            }
+            connections = PackageHelper.ReadConnections();
 
             // All connections must reference this panel so they can notify
             // when their [IsDefault] check state changes.
@@ -221,6 +211,8 @@ namespace RaspberryDebug
         {
             var orgSelection = connectionsView.SelectedObject;
 
+            connections = PackageHelper.ReadConnections();
+
             connectionsView.SelectedObject = null;
             connectionsView.SetObjects(connections);
 
@@ -237,7 +229,7 @@ namespace RaspberryDebug
         /// </summary>
         private void SaveConnections()
         {
-            ConnectionsPage.ConnectionsJson = NeonHelper.JsonSerialize(connections);
+            PackageHelper.WriteConnections(connections);
         }
 
         /// <summary>
@@ -301,6 +293,17 @@ namespace RaspberryDebug
                 {
                     connectionsView.UncheckObjects(uncheckThese);
                 }
+
+                changedConnection.IsDefault = true;
+
+                foreach (var connection in uncheckThese)
+                {
+                    connection.IsDefault = false;
+                }
+            }
+            else
+            {
+                changedConnection.IsDefault = false;
             }
 
             SaveConnections();
@@ -342,8 +345,8 @@ namespace RaspberryDebug
             if (connectionDialog.ShowDialog(dialogParent) == DialogResult.OK)
             {
                 connections.Add(newConnection);
-                ReloadConnections();
                 SaveConnections();
+                ReloadConnections();
             }
         }
 
@@ -363,8 +366,8 @@ namespace RaspberryDebug
 
             if (connectionDialog.ShowDialog(dialogParent) == DialogResult.OK)
             {
-                ReloadConnections();
                 SaveConnections();
+                ReloadConnections();
             }
         }
 
@@ -401,8 +404,8 @@ namespace RaspberryDebug
                                   MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
                 connections.Remove(SelectedConnection);
-                ReloadConnections();
                 SaveConnections();
+                ReloadConnections();
             }
         }
     }

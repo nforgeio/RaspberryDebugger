@@ -17,10 +17,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Settings;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace RaspberryDebug
 {
@@ -30,12 +34,6 @@ namespace RaspberryDebug
     [Guid("00000000-0000-0000-0000-000000000000")]
     public class PiDebugConnectionsPage : DialogPage
     {
-        /// <summary>
-        /// The <see cref="PiRemoteSettings"/> serialized as JSON.  This serializes
-        /// as an array of <see cref="Connection"/> objects.
-        /// </summary>
-        public string ConnectionsJson { get; set; } = "[]";
-
         /// <summary>
         /// Constructs and returns the custom control used to implement this options page.
         /// </summary>
