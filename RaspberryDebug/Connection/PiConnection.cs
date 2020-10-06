@@ -22,6 +22,8 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
+
 using Neon.Common;
 using Neon.Net;
 using Neon.SSH;
@@ -41,7 +43,8 @@ namespace RaspberryDebug
         /// connection information is passed.
         /// </summary>
         /// <param name="connectionInfo">The connection information.</param>
-        /// <returns>The connection or <c>null</c> if the connection could not be established..</returns>
+        /// <returns>The connection.</returns>
+        /// <exception cref="Exception">Thrown when the connection could not be established.</exception>
         public static PiConnection Connect(Connection connectionInfo)
         {
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
@@ -64,17 +67,20 @@ namespace RaspberryDebug
                 var credentials = SshCredentials.FromUserPassword(connectionInfo.User, connectionInfo.Password);
                 var connection  = new PiConnection(connectionInfo.Host, address, credentials, connectionInfo.Port);
 
-                connection.Connect();
+                connection.Connect(TimeSpan.Zero);
+                connection.GetPiStatus();
 
                 return connection;
             }
             catch (Exception e)
             {
                 LogException(e);
-
-                return null;
+                throw;
             }
         }
+
+        //----------------------------------------------------------------------
+        // We need these methods to avoid conflicts with the base class methods.
 
         /// <summary>
         /// Logs a line of text to the Visual Studio debug pane.
@@ -92,6 +98,15 @@ namespace RaspberryDebug
         private static void LogError(string text)
         {
             RaspberryDebug.Log.Error(text);
+        }
+
+        /// <summary>
+        /// Logs a warning to the Visual Studio debug pane.
+        /// </summary>
+        /// <param name="text">The error text.</param>
+        private static void LogWarning(string text)
+        {
+            RaspberryDebug.Log.Warning(text);
         }
 
         /// <summary>
@@ -119,6 +134,143 @@ namespace RaspberryDebug
         {
         }
 
+        /// <summary>
+        /// Returns relevant status information for the remote Raspberry, including the
+        /// chip architecture, <b>vsdbg</b> debugger status, as well as the installed
+        /// .NET Core SDKs.
+        /// </summary>
+        public PiStatus PiStatus { get; private set; }
 
+        /// <summary>
+        /// Retrieves status information from the remote Raspberry and updates <see cref="PiStatus"/>.
+        /// </summary>
+        private void GetPiStatus()
+        {
+            Log($"[{Name}]: Retrieving status");
+
+            // We're going to execute a script the gathers everything in a single operation for speed.
+
+            var script =
+$@"
+# This script will return the status information via STDOUT line-by-line
+# in this order:
+#
+#       Sudo Capability (""sudo"" or ""no-sudo"")
+#       Chip Architecture
+#       Unzip Installed (""unzip"" or ""unzip-missing"")
+#       Debugger Installed (""debugger-installed"" or ""debugger-missing"")
+#       Debugger Running (""debugger-running"" or ""debugger-unavailable"")
+#       List of installed SDKs names (e.g. 3.1.108) separated by commas
+
+# Set the SDK and debugger installation paths.
+
+DOTNET_ROOT={PackageHelper.RemoteDotnetRootPath}
+DEBUGFOLDER={PackageHelper.RemoteDebugPath}
+
+# Detect whether the user can act as root.
+
+if sudu --non-interactive su ; then
+    echo 'sudo'
+else
+    echo 'no-sudo'
+fi
+
+# Get the chip architecture
+
+uname -m
+
+# Detect whether the [vsdbg] debugger is installed.
+
+if [ -d $DEBUGFOLDER ] ; then
+    echo 'debugger-installed'
+else
+    echo 'debugger-missing'
+fi
+
+# Detect whether [unzip] is installed.
+
+if `which unzip` ; then
+    echo 'unzip'
+else
+    echo 'unzip-missing'
+fi
+
+# Detect whether the [vsdbg] debugger is running.
+
+if pidof vsdbg &> /dev/nul ; then
+    echo 'debugger-running'
+else
+    echo 'debugger-unavailable'
+fi
+
+# List the SDK folders.  These folder names are the same as the
+# corresponding SDK name.
+
+ls -m $SDKFOLDER\sdk
+";
+            Log($"[{Name}]: Fetching status");
+
+            var result = SudoCommand(script, RunOptions.None);
+
+            if (result.ExitCode != 0)
+            {
+                LogError($"[{Name}]: {result.ErrorText}");
+                PiStatus = new PiStatus();
+            }
+            else
+            {
+                using (var reader = new StringReader(result.OutputText))
+                {
+                    var sudoAllowed       = reader.ReadLine() == "sudo";
+                    var architecture      = reader.ReadLine();
+                    var hasUnzip          = reader.ReadLine() == "unzip";
+                    var debuggerInstalled = reader.ReadLine() == "debugger-installed";
+                    var debuggerRunning   = reader.ReadLine() == "debugger-running";
+                    var sdkLine           = reader.ReadLine();
+                    var debuggerStatus    = PiDebuggerStatus.NotInstalled;
+
+                    if (debuggerRunning)
+                    {
+                        debuggerStatus = PiDebuggerStatus.Running;
+                    }
+                    else if (debuggerInstalled)
+                    {
+                        debuggerStatus = PiDebuggerStatus.Installed;
+                    }
+
+                    Log($"[{Name}]: Status: sudo allowed    = {sudoAllowed}");
+                    Log($"[{Name}]: Status: architecture    = {architecture}");
+                    Log($"[{Name}]: Status: debugger status = {debuggerStatus}");
+                    Log($"[{Name}]: Status: installed sdks  = {sdkLine}");
+
+                    // Convert the comma separated SDK names into a [PiSdk] list.
+
+                    var sdks = new List<PiSdk>();
+
+                    foreach (var sdkName in sdkLine.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries).Select(sdk => sdk.Trim()))
+                    {
+                        // $todo(jefflill): We're only supporting 32-bit SDKs for now.
+
+                        var sdkCatalogItem = PackageHelper.SdkCatalog.Items.Single(item => item.Name == sdkName && item.Architecture == SdkArchitecture.ARM32);
+
+                        if (sdkCatalogItem != null)
+                        {
+                            sdks.Add(new PiSdk(sdkName, sdkCatalogItem.Version));
+                        }
+                        else
+                        {
+                            LogWarning($".NET SDK [{sdkName}] is present on [{Name}] but is not known to the RaspberryDebug extension.  Consider updating the extension.");
+                        }
+                    }
+
+                    PiStatus = new PiStatus(
+                        sudoAllowed:    sudoAllowed,
+                        architecture:   architecture,
+                        hasUnzip:       hasUnzip,
+                        debugger:       debuggerStatus,
+                        installedSdks:  sdks);
+                }
+            }
+        }
     }
 }

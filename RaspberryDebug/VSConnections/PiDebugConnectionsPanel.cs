@@ -332,7 +332,7 @@ namespace RaspberryDebug
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The arguments.</param>
-        private void addButton_Click(object sender, EventArgs e)
+        private void addButton_Click(object sender, EventArgs args)
         {
             var newConnection =
                 new Connection()
@@ -355,7 +355,7 @@ namespace RaspberryDebug
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The arguments.</param>
-        private void editButton_Click(object sender, EventArgs e)
+        private void editButton_Click(object sender, EventArgs args)
         {
             if (SelectedConnection == null)
             {
@@ -376,11 +376,33 @@ namespace RaspberryDebug
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The arguments.</param>
-        private void testButton_Click(object sender, EventArgs e)
+        private void testButton_Click(object sender, EventArgs args)
         {
             if (SelectedConnection == null)
             {
                 return;
+            }
+
+            try
+            {
+                using (var connection = PiConnection.Connect(SelectedConnection))
+                {
+                    MessageBox.Show(this,
+                                    $"[{SelectedConnection.Host}] connection OK!",
+                                    $"Success",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Exception(e);
+
+                MessageBox.Show(this,
+                                $"Connection Failed:\r\n\r\n{e.GetType().FullName}\r\n\r\n{e.Message}",
+                                $"Connection Failed",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
             }
         }
 
@@ -389,7 +411,7 @@ namespace RaspberryDebug
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The arguments.</param>
-        private void removeButton_Click(object sender, EventArgs e)
+        private void removeButton_Click(object sender, EventArgs args)
         {
             if (SelectedConnection == null)
             {
@@ -400,7 +422,7 @@ namespace RaspberryDebug
                                   $"Delete the debug connection for [{SelectedConnection.Host}]?",
                                   $"Delete Connection",
                                   MessageBoxButtons.YesNo,
-                                  MessageBoxIcon.Warning,
+                                  MessageBoxIcon.Question,
                                   MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
                 connections.Remove(SelectedConnection);

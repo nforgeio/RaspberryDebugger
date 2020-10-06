@@ -59,7 +59,16 @@ namespace RaspberryDebug
         /// <param name="text">The error text.</param>
         public static void Error(string text)
         {
-            WriteLine($"*** ERROR: {text}");
+            WriteLine($"ERROR: {text}");
+        }
+
+        /// <summary>
+        /// Writes a warning line to the Visual Studio debug pane.
+        /// </summary>
+        /// <param name="text">The error text.</param>
+        public static void Warning(string text)
+        {
+            WriteLine($"WARNING: {text}");
         }
 
         /// <summary>

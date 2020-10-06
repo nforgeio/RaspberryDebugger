@@ -53,6 +53,7 @@
     <Compile Include="Connection\PiDebuggerStatus.cs" />
     <Compile Include="Connection\PiConnection.cs" />
     <Compile Include="Connection\PiStatus.cs" />
+    <Compile Include="Connection\PiSdk.cs" />
     <Compile Include="Dialogs\ConnectionDialog.cs">
       <SubType>Form</SubType>
     </Compile>

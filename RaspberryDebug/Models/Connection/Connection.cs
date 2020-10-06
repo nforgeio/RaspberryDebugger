@@ -84,7 +84,7 @@ namespace RaspberryDebug
         /// Describes the authentication method.
         /// </summary>
         [JsonIgnore]
-        public string Authentication => "password";     // We only support password authentication right now.
+        public string Authentication => "PASSWORD";     // We only support password authentication right now.
 
         /// <summary>
         /// <para>

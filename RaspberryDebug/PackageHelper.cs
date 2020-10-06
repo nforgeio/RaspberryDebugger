@@ -30,6 +30,7 @@ using System.Windows.Forms;
 using Neon.Common;
 using Newtonsoft.Json;
 using BrightIdeasSoftware;
+using System.Reflection;
 
 namespace RaspberryDebug
 {
@@ -50,6 +51,22 @@ namespace RaspberryDebug
         public static readonly string ConnectionsPath;
 
         /// <summary>
+        /// Directory on the Raspberry Pi where .NET Core SDKs will be installed along with the
+        /// <b>vsdbg</b> remote debugger.
+        /// </summary>
+        public const string RemoteDotnetRootPath = "/lib/dotnet";
+
+        /// <summary>
+        /// Directory on the Raspberry Pi where the <b>vsdbg</b> remote debugger will be installed.
+        /// </summary>
+        public const string RemoteDebugPath = RemoteDotnetRootPath + "/vsdbg";
+
+        /// <summary>
+        /// Returns information about the known .NET Core SDKs,
+        /// </summary>
+        public static SdkCatalog SdkCatalog { get; private set; }
+
+        /// <summary>
         /// Static constructor.
         /// </summary>
         static PackageHelper()
@@ -64,6 +81,17 @@ namespace RaspberryDebug
             }
 
             ConnectionsPath = Path.Combine(SettingsFolder, "connections.json");
+
+            // Parse the embedded SDK catalog JSON.
+
+            var assembly = Assembly.GetExecutingAssembly();
+
+            using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebug.sdk-catalog.json"))
+            {
+                var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
+
+                SdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
+            }
         }
 
         /// <summary>
