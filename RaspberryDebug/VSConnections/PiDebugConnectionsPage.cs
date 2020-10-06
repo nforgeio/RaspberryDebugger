@@ -24,7 +24,6 @@ using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Settings;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace RaspberryDebug
 {

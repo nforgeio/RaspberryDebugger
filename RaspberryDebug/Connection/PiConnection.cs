@@ -51,7 +51,7 @@ namespace RaspberryDebug
 
             try
             {
-                if (!IPAddress.TryParse(connectionInfo.Host, out var address))
+                if (!NetHelper.TryParseIPv4Address(connectionInfo.Host, out var address))
                 {
                     Log($"DNS lookup for: {connectionInfo.Host}");
 
