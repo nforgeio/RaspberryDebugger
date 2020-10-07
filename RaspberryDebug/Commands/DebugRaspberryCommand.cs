@@ -19,12 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-
+using Neon.Windows;
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebug
@@ -103,20 +104,68 @@ namespace RaspberryDebug
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
-            string title   = "DebugRaspberryCommand";
+            // We need Windows native SSH to be installed.
 
-            Log.WriteLine("Start Raspberry Pi debugging");
+            Log.WriteLine("Checking for native OpenSSH client");
 
-            // Show a message box to prove we were here
-            
-            VsShellUtilities.ShowMessageBox(
-                this.package,
-                message,
-                title,
-                OLEMSGICON.OLEMSGICON_INFO,
-                OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "sysnative", "openssh", "ssh.exe");
+                                
+            if (!File.Exists(openSshPath) || true)
+            {
+                Log.WriteLine("Raspberry debugging requires the native OpenSSH client.  See this:");
+                Log.WriteLine("https://techcommunity.microsoft.com/t5/itops-talk-blog/installing-and-configuring-openssh-on-windows-server-2019/ba-p/309540");
+
+                var button = MessageBox.Show(
+                    "Raspberry debugging requires the Windows OpenSSH client.\r\n\r\nWould you like to install this now (restart required)?",
+                    "OpenSSH Client Required",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button2);
+
+                if (button != DialogResult.Yes)
+                {
+                    return;
+                }
+
+                // Install via Powershell: https://techcommunity.microsoft.com/t5/itops-talk-blog/installing-and-configuring-openssh-on-windows-server-2019/ba-p/309540
+
+                var installingForm = new ProgressForm("Installing OpenSSH Client", min: 0, max: 90, stop: 85);
+
+                _ = Task.Run(() =>
+                {
+                    try
+                    {
+                        using (var powershell = new PowerShell())
+                        {
+                            Log.WriteLine("Installing OpenSSH");
+
+                            for (int i = 0; i < 50; i++)
+                            {
+                                Thread.Sleep(1000);
+                            }
+
+                            Log.WriteLine(powershell.Execute("Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0"));
+                        }
+                    }
+                    finally
+                    {
+                        installingForm.Done = true;
+                    }
+
+                    installingForm.WaitUntilClosed();
+
+                    MessageBox.Show(
+                        "Restart Windows to complete the OpenSSH Client installation.",
+                        "Restart Required",
+                        MessageBoxButtons.OK);
+
+                    return;
+                });
+
+                installingForm.ShowDialog();
+            }
+
+            Log.WriteLine("Start Raspberry Pi Debugging");
         }
     }
 }
