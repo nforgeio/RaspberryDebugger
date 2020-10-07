@@ -213,6 +213,10 @@ $@"
 #       Debugger Installed (""debugger-installed"" or ""debugger-missing"")
 #       Debugger Running (""debugger-running"" or ""debugger-not-running"")
 #       List of installed SDKs names (e.g. 3.1.108) separated by commas
+#
+# This script also ensures that the [/lib/dotnet] directory exists, that
+# it has reasonable permissions, and that the folder exists on the system
+# PATH and that DOTNET_ROOT points to the folder.
 
 # Set the SDK and debugger installation paths.
 
@@ -249,6 +253,25 @@ if pidof vsdbg &> /dev/nul ; then
     echo 'debugger-running'
 else
     echo 'debugger-unavailable'
+fi
+
+# Ensure that the [/lib/dotnet] folder exists, is on the PATH
+# and DOTNET_ROOT is defined.
+
+sudo mkdir -p /lib/dotnet
+sudo chown root:root /lib/dotnet
+sudo chmod 755 /lib/dotnet
+
+if ! sudo grep DOTNET_ROOT /etc/profile ; then
+
+    sudo echo ''                                >> /etc/profile
+    sudo echo 'export DOTNET_ROOT=$DOTNET_ROOT' >> /etc/profile
+    sudo echo 'export PATH=$PATH:$DOTNET_ROOT'  >> /etc/profile
+
+    # Set these for the current session too:
+
+    export DOTNET_ROOT=$DOTNET_ROOT
+    export PATH=$PATH:$DOTNET_ROOT
 fi
 
 # List the SDK folders.  These folder names are the same as the
