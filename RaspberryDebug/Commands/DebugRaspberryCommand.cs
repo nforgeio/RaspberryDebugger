@@ -20,13 +20,19 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+
+using EnvDTE;
 using Neon.Windows;
+
 using Task = System.Threading.Tasks.Task;
+using EnvDTE80;
 
 namespace RaspberryDebug
 {
@@ -110,7 +116,7 @@ namespace RaspberryDebug
 
             var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "sysnative", "openssh", "ssh.exe");
                                 
-            if (!File.Exists(openSshPath) || true)
+            if (!File.Exists(openSshPath))
             {
                 Log.WriteLine("Raspberry debugging requires the native OpenSSH client.  See this:");
                 Log.WriteLine("https://techcommunity.microsoft.com/t5/itops-talk-blog/installing-and-configuring-openssh-on-windows-server-2019/ba-p/309540");
@@ -141,7 +147,7 @@ namespace RaspberryDebug
 
                             for (int i = 0; i < 50; i++)
                             {
-                                Thread.Sleep(1000);
+                                System.Threading.Thread.Sleep(1000);
                             }
 
                             Log.WriteLine(powershell.Execute("Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0"));
@@ -165,7 +171,125 @@ namespace RaspberryDebug
                 installingForm.ShowDialog();
             }
 
+            // Identify the startup project.
+
+            var solution = GetSolution();
+
+            if (solution == null)
+            {
+                MessageBox.Show(
+                    "Please open a Visual Studio solution.",
+                    "Solution Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                return;
+            }
+
+            var project = GetStartupProject(solution);
+
+            if (project == null)
+            {
+                MessageBox.Show(
+                    "Please select a startup project.",
+                    "Startup Project Required",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                return;
+            }
+
             Log.WriteLine("Start Raspberry Pi Debugging");
+        }
+
+        /// <summary>
+        /// Returns the current root solution.
+        /// </summary>
+        /// <returns>The current solution or <c>null</c>.</returns>
+        private Solution GetSolution()
+        {
+            var dte = (DTE2)Package.GetGlobalService(typeof(SDTE));
+
+            return dte.Solution;
+        }
+
+        /// <summary>
+        /// Returns the current Visual Studio startup project.
+        /// </summary>
+        /// <param name="solution">The solution.</param>
+        /// <returns>The current project or <c>null</c>.</returns>
+        private Project GetStartupProject(Solution solution)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (solution?.SolutionBuild?.StartupProjects == null)
+            {
+                return null;
+            }
+
+            var projectName = (string)((object[])solution.SolutionBuild.StartupProjects).FirstOrDefault();
+
+            var startupProject = (Project)null;
+
+            foreach (Project project in solution.Projects)
+            {
+                if (project.UniqueName == projectName)
+                {
+                    startupProject = project;
+                }
+                else if (project.Kind == EnvDTE.Constants.vsProjectItemKindSolutionItems)
+                {
+                    startupProject = FindInSubprojects(project, projectName);
+                }
+
+                if (startupProject != null)
+                {
+                    break;
+                }
+            }
+
+            return startupProject;
+        }
+
+        /// <summary>
+        /// Searches a project's subprojects for a project matching a path.
+        /// </summary>
+        /// <param name="parentProject">The parent project.</param>
+        /// <param name="projectName">The desired project name.</param>
+        /// <returns>The <see cref="Project"/> or <c>null</c>.</returns>
+        private Project FindInSubprojects(Project parentProject, string projectName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (parentProject == null)
+            {
+                return null;
+            }
+
+            if (parentProject.UniqueName == projectName)
+            {
+                return parentProject;
+            }
+
+            var project = (Project)null;
+
+            if (project.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
+            {
+                // The project is actually a solution folder so recursively
+                // search any subprojects.
+
+                foreach (ProjectItem projectItem in project.ProjectItems)
+                {
+                    project = FindInSubprojects(projectItem.SubProject, projectName);
+
+                    if (project != null)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return project;
         }
     }
 }
