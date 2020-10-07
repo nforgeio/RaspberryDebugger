@@ -74,6 +74,7 @@
     <Compile Include="Models\Sdk\SdkCatalog.cs" />
     <Compile Include="Models\Sdk\SdkCatalogItem.cs" />
     <Compile Include="Models\Connection\AuthenticationType.cs" />
+    <Compile Include="Models\VisualStudio\ProjectProperties.cs" />
     <Compile Include="VSConnections\PiDebugConnectionsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>

@@ -29,10 +29,12 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
 using EnvDTE;
+using EnvDTE80;
+
+using Neon.Common;
 using Neon.Windows;
 
 using Task = System.Threading.Tasks.Task;
-using EnvDTE80;
 
 namespace RaspberryDebug
 {
@@ -106,16 +108,18 @@ namespace RaspberryDebug
         /// </summary>
         /// <param name="sender">Event sender.</param>
         /// <param name="e">Event args.</param>
-        private void Execute(object sender, EventArgs e)
+#pragma warning disable VSTHRD100
+        private async void Execute(object sender, EventArgs e)
+#pragma warning restore VSTHRD100 
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // We need Windows native SSH to be installed.
 
             Log.WriteLine("Checking for native OpenSSH client");
 
             var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "sysnative", "openssh", "ssh.exe");
-                                
+
             if (!File.Exists(openSshPath))
             {
                 Log.WriteLine("Raspberry debugging requires the native OpenSSH client.  See this:");
@@ -199,7 +203,80 @@ namespace RaspberryDebug
                 return;
             }
 
-            Log.WriteLine("Start Raspberry Pi Debugging");
+            // We need to capture the relevant project properties on the UI thread.
+
+            var projectProperties = ProjectProperties.Clone(project);
+
+            if (!projectProperties.IsNetCore)
+            {
+                MessageBox.Show(
+                    "Invalid Project Type.",
+                    "Only .NET Core projects are supported for debugging on a Raspberry Pi.",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            // Publish the project locally.  We're publishing, not building so all
+            // required binaries and files will be generated.
+
+            if (!await BuildProjectAsync(projectProperties))
+            {
+                MessageBox.Show(
+                    "[dotnet publish] failed for the project.\r\n\r\nLook at the debug output to see what happened.",
+                    "Build Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Builds a project.
+        /// </summary>
+        /// <param name="project">The project properties.</param>
+        /// <returns><c>true</c> on success.</returns>
+        private async Task<bool> BuildProjectAsync(ProjectProperties projectProperties)
+        {
+            Log.WriteLine($"Building: {projectProperties.FullPath}");
+
+            var response = await NeonHelper.ExecuteCaptureAsync(
+                "dotnet",
+                new object[]
+                {
+                    "publish",
+                    "--configuration", projectProperties.Configuration,
+                    "--runtime", "linux-arm",
+                    "--self-contained", "false",
+                    "--output", projectProperties.OutputFolder,
+                    projectProperties.FullPath
+                });
+
+            if (response.ExitCode == 0)
+            {
+                return true;
+            }
+
+            Log.Error("Build Failed!");
+            Log.WriteLine(response.AllText);
+
+            return false;
+        }
+
+        /// <summary>
+        /// Debugs a project.
+        /// </summary>
+        /// <param name="project">The project.</param>
+        /// <returns><c>true</c> on success.</returns>
+        private bool DebugProject(Project project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Log.WriteLine($"Debugging: {project.FullName}");
+
+            return false;
         }
 
         /// <summary>
