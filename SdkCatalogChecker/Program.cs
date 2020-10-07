@@ -72,12 +72,13 @@ namespace NetCoreCatalogChecker
                 Environment.Exit(1);
             }
 
+            Console.WriteLine();
             Console.WriteLine($"[{catalog.Items.Count}] catalog items");
 
             using (var client = new HttpClient())
             {
                 foreach (var item in catalog.Items
-                    .OrderBy(item => item.Version)
+                    .OrderBy(item => item.Name)
                     .ThenBy(item => item.Architecture))
                 {
                     Console.WriteLine();
@@ -85,7 +86,32 @@ namespace NetCoreCatalogChecker
                     Console.WriteLine();
                     Console.WriteLine($"SDK:    {item.Name}/{item.Architecture}");
                     Console.WriteLine($"Link:   {item.Link}");
-                    Console.WriteLine();
+
+                    if (!item.Link.Contains(item.Name))
+                    {
+                        allOk = false;
+                        Console.WriteLine($"*** ERROR: Link does not include the SDK name: {item.Name}");
+                        continue;
+                    }
+
+                    if (item.Architecture == SdkArchitecture.ARM32)
+                    {
+                        if (item.Link.Contains("arm64"))
+                        {
+                            allOk = false;
+                            Console.WriteLine($"*** ERROR: ARM32 SDK link references a 64-bit SDK.");
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (!item.Link.Contains("arm64"))
+                        {
+                            allOk = false;
+                            Console.WriteLine($"*** ERROR: ARM64 SDK link references a 32-bit SDK.");
+                            continue;
+                        }
+                    }
 
                     var binary = (byte[])null;
 
@@ -106,15 +132,14 @@ namespace NetCoreCatalogChecker
 
                     if (actualSha512 == expectedSha512)
                     {
-                        Console.WriteLine("Status: OK");
+                        Console.WriteLine("SHA512: Hashes match");
                     }
                     else
                     {
                         allOk = false;
 
-                        Console.WriteLine("Status: **FAILED**");
                         Console.WriteLine();
-                        Console.WriteLine($"SHA512 hashes don't match!");
+                        Console.WriteLine($"*** ERROR: SHA512 hashes don't match!");
                         Console.WriteLine($"Expected: {expectedSha512}");
                         Console.WriteLine($"Actual:   {actualSha512}");
                     }
