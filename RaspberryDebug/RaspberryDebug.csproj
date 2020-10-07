@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="BaseOptionModel.cs" />
     <Compile Include="Commands\DebugRaspberryCommand.cs" />
+    <Compile Include="Connection\ConnectException.cs" />
     <Compile Include="Connection\PiDebuggerStatus.cs" />
     <Compile Include="Connection\PiConnection.cs" />
     <Compile Include="Connection\PiStatus.cs" />
@@ -88,6 +89,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Neon.SSH.NET, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\neonKUBE\Lib\Neon.SSH.NET\bin\Debug\netstandard2.0\Neon.SSH.NET.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />
@@ -95,6 +100,7 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.206" ExcludeAssets="runtime" />
@@ -103,9 +109,6 @@
       <Version>2.3.1</Version>
     </PackageReference>
     <PackageReference Include="Neon.Cryptography">
-      <Version>2.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="Neon.SSH.NET">
       <Version>2.3.1</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">

@@ -25,6 +25,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Microsoft.VisualStudio.Threading;
+
 using Neon.Common;
 using BrightIdeasSoftware;
 
@@ -65,6 +67,11 @@ namespace RaspberryDebug
         /// and dialogs.
         /// </summary>
         private IWin32Window dialogParent => ConnectionsPage.PanelWindow;
+
+        /// <summary>
+        /// Returns the selected connection or <c>null</c>.
+        /// </summary>
+        private Connection SelectedConnection => (Connection)connectionsView.SelectedObject;
 
         /// <summary>
         /// Called when the panel is first loaded.
@@ -179,6 +186,30 @@ namespace RaspberryDebug
             // Load the connections from the state persisted by Visual Studio.
 
             LoadConnections();
+        }
+
+        /// <summary>
+        /// Invokes an action on the UI thread and waits for it to complete.
+        /// </summary>
+        /// <param name="action"></param>
+        private void Invoke(Action action)
+        {
+            if (action == null)
+            {
+                return; // Nothing to do
+            }
+
+            if (InvokeRequired)
+            {
+                Invoke((MethodInvoker)delegate
+                {
+                    action();
+                });
+            }
+            else
+            {
+                action();
+            }
         }
 
         /// <summary>
@@ -310,11 +341,6 @@ namespace RaspberryDebug
         }
 
         /// <summary>
-        /// Returns the selected connection or <c>null</c>.
-        /// </summary>
-        private Connection SelectedConnection => (Connection)connectionsView.SelectedObject;
-
-        /// <summary>
         /// Enables or disables the buttons as necessary based on whether there's a selected connection.
         /// </summary>
         private void EnableButtons()
@@ -372,23 +398,29 @@ namespace RaspberryDebug
         }
 
         /// <summary>
-        /// Handles <b>Test</b> button clicks.
+        /// Tests the connection settings by establishing a connection to the Raspberry Pi.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The arguments.</param>
-        private void testButton_Click(object sender, EventArgs args)
+#pragma warning disable VSTHRD100
+        private async void testButton_Click(object sender, EventArgs args)
+#pragma warning restore VSTHRD100
         {
             if (SelectedConnection == null)
             {
                 return;
             }
 
+            Log.WriteLine($"[{SelectedConnection.Host}]: Testing...");
+
             try
             {
-                using (var connection = PiConnection.Connect(SelectedConnection))
+                Invoke(() => Cursor = Cursors.WaitCursor);
+
+                using (var connection = await PiConnection.ConnectAsync(SelectedConnection))
                 {
                     MessageBox.Show(this,
-                                    $"[{SelectedConnection.Host}] connection OK!",
+                                    $"[{SelectedConnection.Host}] Connection is OK!",
                                     $"Success",
                                     MessageBoxButtons.OK,
                                     MessageBoxIcon.Information);
@@ -399,10 +431,14 @@ namespace RaspberryDebug
                 Log.Exception(e);
 
                 MessageBox.Show(this,
-                                $"Connection Failed:\r\n\r\n{e.GetType().FullName}\r\n\r\n{e.Message}",
+                                $"Connection Failed:\r\n\r\n{e.GetType().FullName}\r\n\r\n{e.Message}\r\n\r\nView the Debug Output for more details.",
                                 $"Connection Failed",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
+            }
+            finally
+            {
+                Invoke(() => Cursor = Cursors.Default);
             }
         }
 

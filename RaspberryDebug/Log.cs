@@ -75,7 +75,8 @@ namespace RaspberryDebug
         /// Writes an exception to the Visual Studio debug pane.
         /// </summary>
         /// <param name="e">The exception.</param>
-        public static void Exception(Exception e)
+        /// <param name="message">Optional text to include before the exception information.</param>
+        public static void Exception(Exception e, string message = null)
         {
             if (e == null)
             {
@@ -88,7 +89,16 @@ namespace RaspberryDebug
             var sb = new StringBuilder();
 
             sb.Append("\n");
-            sb.Append($"EXCEPTION: {e.GetType().FullName}: {e.Message}\n");
+
+            if (string.IsNullOrEmpty(message))
+            {
+                sb.Append($"EXCEPTION: {e.GetType().FullName}: {e.Message}\n");
+            }
+            else
+            {
+                sb.Append($"EXCEPTION: {e.GetType().FullName}: {message} {e.Message}\n");
+            }
+
             sb.Append(e.StackTrace);
             sb.Append("\n");
 
