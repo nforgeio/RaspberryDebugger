@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    ProgressForm.cs
+// FILE:	    ProgressDialog.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -40,7 +40,7 @@ namespace RaspberryDebug
     /// we're won't know how long in advance. 
     /// </para>
     /// </summary>
-    public partial class ProgressForm : Form
+    public partial class ProgressDialog : Form
     {
         private bool isClosed = false;
 
@@ -56,7 +56,7 @@ namespace RaspberryDebug
         /// <param name="min">The minimum progress value.</param>
         /// <param name="max">The maximum progress value.</param>
         /// <param name="stop">Optionally specifies a value less than <see cref="Max"/> where progress will stop.</param>
-        public ProgressForm(string title, int min, int max, int stop = int.MaxValue)
+        public ProgressDialog(string title, int min, int max, int stop = int.MaxValue)
         {
             InitializeComponent();
 

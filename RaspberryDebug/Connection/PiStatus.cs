@@ -40,10 +40,10 @@ namespace RaspberryDebug
         /// </summary>
         /// <param name="architecture">The chip architecture.</param>
         /// <param name="hasUnzip">Indicates whether <b>unzip</b> is installed.</param>
-        /// <param name="debugger">The debugger status.</param>
+        /// <param name="hasDebuffer">Indicates whether the debugger is installed.</param>
         /// <param name="installedSdks">The installed .NET Core SDKs.</param>
         /// <param name="path">The current value of the PATH environment variable.</param>
-        public PiStatus(string architecture, string path, bool hasUnzip, PiDebuggerStatus debugger, IEnumerable<PiSdk> installedSdks)
+        public PiStatus(string architecture, string path, bool hasUnzip, bool hasDebugger, IEnumerable<PiSdk> installedSdks)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(architecture), nameof(architecture));
             Covenant.Requires<ArgumentNullException>(path != null, nameof(path));
@@ -52,7 +52,7 @@ namespace RaspberryDebug
             this.Architecture  = architecture;
             this.PATH          = path;
             this.HasUnzip      = hasUnzip;
-            this.Debugger      = debugger;
+            this.HasDebugger   = hasDebugger;
             this.InstalledSdks = installedSdks.ToList().AsReadOnly();
         }
 
@@ -74,9 +74,9 @@ namespace RaspberryDebug
         public bool HasUnzip { get; private set; }
 
         /// <summary>
-        /// Indicates the status of the <b>vsdbg</b> debugger.
+        /// Indicates whether the <b>vsdbg</b> debugger is installed.
         /// </summary>
-        public PiDebuggerStatus Debugger { get; private set; }
+        public bool HasDebugger { get; private set; }
 
         /// <summary>
         /// Returns information about the .NET Core SDKs installed.

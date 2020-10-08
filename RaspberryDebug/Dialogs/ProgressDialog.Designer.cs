@@ -1,6 +1,6 @@
 ﻿namespace RaspberryDebug
 {
-    partial class ProgressForm
+    partial class ProgressDialog
     {
         /// <summary>
         /// Required designer variable.

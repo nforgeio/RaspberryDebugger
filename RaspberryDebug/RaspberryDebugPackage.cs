@@ -46,10 +46,9 @@ namespace RaspberryDebug
         /// </summary>
         public const string PackageGuidString = "fed3a92c-c8e2-40a3-a38f-ce7d35088ea5";
 
-        private static object               debugSyncLock      = new object();
-        private static IVsOutputWindowPane  debugPane          = null;
-        private static bool                 debugPaneActivated = false;
-        private static Queue<string>        debugLogQueue      = new Queue<string>();
+        private static object               debugSyncLock = new object();
+        private static IVsOutputWindowPane  debugPane     = null;
+        private static Queue<string>        debugLogQueue = new Queue<string>();
 
         /// <summary>
         /// Returns the package instance.
@@ -101,15 +100,7 @@ namespace RaspberryDebug
                             return;     // Nothing to do
                         }
 
-                        if (!debugPaneActivated)
-                        {
-                            // We're going to activate the Visual Studio debug panel just once,
-                            // the first time a message is logged.
-
-                            debugPane.Activate();
-
-                            debugPaneActivated = true;
-                        }
+                        debugPane.Activate();
 
                         // Log any queued messages.
 

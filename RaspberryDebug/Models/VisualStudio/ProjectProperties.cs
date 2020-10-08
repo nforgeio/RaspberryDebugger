@@ -81,7 +81,7 @@ namespace RaspberryDebug
                 FullPath      = project.FullName,
                 Configuration = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
                 IsNetCore     = isNetCore,
-                OutputFolder  = Path.GetFullPath(Path.Combine(project.FullName, project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString())),
+                OutputFolder  = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(project.FullName), project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString())),
                 AssemblyName  = project.Properties.Item("AssemblyName").Value.ToString()
             };
         }
@@ -113,6 +113,16 @@ namespace RaspberryDebug
         /// Returns the fully qualified path to the project's output directory.
         /// </summary>
         public string OutputFolder { get; private set; }
+
+        /// <summary>
+        /// Returns the publish runtime.
+        /// </summary>
+        public string Runtime => "linux-arm";
+
+        /// <summary>
+        /// Returns the publication folder.
+        /// </summary>
+        public string PublishFolder => Path.Combine(OutputFolder, Runtime);
 
         /// <summary>
         /// Returns the name of the output assembly.

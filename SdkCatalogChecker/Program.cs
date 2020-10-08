@@ -146,7 +146,6 @@ namespace NetCoreCatalogChecker
                         catch (Exception e)
                         {
                             Console.WriteLine(NeonHelper.ExceptionError(e));
-                            continue;
                         }
                     }
 

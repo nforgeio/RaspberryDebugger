@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using Neon.Common;
 using Neon.Net;
 using Neon.SSH;
+using stdole;
 
 namespace RaspberryDebug
 {
@@ -247,14 +248,6 @@ else
     echo 'debugger-missing'
 fi
 
-# Detect whether the [vsdbg] debugger is running.
-
-if pidof vsdbg &> /dev/nul ; then
-    echo 'debugger-running'
-else
-    echo 'debugger-unavailable'
-fi
-
 # Ensure that the [/lib/dotnet] folder exists, is on the PATH
 # and DOTNET_ROOT is defined.
 
@@ -291,27 +284,16 @@ fi
 
             using (var reader = new StringReader(response.OutputText))
             {
-                var architecture      = reader.ReadLine();
-                var path              = reader.ReadLine();
-                var hasUnzip          = reader.ReadLine() == "unzip";
-                var debuggerInstalled = reader.ReadLine() == "debugger-installed";
-                var debuggerRunning   = reader.ReadLine() == "debugger-running";
-                var sdkLine           = reader.ReadLine();
-                var debuggerStatus    = PiDebuggerStatus.NotInstalled;
+                var architecture = reader.ReadLine();
+                var path         = reader.ReadLine();
+                var hasUnzip     = reader.ReadLine() == "unzip";
+                var hasDebugger  = reader.ReadLine() == "debugger-installed";
+                var sdkLine      = reader.ReadLine();
 
-                if (debuggerRunning)
-                {
-                    debuggerStatus = PiDebuggerStatus.Running;
-                }
-                else if (debuggerInstalled)
-                {
-                    debuggerStatus = PiDebuggerStatus.Installed;
-                }
-
-                Log($"[{Name}]: architecture    = {architecture}");
-                Log($"[{Name}]: PATH            = {path}");
-                Log($"[{Name}]: debugger status = {debuggerStatus}");
-                Log($"[{Name}]: installed sdks  = {sdkLine}");
+                Log($"[{Name}]: architecture   = {architecture}");
+                Log($"[{Name}]: PATH           = {path}");
+                Log($"[{Name}]: has debugger   = {hasDebugger}");
+                Log($"[{Name}]: installed sdks = {sdkLine}");
 
                 // Convert the comma separated SDK names into a [PiSdk] list.
 
@@ -334,11 +316,116 @@ fi
                 }
 
                 PiStatus = new PiStatus(
-                    architecture:   architecture,
-                    path:           path,
-                    hasUnzip:       hasUnzip,
-                    debugger:       debuggerStatus,
-                    installedSdks:  sdks);
+                    architecture:  architecture,
+                    path:          path,
+                    hasUnzip:      hasUnzip,
+                    hasDebugger:   hasDebugger,
+                    installedSdks: sdks);
+            }
+        }
+
+        /// <summary>
+        /// Installs the specified .NET Core SDK if it's not already installed.
+        /// </summary>
+        /// <param name="sdkItem">The SDK catalog information.</param>
+        /// <returns><c>true</c> on success.</returns>
+        public async Task<bool> InstallSdkAsync(SdkCatalogItem sdkItem)
+        {
+            Covenant.Requires<ArgumentNullException>(sdkItem != null, nameof(sdkItem));
+
+            // $todo(jefflill):
+            //
+            // Note that we're going to install that standalone SDK for the SDK
+            // version rather than the SDK that shipped with Visual Studio.  I'm 
+            // assuming that the Visual Studio SDKs might have extra stuff we don't
+            // need and it's also possible that the Visual Studio SDK for the SDK
+            // version may not have shipped yet.
+            //
+            // We may want to re-evaluate this in the future.
+
+            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkItem.Version))
+            {
+                return true;    // Already installed
+            }
+
+            LogInfo($".NET Core SDK [v{sdkItem.Version}] is not installed.");
+
+            // Locate the standalone SDK for the request .NET version.  Note that
+            // standalone SDKs seem to have patch number is less than 200.
+
+            var targetSdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == sdkItem.Version && SemanticVersion.Parse(sdkItem.Version).Patch < 200);
+
+            if (targetSdk == null)
+            {
+                // Fall back to the Visual Studio SDK, if there is one.
+
+                targetSdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == sdkItem.Version);
+            }
+
+            if (targetSdk == null)
+            {
+                LogError($"RasberryDebug is unaware of the [{sdkItem.Name}/{sdkItem.Version}] .NET Core SDK.");
+                LogError($"Try updating the RasberryDebug extension or report this issue at:");
+                LogError($"https://github.com/jefflill/RaspberryDebug/issues/");
+
+                return false;
+            }
+
+            // Install the SDK.
+
+            LogInfo($"Installing SDK v{targetSdk.Version} on Raspberry");
+
+            var installProgress = new ProgressDialog($"Installing SDK v{targetSdk.Version}", 0, 60, 55);
+            var installScript =
+$@"
+if ! rm $TMP/dotnet-sdk.tar.gz ; then
+    exit 1
+fi
+
+if ! wget -O $TMP/dotnet-sdk.tar.gz {targetSdk.Link} ; then
+    exit 1
+fi
+
+if ! tar zxf $TMP/dotnet-sdk.tar.gz -C $DOTNET_ROOT ; then
+    exit 1
+fi
+
+if ! rm $TMP/dotnet-sdk.tar.gz ; then
+    exit 1
+fi
+
+exit 0
+";
+            try
+            {
+                installProgress.ShowDialog();
+
+                return await Task<bool>.Run(() =>
+                {
+                    var response = SudoCommand(CommandBundle.FromScript(installScript));
+
+                    if (response.ExitCode == 0)
+                    {
+                        // Add the newly installed SDK to the list of installed SDKs.
+
+                        PiStatus.InstalledSdks.Add(new PiSdk(targetSdk.Name, targetSdk.Version));
+                        return true;
+                    }
+                    else
+                    {
+                        LogError(response.AllText);
+                        return false;
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                LogException(e);
+                return false;
+            }
+            finally
+            {
+                installProgress.Done = true;
             }
         }
     }
