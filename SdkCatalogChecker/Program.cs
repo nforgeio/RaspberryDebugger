@@ -16,6 +16,7 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -58,7 +59,7 @@ namespace NetCoreCatalogChecker
         {
             var catalogPath = Path.GetFullPath(Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "..", "..", "..", "..", "RaspberryDebug", "sdk-catalog.json"));
             var catalog     = (SdkCatalog)null;
-            var allOk       = true;
+            var ok          = true;
 
             Console.WriteLine($"reading: {catalogPath}");
 
@@ -75,6 +76,24 @@ namespace NetCoreCatalogChecker
             Console.WriteLine();
             Console.WriteLine($"[{catalog.Items.Count}] catalog items");
 
+            // Verify that all of the links are unique.
+
+            var sdkLinkToItem = new Dictionary<string, SdkCatalogItem>();
+
+            foreach (var item in catalog.Items)
+            {
+                if (sdkLinkToItem.TryGetValue(item.Link, out var existingItem))
+                {
+                    ok = false;
+                    Console.WriteLine($"SDK [{existingItem.Name}] and [{item.Name}] have the same link: [{item.Link}] ");
+                    continue;
+                }
+
+                sdkLinkToItem.Add(item.Link, item);
+            }
+
+            // Verify the links and SHA256 hashes.
+
             using (var client = new HttpClient())
             {
                 foreach (var item in catalog.Items
@@ -89,7 +108,7 @@ namespace NetCoreCatalogChecker
 
                     if (!item.Link.Contains(item.Name))
                     {
-                        allOk = false;
+                        ok = false;
                         Console.WriteLine($"*** ERROR: Link does not include the SDK name: {item.Name}");
                         continue;
                     }
@@ -98,7 +117,7 @@ namespace NetCoreCatalogChecker
                     {
                         if (item.Link.Contains("arm64"))
                         {
-                            allOk = false;
+                            ok = false;
                             Console.WriteLine($"*** ERROR: ARM32 SDK link references a 64-bit SDK.");
                             continue;
                         }
@@ -107,24 +126,33 @@ namespace NetCoreCatalogChecker
                     {
                         if (!item.Link.Contains("arm64"))
                         {
-                            allOk = false;
+                            ok = false;
                             Console.WriteLine($"*** ERROR: ARM64 SDK link references a 32-bit SDK.");
                             continue;
                         }
                     }
 
+                    // I've seen some transient issues with downloading SDKs from Microsoft: 404 & 503
+                    // We're going to retry up to 5 times.
+
                     var binary = (byte[])null;
 
-                    try
+                    for (int i = 0; i < 5; i++)
                     {
-                        binary = await client.GetByteArraySafeAsync(item.Link);
+                        try
+                        {
+                            binary = await client.GetByteArraySafeAsync(item.Link);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(NeonHelper.ExceptionError(e));
+                            continue;
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        allOk = false;
 
-                        Console.WriteLine(NeonHelper.ExceptionError(e));
-                        continue;
+                    if (binary == null)
+                    {
+                        ok = false;
                     }
 
                     var expectedSha512 = item.SHA512.ToLowerInvariant();
@@ -136,7 +164,7 @@ namespace NetCoreCatalogChecker
                     }
                     else
                     {
-                        allOk = false;
+                        ok = false;
 
                         Console.WriteLine();
                         Console.WriteLine($"*** ERROR: SHA512 hashes don't match!");
@@ -150,7 +178,7 @@ namespace NetCoreCatalogChecker
             Console.WriteLine("----------------------------------------");
             Console.WriteLine();
 
-            if (allOk)
+            if (ok)
             {
                 Console.WriteLine("Catalog is OK");
                 Environment.Exit(1);
