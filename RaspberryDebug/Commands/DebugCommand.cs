@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    DebugRaspberryCommand.cs
+// FILE:	    DebugCommand.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -41,7 +41,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Handles the <b>Start Raspberry Debugging</b> command.
     /// </summary>
-    internal sealed class DebugRaspberryCommand
+    internal sealed class DebugCommand
     {
         /// <summary>
         /// Command ID.
@@ -59,12 +59,12 @@ namespace RaspberryDebug
         private readonly AsyncPackage package;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DebugRaspberryCommand"/> class.
+        /// Initializes a new instance of the <see cref="DebugCommand"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
         /// <param name="commandService">Command service to add command to, not null.</param>
-        private DebugRaspberryCommand(AsyncPackage package, OleMenuCommandService commandService)
+        private DebugCommand(AsyncPackage package, OleMenuCommandService commandService)
         {
             this.package = package ?? throw new ArgumentNullException(nameof(package));
 
@@ -79,7 +79,7 @@ namespace RaspberryDebug
         /// <summary>
         /// Gets the instance of the command.
         /// </summary>
-        public static DebugRaspberryCommand Instance { get; private set; }
+        public static DebugCommand Instance { get; private set; }
 
         /// <summary>
         /// Gets the service provider from the owner package.
@@ -98,7 +98,7 @@ namespace RaspberryDebug
 
             var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
 
-            Instance = new DebugRaspberryCommand(package, commandService);
+            Instance = new DebugCommand(package, commandService);
         }
 
         /// <summary>

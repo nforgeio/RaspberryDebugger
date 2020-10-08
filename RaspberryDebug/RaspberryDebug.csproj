@@ -49,7 +49,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BaseOptionModel.cs" />
-    <Compile Include="Commands\DebugRaspberryCommand.cs" />
+    <Compile Include="Commands\DebugCommand.cs" />
     <Compile Include="Connection\ConnectException.cs" />
     <Compile Include="Connection\PiConnection.cs" />
     <Compile Include="Connection\PiStatus.cs" />

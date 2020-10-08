@@ -139,7 +139,7 @@ namespace RaspberryDebug
 
             // Initialize the new commands.
 
-            await DebugRaspberryCommand.InitializeAsync(this);
+            await DebugCommand.InitializeAsync(this);
         }
     }
 }
