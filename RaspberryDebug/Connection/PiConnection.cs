@@ -26,9 +26,9 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 
 using Neon.Common;
+using Neon.IO;
 using Neon.Net;
 using Neon.SSH;
-using stdole;
 
 namespace RaspberryDebug
 {
@@ -222,7 +222,7 @@ $@"
 # Set the SDK and debugger installation paths.
 
 DOTNET_ROOT={PackageHelper.RemoteDotnetRootPath}
-DEBUGFOLDER={PackageHelper.RemoteDebugPath}
+DEBUGFOLDER={PackageHelper.RemoteDebugRoot}
 
 # Get the chip architecture
 
@@ -325,7 +325,7 @@ fi
         }
 
         /// <summary>
-        /// Installs the specified .NET Core SDK if it's not already installed.
+        /// Installs the specified .NET Core SDK on the Raspberry if it's not already installed.
         /// </summary>
         /// <param name="sdkItem">The SDK catalog information.</param>
         /// <returns><c>true</c> on success.</returns>
@@ -360,6 +360,7 @@ fi
                 // Fall back to the Visual Studio SDK, if there is one.
 
                 targetSdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == sdkItem.Version);
+                LogInfo($"Cannot find SDK [{sdkItem.Name}] for falling back to [{targetSdk.Name}], version [v{targetSdk.Version}].");
             }
 
             if (targetSdk == null)
@@ -426,6 +427,130 @@ exit 0
             finally
             {
                 installProgress.Done = true;
+            }
+        }
+
+        /// <summary>
+        /// Installs the <b>vsdbg</b> debugger on the Raspberry if it's not already installed.
+        /// </summary>
+        /// <returns><c>true</c> on success.</returns>
+        public async Task<bool> InstallDebuggerAsync()
+        {
+            if (PiStatus.HasDebugger)
+            {
+                return true;
+            }
+
+            var installProgress = new ProgressDialog($"Installing [vsdbg] debugger", 0, 60, 55);
+            var installScript   =
+$@"
+if ! curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /lib/dotnet/vsdbg ; then
+    exit 1
+fi
+
+exit 0
+";
+            try
+            {
+                installProgress.ShowDialog();
+
+                return await Task<bool>.Run(() =>
+                {
+                    var response = SudoCommand(CommandBundle.FromScript(installScript));
+
+                    if (response.ExitCode == 0)
+                    {
+                        // Indicate that debugger is now installed.
+
+                        PiStatus.HasDebugger = true;
+                        return true;
+                    }
+                    else
+                    {
+                        LogError(response.AllText);
+                        return false;
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                LogException(e);
+                return false;
+            }
+            finally
+            {
+                installProgress.Done = true;
+            }
+        }
+
+        /// <summary>
+        /// Uploads the files for the program being debugged to the Raspberry, replacing
+        /// any existing files.
+        /// </summary>
+        /// <param name="programName">The program name</param>
+        /// <param name="programFolder">Path to the folder holding the program files.</param>
+        /// <returns><c>true</c> on success.</returns>
+        public async Task<bool> UploadProgramAsync(string programName, string programFolder)
+        {
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(programName), nameof(programName));
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(programFolder), nameof(programFolder));
+            Covenant.Requires<ArgumentNullException>(Directory.Exists(programFolder), nameof(programFolder));
+
+            // Replace any spaces in the program name with underscores so we don't
+            // have to worry about quoting.
+
+            programName = programName.Replace(' ', '_');
+
+            // We're going to ZIP the program files locally and then transfer the zipped
+            // files to the Raspberry to be expanded there.
+
+            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteDebugRoot, programName);
+            var deployScript =
+$@"
+if ! rm -rf {debugFolder} ; then
+    exit 1
+fi
+
+if ! mkdir -p {debugFolder} ; then
+    exit 1
+fi
+
+if ! unzip program.zip -o -d {debugFolder} ; then
+    exit 1
+fi
+
+exit 0
+";
+            // I'm not going to do a progress dialog because this should be fast.
+
+            try
+            {
+                return await Task<bool>.Run(() =>
+                {
+                    LogInfo($"Uploading program to: [{debugFolder}]");
+
+                    var bundle = new CommandBundle(deployScript);
+
+                    bundle.AddZip("program.zip", programFolder);
+
+                    var response = SudoCommand(bundle);
+
+                    if (response.ExitCode == 0)
+                    {
+                        LogInfo($"Program uploaded");
+                        return true;
+                    }
+                    else
+                    {
+                        LogError(response.AllText);
+                        return false;
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                LogException(e);
+                return false;
             }
         }
     }

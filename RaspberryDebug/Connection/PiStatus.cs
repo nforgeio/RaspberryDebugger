@@ -76,7 +76,7 @@ namespace RaspberryDebug
         /// <summary>
         /// Indicates whether the <b>vsdbg</b> debugger is installed.
         /// </summary>
-        public bool HasDebugger { get; private set; }
+        public bool HasDebugger { get; set; }
 
         /// <summary>
         /// Returns information about the .NET Core SDKs installed.
