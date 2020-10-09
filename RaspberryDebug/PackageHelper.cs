@@ -46,6 +46,11 @@ namespace RaspberryDebug
         public static readonly string SettingsFolder;
 
         /// <summary>
+        /// The path to the folder holding the Raspberry SSH private keys.
+        /// </summary>
+        public static readonly string KeysFolder;
+
+        /// <summary>
         /// The path to the JSON file defining the Raspberry Pi connections.
         /// </summary>
         public static readonly string ConnectionsPath;
@@ -71,13 +76,20 @@ namespace RaspberryDebug
         /// </summary>
         static PackageHelper()
         {
-            // Initialize the settings path and folder.
+            // Initialize the settings path and folders.
 
             SettingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".pi-debug");
 
             if (!Directory.Exists(SettingsFolder))
             {
                 Directory.CreateDirectory(SettingsFolder);
+            }
+
+            KeysFolder = Path.Combine(SettingsFolder, "keys");
+
+            if (!Directory.Exists(KeysFolder))
+            {
+                Directory.CreateDirectory(KeysFolder);
             }
 
             ConnectionsPath = Path.Combine(SettingsFolder, "connections.json");
@@ -100,22 +112,23 @@ namespace RaspberryDebug
         /// <returns>The connections.</returns>
         public static List<Connection> ReadConnections()
         {
-            if (!File.Exists(ConnectionsPath))
-            {
-                return new List<Connection>();
-            }
+            Log.WriteLine("Reading connections");
 
             try
             {
+                if (!File.Exists(ConnectionsPath))
+                {
+                    return new List<Connection>();
+                }
+
                 var list = NeonHelper.JsonDeserialize<List<Connection>>(File.ReadAllText(ConnectionsPath));
 
                 return list ?? new List<Connection>();
             }
-            catch
+            catch (Exception e)
             {
-                // Something must be corrupted so just return an empty list.
-
-                return new List<Connection>();
+                Log.Exception(e);
+                throw;
             }
         }
 
@@ -125,9 +138,19 @@ namespace RaspberryDebug
         /// <param name="connections">The connections.</param>
         public static void WriteConnections(List<Connection> connections)
         {
-            connections = connections ?? new List<Connection>();
+            Log.WriteLine("Writing connections");
 
-            File.WriteAllText(ConnectionsPath, NeonHelper.JsonSerialize(connections, Formatting.Indented));
+            try
+            {
+                connections = connections ?? new List<Connection>();
+
+                File.WriteAllText(ConnectionsPath, NeonHelper.JsonSerialize(connections, Formatting.Indented));
+            }
+            catch (Exception e)
+            {
+                Log.Exception(e);
+                throw;
+            }
         }
     }
 }

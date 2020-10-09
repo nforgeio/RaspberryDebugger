@@ -77,14 +77,23 @@ namespace RaspberryDebug
         /// <summary>
         /// The password.
         /// </summary>
-        [JsonProperty(PropertyName = "Password", Required = Required.Always)]
+        [JsonProperty(PropertyName = "Password", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(null)]
         public string Password { get; set; } = "raspberry";
+
+        /// <summary>
+        /// Path to the public key for this connection or <c>null</c> when one
+        /// hasn't been initialized yet.
+        /// </summary>
+        [JsonProperty(PropertyName = "KeyPath", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(null)]
+        public string KeyPath { get; set; } = null;
 
         /// <summary>
         /// Describes the authentication method.
         /// </summary>
         [JsonIgnore]
-        public string Authentication => "PASSWORD";     // We only support password authentication right now.
+        public string Authentication => string.IsNullOrEmpty(KeyPath) ? "PASSWORD" : "SSH-KEY";
 
         /// <summary>
         /// <para>

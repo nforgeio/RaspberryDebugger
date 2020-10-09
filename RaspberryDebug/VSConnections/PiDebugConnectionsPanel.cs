@@ -29,6 +29,7 @@ using Microsoft.VisualStudio.Threading;
 
 using Neon.Common;
 using BrightIdeasSoftware;
+using System.IO;
 
 namespace RaspberryDebug
 {
@@ -240,19 +241,12 @@ namespace RaspberryDebug
         /// </summary>
         private void ReloadConnections()
         {
-            var orgSelection = connectionsView.SelectedObject;
+            var orgHost = ((Connection)connectionsView.SelectedObject)?.Host;
 
             connections = PackageHelper.ReadConnections();
 
-            connectionsView.SelectedObject = null;
             connectionsView.SetObjects(connections);
-
-            if (connections.Any(connection => connection == orgSelection))
-            {
-                // The selected connection still exists so reselect it.
-
-                connectionsView.SelectedObject = orgSelection;
-            }
+            connectionsView.SelectedObject = connections.SingleOrDefault(connection => connection.Host == orgHost);
         }
 
         /// <summary>
@@ -413,32 +407,67 @@ namespace RaspberryDebug
 
             Log.WriteLine($"[{SelectedConnection.Host}]: Testing...");
 
-            try
-            {
-                Invoke(() => Cursor = Cursors.WaitCursor);
+            var currentConnection = SelectedConnection;
+            var createKeyPair     = !string.IsNullOrEmpty(SelectedConnection.KeyPath) || !File.Exists(SelectedConnection.KeyPath);
+            var progressDialog    = (ProgressDialog)null;
+            var exception         = (Exception)null;
 
-                using (var connection = await PiConnection.ConnectAsync(SelectedConnection))
-                {
-                    MessageBox.Show(this,
-                                    $"[{SelectedConnection.Host}] Connection is OK!",
-                                    $"Success",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception e)
+            await Task.Run(async () =>
             {
-                Log.Exception(e);
+                try
+                {
+                    if (createKeyPair)
+                    {
+                        progressDialog = new ProgressDialog("Create SSH key pair", 0, 60, 55);
+                    }
+                    else
+                    {
+                        Invoke(() => Cursor = Cursors.WaitCursor);
+                    }
+
+                    using (var connection = await PiConnection.ConnectAsync(currentConnection))
+                    {
+                        exception = null;
+                    }
+                }
+                catch (Exception e)
+                {
+                    exception = e;
+
+                    Log.Exception(e);
+                }
+                finally
+                {
+                    if (createKeyPair)
+                    {
+                        progressDialog.Done = true;
+                    }
+                    else
+                    {
+                        Invoke(() => Cursor = Cursors.Default);
+                    }
+                }
+            });
+
+            if (exception == null)
+            {
+                // Reload the connections to pick any changes (like adding the SSH key).
+
+                ReloadConnections();
 
                 MessageBox.Show(this,
-                                $"Connection Failed:\r\n\r\n{e.GetType().FullName}\r\n\r\n{e.Message}\r\n\r\nView the Debug Output for more details.",
+                                $"[{SelectedConnection.Host}] Connection is OK!",
+                                $"Success",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show(this,
+                                $"Connection Failed:\r\n\r\n{exception.GetType().FullName}\r\n\r\n{exception.Message}\r\n\r\nView the Debug Output for more details.",
                                 $"Connection Failed",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
-            }
-            finally
-            {
-                Invoke(() => Cursor = Cursors.Default);
             }
         }
 

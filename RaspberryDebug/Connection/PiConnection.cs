@@ -24,11 +24,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-
+using Microsoft.VisualStudio.Debugger.Breakpoints;
 using Neon.Common;
 using Neon.IO;
 using Neon.Net;
 using Neon.SSH;
+using Renci.SshNet;
 
 namespace RaspberryDebug
 {
@@ -65,10 +66,21 @@ namespace RaspberryDebug
                     throw new ConnectException(connectionInfo.Host, "DNS lookup failed.");
                 }
 
-                var connection = new PiConnection(connectionInfo.Host, address, connectionInfo.User, connectionInfo.Password, connectionInfo.Port);
+                SshCredentials credentials;
+
+                if (string.IsNullOrEmpty(connectionInfo.KeyPath))
+                {
+                    credentials = SshCredentials.FromUserPassword(connectionInfo.User, connectionInfo.Password);
+                }
+                else
+                {
+                    credentials = SshCredentials.FromPrivateKey(connectionInfo.User, File.ReadAllText(connectionInfo.KeyPath));
+                }
+
+                var connection = new PiConnection(connectionInfo.Host, address, connectionInfo, credentials);
 
                 connection.Connect(TimeSpan.Zero);
-                connection.Initialize();
+                await connection.InitializeAsync();
 
                 return connection;
             }
@@ -91,22 +103,25 @@ namespace RaspberryDebug
         //---------------------------------------------------------------------
         // Instance members
 
+        private string host;
         private string username;
         private string password;
+        private string keyPath;
 
         /// <summary>
-        /// Private constructor.
+        /// Constructs a connection using a password.
         /// </summary>
         /// <param name="name">The server name.</param>
         /// <param name="address">The IP address.</param>
-        /// <param name="username">The SSH username.</param>
-        /// <param name="password">The SSH password.</param>
-        /// <param name="port">OPtionall overrides the default SSH port (22).</param>
-        private PiConnection(string name, IPAddress address, string username, string password, int port = NetworkPorts.SSH) 
-            : base(name, address, SshCredentials.FromUserPassword(username, password), port, logWriter: null)
+        /// <param name="connectionInfo">The connection information.</param>
+        /// <param name="credentials">The SSH credentials.</param>
+        private PiConnection(string name, IPAddress address, Connection connectionInfo, SshCredentials credentials)
+            : base(name, address, credentials, connectionInfo.Port, logWriter: null)
         {
-            this.username = username;
-            this.password = password;
+            this.host     = connectionInfo.Host;
+            this.username = connectionInfo.User;
+            this.password = connectionInfo.Password;
+            this.keyPath  = connectionInfo.KeyPath;
 
             // Disable connection level logging, etc.
 
@@ -175,9 +190,12 @@ namespace RaspberryDebug
 
         /// <summary>
         /// Initializes the connection by retrieving status from the remote Raspberry and ensuring
-        /// that any packages required for executing remote commands are installed.
+        /// that any packages required for executing remote commands are installed.  This will also
+        /// create and configure a SSH key pair on both the workstation and remote Raspberry if one
+        /// doesn't already exist so that subsequent connections can use key based authentication.
         /// </summary>
-        private void Initialize()
+        /// <returns>Thr tracking <see cref="Task"/>.</returns>
+        private async Task InitializeAsync()
         {
             // This call ensures that SUDO password prompting is disabled and the
             // the required hidden folders exist in the user's home directory.
@@ -248,25 +266,6 @@ else
     echo 'debugger-missing'
 fi
 
-# Ensure that the [/lib/dotnet] folder exists, is on the PATH
-# and DOTNET_ROOT is defined.
-
-sudo mkdir -p /lib/dotnet
-sudo chown root:root /lib/dotnet
-sudo chmod 755 /lib/dotnet
-
-if ! sudo grep DOTNET_ROOT /etc/profile ; then
-
-    sudo echo ''                                >> /etc/profile
-    sudo echo 'export DOTNET_ROOT=$DOTNET_ROOT' >> /etc/profile
-    sudo echo 'export PATH=$PATH:$DOTNET_ROOT'  >> /etc/profile
-
-    # Set these for the current session too:
-
-    export DOTNET_ROOT=$DOTNET_ROOT
-    export PATH=$PATH:$DOTNET_ROOT
-fi
-
 # List the SDK folders.  These folder names are the same as the
 # corresponding SDK name.  We'll list the files on one line
 # with the SDK names separated by commas.  We'll return a blank
@@ -277,6 +276,25 @@ if [ -d $DOTNET_ROOT/sdk ] ; then
 else
     echo ''
 fi
+
+# Ensure that the [/lib/dotnet] folder exists, that its on the 
+# PATH and that DOTNET_ROOT is defined.
+
+mkdir -p /lib/dotnet
+chown root:root /lib/dotnet
+chmod 755 /lib/dotnet
+
+if ! grep --quiet DOTNET_ROOT /etc/profile ; then
+
+    echo ''                                >> /etc/profile
+    echo 'export DOTNET_ROOT=$DOTNET_ROOT' >> /etc/profile
+    echo 'export PATH=$PATH:$DOTNET_ROOT'  >> /etc/profile
+
+    # Set these for the current session too:
+
+    export DOTNET_ROOT=$DOTNET_ROOT
+    export PATH=$PATH:$DOTNET_ROOT
+fi
 ";
             Log($"[{Name}]: Fetching status");
 
@@ -284,15 +302,16 @@ fi
 
             using (var reader = new StringReader(response.OutputText))
             {
-                var architecture = reader.ReadLine();
-                var path         = reader.ReadLine();
-                var hasUnzip     = reader.ReadLine() == "unzip";
-                var hasDebugger  = reader.ReadLine() == "debugger-installed";
-                var sdkLine      = reader.ReadLine();
+                var architecture = await reader.ReadLineAsync();
+                var path         = await reader.ReadLineAsync();
+                var hasUnzip     = await reader.ReadLineAsync() == "unzip";
+                var hasDebugger  = await reader.ReadLineAsync() == "debugger-installed";
+                var sdkLine      = await reader.ReadLineAsync();
 
                 Log($"[{Name}]: architecture   = {architecture}");
                 Log($"[{Name}]: PATH           = {path}");
-                Log($"[{Name}]: has debugger   = {hasDebugger}");
+                Log($"[{Name}]: unzup          = {hasUnzip}");
+                Log($"[{Name}]: debugger       = {hasDebugger}");
                 Log($"[{Name}]: installed sdks = {sdkLine}");
 
                 // Convert the comma separated SDK names into a [PiSdk] list.
@@ -321,6 +340,91 @@ fi
                     hasUnzip:      hasUnzip,
                     hasDebugger:   hasDebugger,
                     installedSdks: sdks);
+            }
+
+            // Create and configure an SSH key for this connection if one doesn't already exist.
+
+            if (string.IsNullOrEmpty(keyPath) || !File.Exists(keyPath))
+            {
+                var keyProgressDialog = new ProgressDialog("Create SSH Key Pair", 0, 60, 55);
+
+                var task = Task.Run(async () =>
+                {
+                    // Create a 2048-bit private key with no passphrase on the Raspberry
+                    // and then download it to our keys folder.  The key file name will
+                    // be the host name of the Raspberry.
+
+                    LogInfo("Configuring SSH key pair");
+
+                    var workstationUser    = Environment.GetEnvironmentVariable("USERNAME");
+                    var workstationName    = Environment.GetEnvironmentVariable("COMPUTERNAME");
+                    var keyName            = Guid.NewGuid().ToString("d");
+                    var homeFolder         = LinuxPath.Combine("/", "home", username);
+                    var tempPrivateKeyPath = LinuxPath.Combine(homeFolder, keyName);
+                    var tempPublicKeyPath  = LinuxPath.Combine(homeFolder, $"{keyName}.pub");
+
+                    try
+                    {
+                        var createKeyScript =
+    $@"
+# Create the key pair
+
+if ! ssh-keygen -t rsa -b 2048 -N '' -C '{workstationUser}@{workstationName}' -f {tempPrivateKeyPath} ; then
+    exit 1
+fi
+
+# Append the public key to the users [authorized_files].
+
+touch {homeFolder}/.ssh/authorized_files
+cat {tempPublicKeyPath} >> {homeFolder}/.ssh/authorized_files
+
+exit 0
+";
+                        ThrowOnError(SudoCommand(CommandBundle.FromScript(createKeyScript)));
+
+                        // Download the public key, persist it to the workstation and then update the
+                        // workstation connections.
+
+                        var connections = PackageHelper.ReadConnections();
+                        var connection  = connections.SingleOrDefault(c => c.Host == host);
+
+                        if (connection == null)
+                        {
+                            // Another instance of VS must have deleted this connection 
+                            // out from under us.
+
+                            throw new ConnectException(this, $"The [{host}] connection no longer exists.  You'll need to recreate it.");
+                        }
+
+                        var privateKeyPath = Path.Combine(PackageHelper.KeysFolder, host);
+
+                        File.WriteAllBytes(privateKeyPath, DownloadBytes(tempPrivateKeyPath));
+
+                        connection.KeyPath  = privateKeyPath;
+                        connection.Password = null;     // We don't need the password any longer
+
+                        PackageHelper.WriteConnections(connections);
+                    }
+                    finally
+                    {
+                        keyProgressDialog.Done = true;
+
+                        // Delete the temporary key files on the Raspberry.
+
+                        var removeKeyScript =
+$@"
+rm -f {tempPrivateKeyPath}
+rm -f {tempPublicKeyPath}
+";
+                        ThrowOnError(SudoCommand(CommandBundle.FromScript(removeKeyScript)));
+                    }
+
+                    await Task.CompletedTask;
+                });
+
+                keyProgressDialog.ShowDialog();
+
+                await task;
             }
         }
 
