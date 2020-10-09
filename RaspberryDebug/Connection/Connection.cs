@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    PiConnection.cs
+// FILE:	    Connection.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -36,7 +36,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Implements a SSH connection to the remote Raspberry Pi.
     /// </summary>
-    internal class PiConnection : LinuxSshProxy
+    internal class Connection : LinuxSshProxy
     {
         //---------------------------------------------------------------------
         // Static members
@@ -48,7 +48,7 @@ namespace RaspberryDebug
         /// <param name="connectionInfo">The connection information.</param>
         /// <returns>The connection.</returns>
         /// <exception cref="Exception">Thrown when the connection could not be established.</exception>
-        public static async Task<PiConnection> ConnectAsync(Connection connectionInfo)
+        public static async Task<Connection> ConnectAsync(ConnectionInfo connectionInfo)
         {
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
 
@@ -63,7 +63,7 @@ namespace RaspberryDebug
 
                 if (address == null)
                 {
-                    throw new ConnectException(connectionInfo.Host, "DNS lookup failed.");
+                    throw new ConnectionException(connectionInfo.Host, "DNS lookup failed.");
                 }
 
                 SshCredentials credentials;
@@ -77,7 +77,7 @@ namespace RaspberryDebug
                     credentials = SshCredentials.FromPrivateKey(connectionInfo.User, File.ReadAllText(connectionInfo.KeyPath));
                 }
 
-                var connection = new PiConnection(connectionInfo.Host, address, connectionInfo, credentials);
+                var connection = new Connection(connectionInfo.Host, address, connectionInfo, credentials);
 
                 connection.Connect(TimeSpan.Zero);
                 await connection.InitializeAsync();
@@ -115,7 +115,7 @@ namespace RaspberryDebug
         /// <param name="address">The IP address.</param>
         /// <param name="connectionInfo">The connection information.</param>
         /// <param name="credentials">The SSH credentials.</param>
-        private PiConnection(string name, IPAddress address, Connection connectionInfo, SshCredentials credentials)
+        private Connection(string name, IPAddress address, ConnectionInfo connectionInfo, SshCredentials credentials)
             : base(name, address, credentials, connectionInfo.Port, logWriter: null)
         {
             this.host     = connectionInfo.Host;
@@ -133,7 +133,7 @@ namespace RaspberryDebug
         /// chip architecture, <b>vsdbg</b> debugger status, as well as the installed
         /// .NET Core SDKs.
         /// </summary>
-        public PiStatus PiStatus { get; private set; }
+        public Status PiStatus { get; private set; }
 
         /// <summary>
         /// Logs info the Visual Studio debug pane.
@@ -141,7 +141,7 @@ namespace RaspberryDebug
         /// <param name="text">The error text.</param>
         private void LogInfo(string text)
         {
-            RaspberryDebug.Log.Write($"[{Name}]: {text}");
+            RaspberryDebug.Log.WriteLine($"[{Name}]: {text}");
         }
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace RaspberryDebug
         }
 
         /// <summary>
-        /// Throws a <see cref="ConnectException"/> if a remote command failed.
+        /// Throws a <see cref="ConnectionException"/> if a remote command failed.
         /// </summary>
         /// <param name="commandResponse">The remote command response.</param>
         /// <returns>The <see cref="CommandResponse"/> on success.</returns>
@@ -182,7 +182,7 @@ namespace RaspberryDebug
 
             if (commandResponse.ExitCode != 0)
             {
-                throw new ConnectException(this, commandResponse.ErrorText);
+                throw new ConnectionException(this, commandResponse.ErrorText);
             }
 
             return commandResponse;
@@ -197,15 +197,18 @@ namespace RaspberryDebug
         /// <returns>Thr tracking <see cref="Task"/>.</returns>
         private async Task InitializeAsync()
         {
+            // Disabling this because it looks like SUDO passwork prompting is disabled
+            // by default for Raspberry Pi OS.
+#if DISABLED
             // This call ensures that SUDO password prompting is disabled and the
             // the required hidden folders exist in the user's home directory.
 
             DisableSudoPrompt(password);
-
+#endif
             // We need to ensure that [unzip] is installed so that [LinuxSshProxy] command
             // bundles will work.
 
-            Log($"[{Name}]: Checking: [unzip]");
+            Log($"[{Name}]: Checking for: [unzip]");
 
             var response = SudoCommand("which unzip");
 
@@ -226,12 +229,12 @@ $@"
 # This script will return the status information via STDOUT line-by-line
 # in this order:
 #
-#       Chip Architecture
-#       PATH environment variable
-#       Unzip Installed (""unzip"" or ""unzip-missing"")
-#       Debugger Installed (""debugger-installed"" or ""debugger-missing"")
-#       Debugger Running (""debugger-running"" or ""debugger-not-running"")
-#       List of installed SDKs names (e.g. 3.1.108) separated by commas
+# Chip Architecture
+# PATH environment variable
+# Unzip Installed (""unzip"" or ""unzip-missing"")
+# Debugger Installed (""debugger-installed"" or ""debugger-missing"")
+# Debugger Running (""debugger-running"" or ""debugger-not-running"")
+# List of installed SDKs names (e.g. 3.1.108) separated by commas
 #
 # This script also ensures that the [/lib/dotnet] directory exists, that
 # it has reasonable permissions, and that the folder exists on the system
@@ -269,7 +272,7 @@ fi
 # List the SDK folders.  These folder names are the same as the
 # corresponding SDK name.  We'll list the files on one line
 # with the SDK names separated by commas.  We'll return a blank
-# line if the SDK directory doesn't exist.
+#line if the SDK directory doesn't exist.
 
 if [ -d $DOTNET_ROOT/sdk ] ; then
     ls -m $DOTNET_ROOT/sdk
@@ -290,7 +293,7 @@ if ! grep --quiet DOTNET_ROOT /etc/profile ; then
     echo 'export DOTNET_ROOT=$DOTNET_ROOT' >> /etc/profile
     echo 'export PATH=$PATH:$DOTNET_ROOT'  >> /etc/profile
 
-    # Set these for the current session too:
+# Set these for the current session too:
 
     export DOTNET_ROOT=$DOTNET_ROOT
     export PATH=$PATH:$DOTNET_ROOT
@@ -308,15 +311,15 @@ fi
                 var hasDebugger  = await reader.ReadLineAsync() == "debugger-installed";
                 var sdkLine      = await reader.ReadLineAsync();
 
-                Log($"[{Name}]: architecture   = {architecture}");
-                Log($"[{Name}]: PATH           = {path}");
-                Log($"[{Name}]: unzup          = {hasUnzip}");
-                Log($"[{Name}]: debugger       = {hasDebugger}");
-                Log($"[{Name}]: installed sdks = {sdkLine}");
+                Log($"[{Name}]: architecture: {architecture}");
+                Log($"[{Name}]: path:         {path}");
+                Log($"[{Name}]: unzip:        {hasUnzip}");
+                Log($"[{Name}]: debugger:     {hasDebugger}");
+                Log($"[{Name}]: sdks:         {sdkLine}");
 
                 // Convert the comma separated SDK names into a [PiSdk] list.
 
-                var sdks = new List<PiSdk>();
+                var sdks = new List<Sdk>();
 
                 foreach (var sdkName in sdkLine.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(sdk => sdk.Trim()))
                 {
@@ -326,7 +329,7 @@ fi
 
                     if (sdkCatalogItem != null)
                     {
-                        sdks.Add(new PiSdk(sdkName, sdkCatalogItem.Version));
+                        sdks.Add(new Sdk(sdkName, sdkCatalogItem.Version));
                     }
                     else
                     {
@@ -334,7 +337,7 @@ fi
                     }
                 }
 
-                PiStatus = new PiStatus(
+                PiStatus = new Status(
                     architecture:  architecture,
                     path:          path,
                     hasUnzip:      hasUnzip,
@@ -346,31 +349,30 @@ fi
 
             if (string.IsNullOrEmpty(keyPath) || !File.Exists(keyPath))
             {
-                var keyProgressDialog = new ProgressDialog("Create SSH Key Pair", 0, 60, 55);
-
-                var task = Task.Run(async () =>
-                {
-                    // Create a 2048-bit private key with no passphrase on the Raspberry
-                    // and then download it to our keys folder.  The key file name will
-                    // be the host name of the Raspberry.
-
-                    LogInfo("Configuring SSH key pair");
-
-                    var workstationUser    = Environment.GetEnvironmentVariable("USERNAME");
-                    var workstationName    = Environment.GetEnvironmentVariable("COMPUTERNAME");
-                    var keyName            = Guid.NewGuid().ToString("d");
-                    var homeFolder         = LinuxPath.Combine("/", "home", username);
-                    var tempPrivateKeyPath = LinuxPath.Combine(homeFolder, keyName);
-                    var tempPublicKeyPath  = LinuxPath.Combine(homeFolder, $"{keyName}.pub");
-
-                    try
+                await ProgressDialog.RunAsync("Create SSH Key Pair", 60,
+                    async () =>
                     {
-                        var createKeyScript =
-    $@"
+                        // Create a 2048-bit private key with no passphrase on the Raspberry
+                        // and then download it to our keys folder.  The key file name will
+                        // be the host name of the Raspberry.
+
+                        LogInfo("Configuring SSH key pair");
+
+                        var workstationUser    = Environment.GetEnvironmentVariable("USERNAME");
+                        var workstationName    = Environment.GetEnvironmentVariable("COMPUTERNAME");
+                        var keyName            = Guid.NewGuid().ToString("d");
+                        var homeFolder         = LinuxPath.Combine("/", "home", username);
+                        var tempPrivateKeyPath = LinuxPath.Combine(homeFolder, keyName);
+                        var tempPublicKeyPath  = LinuxPath.Combine(homeFolder, $"{keyName}.pub");
+
+                        try
+                        {
+                            var createKeyScript =
+$@"
 # Create the key pair
 
 if ! ssh-keygen -t rsa -b 2048 -N '' -C '{workstationUser}@{workstationName}' -f {tempPrivateKeyPath} ; then
-    exit 1
+exit 1
 fi
 
 # Append the public key to the users [authorized_files].
@@ -380,51 +382,45 @@ cat {tempPublicKeyPath} >> {homeFolder}/.ssh/authorized_files
 
 exit 0
 ";
-                        ThrowOnError(SudoCommand(CommandBundle.FromScript(createKeyScript)));
+                            ThrowOnError(SudoCommand(CommandBundle.FromScript(createKeyScript)));
 
-                        // Download the public key, persist it to the workstation and then update the
-                        // workstation connections.
+                            // Download the public key, persist it to the workstation and then update the
+                            // workstation connections.
 
-                        var connections = PackageHelper.ReadConnections();
-                        var connection  = connections.SingleOrDefault(c => c.Host == host);
+                            var connections = PackageHelper.ReadConnections();
+                            var connection  = connections.SingleOrDefault(c => c.Host == host);
 
-                        if (connection == null)
-                        {
-                            // Another instance of VS must have deleted this connection 
-                            // out from under us.
+                            if (connection == null)
+                            {
+                                // Another instance of VS must have deleted this connection 
+                                // out from under us.
 
-                            throw new ConnectException(this, $"The [{host}] connection no longer exists.  You'll need to recreate it.");
+                                throw new ConnectionException(this, $"The [{host}] connection no longer exists.  You'll need to recreate it.");
+                            }
+
+                            var privateKeyPath = Path.Combine(PackageHelper.KeysFolder, host);
+
+                            File.WriteAllBytes(privateKeyPath, DownloadBytes(tempPrivateKeyPath));
+
+                            connection.KeyPath  = privateKeyPath;
+                            connection.Password = null;     // We don't need the password any longer
+
+                            PackageHelper.WriteConnections(connections);
                         }
+                        finally
+                        {
+                            // Delete the temporary key files on the Raspberry.
 
-                        var privateKeyPath = Path.Combine(PackageHelper.KeysFolder, host);
-
-                        File.WriteAllBytes(privateKeyPath, DownloadBytes(tempPrivateKeyPath));
-
-                        connection.KeyPath  = privateKeyPath;
-                        connection.Password = null;     // We don't need the password any longer
-
-                        PackageHelper.WriteConnections(connections);
-                    }
-                    finally
-                    {
-                        keyProgressDialog.Done = true;
-
-                        // Delete the temporary key files on the Raspberry.
-
-                        var removeKeyScript =
+                            var removeKeyScript =
 $@"
 rm -f {tempPrivateKeyPath}
 rm -f {tempPublicKeyPath}
 ";
-                        ThrowOnError(SudoCommand(CommandBundle.FromScript(removeKeyScript)));
-                    }
+                            ThrowOnError(SudoCommand(CommandBundle.FromScript(removeKeyScript)));
+                        }
 
-                    await Task.CompletedTask;
-                });
-
-                keyProgressDialog.ShowDialog();
-
-                await task;
+                        await Task.CompletedTask;
+                    });
             }
         }
 
@@ -480,8 +476,10 @@ rm -f {tempPublicKeyPath}
 
             LogInfo($"Installing SDK v{targetSdk.Version} on Raspberry");
 
-            var installProgress = new ProgressDialog($"Installing SDK v{targetSdk.Version}", 0, 60, 55);
-            var installScript =
+            return await ProgressDialog.RunAsync<bool>($"Installing SDK v{targetSdk.Version}", 60,
+                async () =>
+                {
+                    var installScript =
 $@"
 if ! rm $TMP/dotnet-sdk.tar.gz ; then
     exit 1
@@ -501,37 +499,32 @@ fi
 
 exit 0
 ";
-            try
-            {
-                installProgress.ShowDialog();
-
-                return await Task<bool>.Run(() =>
-                {
-                    var response = SudoCommand(CommandBundle.FromScript(installScript));
-
-                    if (response.ExitCode == 0)
+                    try
                     {
-                        // Add the newly installed SDK to the list of installed SDKs.
+                        return await Task<bool>.Run(() =>
+                        {
+                            var response = SudoCommand(CommandBundle.FromScript(installScript));
 
-                        PiStatus.InstalledSdks.Add(new PiSdk(targetSdk.Name, targetSdk.Version));
-                        return true;
+                            if (response.ExitCode == 0)
+                            {
+                                // Add the newly installed SDK to the list of installed SDKs.
+
+                                PiStatus.InstalledSdks.Add(new Sdk(targetSdk.Name, targetSdk.Version));
+                                return true;
+                            }
+                            else
+                            {
+                                LogError(response.AllText);
+                                return false;
+                            }
+                        });
                     }
-                    else
+                    catch (Exception e)
                     {
-                        LogError(response.AllText);
+                        LogException(e);
                         return false;
                     }
                 });
-            }
-            catch (Exception e)
-            {
-                LogException(e);
-                return false;
-            }
-            finally
-            {
-                installProgress.Done = true;
-            }
         }
 
         /// <summary>
@@ -545,8 +538,10 @@ exit 0
                 return true;
             }
 
-            var installProgress = new ProgressDialog($"Installing [vsdbg] debugger", 0, 60, 55);
-            var installScript   =
+            return await ProgressDialog.RunAsync<bool>($"Installing [vsdbg] debugger", 60,
+                async () =>
+                {
+                    var installScript =
 $@"
 if ! curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /lib/dotnet/vsdbg ; then
     exit 1
@@ -554,37 +549,32 @@ fi
 
 exit 0
 ";
-            try
-            {
-                installProgress.ShowDialog();
-
-                return await Task<bool>.Run(() =>
-                {
-                    var response = SudoCommand(CommandBundle.FromScript(installScript));
-
-                    if (response.ExitCode == 0)
+                    try
                     {
-                        // Indicate that debugger is now installed.
+                        return await Task<bool>.Run(() =>
+                        {
+                            var response = SudoCommand(CommandBundle.FromScript(installScript));
 
-                        PiStatus.HasDebugger = true;
-                        return true;
+                            if (response.ExitCode == 0)
+                            {
+                                // Indicate that debugger is now installed.
+
+                                PiStatus.HasDebugger = true;
+                                return true;
+                            }
+                            else
+                            {
+                                LogError(response.AllText);
+                                return false;
+                            }
+                        });
                     }
-                    else
+                    catch (Exception e)
                     {
-                        LogError(response.AllText);
+                        LogException(e);
                         return false;
                     }
                 });
-            }
-            catch (Exception e)
-            {
-                LogException(e);
-                return false;
-            }
-            finally
-            {
-                installProgress.Done = true;
-            }
         }
 
         /// <summary>

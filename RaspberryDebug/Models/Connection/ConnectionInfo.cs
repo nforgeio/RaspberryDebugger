@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    Connection.cs
+// FILE:	    ConnectionInfo.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -28,7 +28,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Describes a Raspberry Pi host connection.
     /// </summary>
-    internal class Connection
+    internal class ConnectionInfo
     {
         private bool    isDefault;
 
@@ -99,7 +99,7 @@ namespace RaspberryDebug
         /// <para>
         /// This is a bit of a hack to call the <see cref="PiDebugConnectionsPanel.ConnectionIsDefaultChanged"/>
         /// when the user changes the state of the <see cref="IsDefault"/>  property.  The sender will be
-        /// the changed <see cref="Connection"/> and the arguments will be empty.
+        /// the changed <see cref="ConnectionInfo"/> and the arguments will be empty.
         /// </para>
         /// <para>
         /// This is a bit of hack because the <see cref="ObjectListView"/> control doesn't

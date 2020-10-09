@@ -40,7 +40,7 @@
             this.progressBar.Size = new System.Drawing.Size(323, 23);
             this.progressBar.TabIndex = 0;
             // 
-            // OpenSshInstalling
+            // ProgressDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -49,11 +49,11 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "OpenSshInstalling";
+            this.Name = "ProgressDialog";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Installing OpenSSH...";
+            this.Text = "Progress";
             this.ResumeLayout(false);
 
         }

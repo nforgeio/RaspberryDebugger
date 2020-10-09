@@ -48,7 +48,7 @@ namespace RaspberryDebug
         private const int blankColumn   = 6;
 
         private bool                isInitialized = false;
-        private List<Connection>    connections;
+        private List<ConnectionInfo>    connections;
 
         /// <summary>
         /// Constructor.
@@ -72,7 +72,7 @@ namespace RaspberryDebug
         /// <summary>
         /// Returns the selected connection or <c>null</c>.
         /// </summary>
-        private Connection SelectedConnection => (Connection)connectionsView.SelectedObject;
+        private ConnectionInfo SelectedConnection => (ConnectionInfo)connectionsView.SelectedObject;
 
         /// <summary>
         /// Called when the panel is first loaded.
@@ -104,7 +104,7 @@ namespace RaspberryDebug
                 isInitialized              = true;
             }
 
-            connectionsView.CheckedAspectName = nameof(Connection.IsDefault);
+            connectionsView.CheckedAspectName = nameof(ConnectionInfo.IsDefault);
 
             connectionsView.Columns.Add(
                 new OLVColumn()
@@ -123,7 +123,7 @@ namespace RaspberryDebug
                 {
                     Name            = "Host",
                     Text            = "Host",
-                    AspectName      = nameof(Connection.Host),
+                    AspectName      = nameof(ConnectionInfo.Host),
                     DisplayIndex    = hostColumn,
                     Width           = 200,
                     HeaderTextAlign = HorizontalAlignment.Left,
@@ -136,7 +136,7 @@ namespace RaspberryDebug
                 {
                     Name            = "Port",
                     Text            = "Port",
-                    AspectName      = nameof(Connection.Port),
+                    AspectName      = nameof(ConnectionInfo.Port),
                     DisplayIndex    = portColumn,
                     Width           = 60,
                     HeaderTextAlign = HorizontalAlignment.Center,
@@ -149,7 +149,7 @@ namespace RaspberryDebug
                 {
                     Name            = "User",
                     Text            = "User",
-                    AspectName      = nameof(Connection.User),
+                    AspectName      = nameof(ConnectionInfo.User),
                     DisplayIndex    = userColumn,
                     FillsFreeSpace  = true,
                     MaximumWidth    = 500,
@@ -163,7 +163,7 @@ namespace RaspberryDebug
                 {
                     Name            = "Authentication",
                     Text            = "Authentication",
-                    AspectName      = nameof(Connection.Authentication),
+                    AspectName      = nameof(ConnectionInfo.Authentication),
                     DisplayIndex    = authColumn,
                     Width           = 100,
                     HeaderTextAlign = HorizontalAlignment.Center,
@@ -241,7 +241,7 @@ namespace RaspberryDebug
         /// </summary>
         private void ReloadConnections()
         {
-            var orgHost = ((Connection)connectionsView.SelectedObject)?.Host;
+            var orgHost = ((ConnectionInfo)connectionsView.SelectedObject)?.Host;
 
             connections = PackageHelper.ReadConnections();
 
@@ -300,11 +300,11 @@ namespace RaspberryDebug
         /// This is a bit of hack because the <see cref="ObjectListView"/> control doesn't
         /// appear to have a check box changed event.
         /// </remarks>
-        internal void ConnectionIsDefaultChanged(Connection changedConnection)
+        internal void ConnectionIsDefaultChanged(ConnectionInfo changedConnection)
         {
             if (changedConnection.IsDefault)
             {
-                var uncheckThese = new List<Connection>();
+                var uncheckThese = new List<ConnectionInfo>();
 
                 foreach (var connection in connections.Where(connection => connection != changedConnection))
                 {
@@ -355,7 +355,7 @@ namespace RaspberryDebug
         private void addButton_Click(object sender, EventArgs args)
         {
             var newConnection =
-                new Connection()
+                new ConnectionInfo()
                 {
                     ConnectionsPanel = this
                 };
@@ -409,23 +409,13 @@ namespace RaspberryDebug
 
             var currentConnection = SelectedConnection;
             var createKeyPair     = !string.IsNullOrEmpty(SelectedConnection.KeyPath) || !File.Exists(SelectedConnection.KeyPath);
-            var progressDialog    = (ProgressDialog)null;
             var exception         = (Exception)null;
 
             await Task.Run(async () =>
             {
                 try
                 {
-                    if (createKeyPair)
-                    {
-                        progressDialog = new ProgressDialog("Create SSH key pair", 0, 60, 55);
-                    }
-                    else
-                    {
-                        Invoke(() => Cursor = Cursors.WaitCursor);
-                    }
-
-                    using (var connection = await PiConnection.ConnectAsync(currentConnection))
+                    using (var connection = await Connection.ConnectAsync(currentConnection))
                     {
                         exception = null;
                     }
@@ -435,17 +425,6 @@ namespace RaspberryDebug
                     exception = e;
 
                     Log.Exception(e);
-                }
-                finally
-                {
-                    if (createKeyPair)
-                    {
-                        progressDialog.Done = true;
-                    }
-                    else
-                    {
-                        Invoke(() => Cursor = Cursors.Default);
-                    }
                 }
             });
 
@@ -494,6 +473,16 @@ namespace RaspberryDebug
                 SaveConnections();
                 ReloadConnections();
             }
+        }
+
+        /// <summary>
+        /// We'll display the edit dialog when an item is double-clicked. 
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="args">The arguments.</param>
+        private void connectionsView_MouseDoubleClick(object sender, MouseEventArgs args)
+        {
+            editButton_Click(sender, EventArgs.Empty);
         }
     }
 }

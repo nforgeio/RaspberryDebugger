@@ -40,7 +40,7 @@ namespace RaspberryDebug
         private const char passwordChar = '•';
 
         private bool                edit;
-        private List<Connection>    existingConnections;
+        private List<ConnectionInfo>    existingConnections;
 
         /// <summary>
         /// Constructor.
@@ -48,7 +48,7 @@ namespace RaspberryDebug
         /// <param name="connection">The connection being created or edited.</param>
         /// <param name="edit">Pass <c>true</c> when editing, <c>false</c> for creating a new connection.</param>
         /// <param name="existingConnections">The existing connection.</param>
-        public ConnectionDialog(Connection connection, bool edit, List<Connection> existingConnections)
+        public ConnectionDialog(ConnectionInfo connection, bool edit, List<ConnectionInfo> existingConnections)
         {
             InitializeComponent();
 
@@ -73,7 +73,7 @@ namespace RaspberryDebug
         /// <summary>
         /// Returns the connection being created or edited.
         /// </summary>
-        internal Connection Connection { get; private set; }
+        internal ConnectionInfo Connection { get; private set; }
 
         /// <summary>
         /// Handles the OK button.

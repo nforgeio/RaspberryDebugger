@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    PiSdk.cs
+// FILE:	    Sdk.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -33,14 +33,14 @@ namespace RaspberryDebug
     /// <summary>
     /// Holds information about a .NET Core SDK installed on a Raspberry Pi.
     /// </summary>
-    public class PiSdk
+    public class Sdk
     {
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="name">The SDK name.</param>
         /// <param name="version">The SDK version.</param>
-        public PiSdk(string name, string version)
+        public Sdk(string name, string version)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(name), nameof(name));
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(version), nameof(version));

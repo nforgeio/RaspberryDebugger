@@ -139,11 +139,8 @@ namespace RaspberryDebug
 
                 // Install via Powershell: https://techcommunity.microsoft.com/t5/itops-talk-blog/installing-and-configuring-openssh-on-windows-server-2019/ba-p/309540
 
-                var installingForm = new ProgressDialog("Installing OpenSSH Client", min: 0, max: 90, stop: 85);
-
-                _ = Task.Run(() =>
-                {
-                    try
+                await ProgressDialog.RunAsync("Installing OpenSSH Client", 90,
+                    async () =>
                     {
                         using (var powershell = new PowerShell())
                         {
@@ -156,23 +153,14 @@ namespace RaspberryDebug
 
                             Log.WriteLine(powershell.Execute("Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0"));
                         }
-                    }
-                    finally
-                    {
-                        installingForm.Done = true;
-                    }
 
-                    installingForm.WaitUntilClosed();
+                        MessageBox.Show(
+                            "Restart Windows to complete the OpenSSH Client installation.",
+                            "Restart Required",
+                            MessageBoxButtons.OK);
 
-                    MessageBox.Show(
-                        "Restart Windows to complete the OpenSSH Client installation.",
-                        "Restart Required",
-                        MessageBoxButtons.OK);
-
-                    return;
-                });
-
-                installingForm.ShowDialog();
+                        await Task.CompletedTask;
+                    });
             }
 
             // Identify the startup project.

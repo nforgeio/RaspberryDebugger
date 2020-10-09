@@ -142,6 +142,7 @@ namespace RaspberryDebug
             this.connectionsView.UseCompatibleStateImageBehavior = false;
             this.connectionsView.View = System.Windows.Forms.View.Details;
             this.connectionsView.ColumnWidthChanging += new System.Windows.Forms.ColumnWidthChangingEventHandler(this.connectionsView_ColumnWidthChanging);
+            this.connectionsView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.connectionsView_MouseDoubleClick);
             // 
             // PiDebugConnectionsPanel
             // 

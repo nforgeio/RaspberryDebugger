@@ -49,10 +49,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Commands\DebugCommand.cs" />
-    <Compile Include="Connection\ConnectException.cs" />
-    <Compile Include="Connection\PiConnection.cs" />
-    <Compile Include="Connection\PiStatus.cs" />
-    <Compile Include="Connection\PiSdk.cs" />
+    <Compile Include="Connection\ConnectionException.cs" />
+    <Compile Include="Connection\Connection.cs" />
+    <Compile Include="Connection\Status.cs" />
+    <Compile Include="Connection\Sdk.cs" />
     <Compile Include="Dialogs\ConnectionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -67,19 +67,19 @@
       <DependentUpon>ProgressDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Log.cs" />
-    <Compile Include="Models\Connection\Connection.cs" />
+    <Compile Include="Models\Connection\ConnectionInfo.cs" />
     <Compile Include="Models\Sdk\SdkArchitecture.cs" />
     <Compile Include="Models\Sdk\SdkCatalog.cs" />
     <Compile Include="Models\Sdk\SdkCatalogItem.cs" />
     <Compile Include="Models\Connection\AuthenticationType.cs" />
     <Compile Include="Models\VisualStudio\ProjectProperties.cs" />
-    <Compile Include="VSConnections\PiDebugConnectionsPanel.cs">
+    <Compile Include="ConnectionOptions\PiDebugConnectionsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="VSConnections\PiDebugConnectionsPanel.Designer.cs">
+    <Compile Include="ConnectionOptions\PiDebugConnectionsPanel.Designer.cs">
       <DependentUpon>PiDebugConnectionsPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="VSConnections\PiDebugConnectionsPage.cs">
+    <Compile Include="ConnectionOptions\PiDebugConnectionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PackageHelper.cs" />
@@ -135,7 +135,7 @@
     <Content Include="Resources\DebugRaspberryCommand.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="VSConnections\PiDebugConnectionsPanel.resx">
+    <EmbeddedResource Include="ConnectionOptions\PiDebugConnectionsPanel.resx">
       <DependentUpon>PiDebugConnectionsPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\ConnectionDialog.resx">

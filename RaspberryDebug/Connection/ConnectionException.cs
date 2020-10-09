@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    ConnectException.cs
+// FILE:	    ConnectionException.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -33,7 +33,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Used to report connection issues.
     /// </summary>
-    internal class ConnectException : Exception
+    internal class ConnectionException : Exception
     {
         //---------------------------------------------------------------------
         // Static members
@@ -44,7 +44,7 @@ namespace RaspberryDebug
         /// <param name="connection">The offending connection.</param>
         /// <param name="error">The error message.</param>
         /// <returns>The exception message.</returns>
-        private static string GetMessage(PiConnection connection, string error)
+        private static string GetMessage(Connection connection, string error)
         {
             var name = connection?.Name ?? "????";
             
@@ -71,12 +71,12 @@ namespace RaspberryDebug
         // Instance members
 
         /// <summary>
-        /// Constructs an instance based on a <see cref="PiConnection"/> and
+        /// Constructs an instance based on a <see cref="Connection"/> and
         /// an error message.
         /// </summary>
         /// <param name="connection">The offending connection.</param>
         /// <param name="error">The error message.</param>
-        public ConnectException(PiConnection connection, string error)
+        public ConnectionException(Connection connection, string error)
             : base(GetMessage(connection, error))
         {
         }
@@ -87,7 +87,7 @@ namespace RaspberryDebug
         /// </summary>
         /// <param name="name">The offending connection (host) name.</param>
         /// <param name="error">The error message.</param>
-        public ConnectException(string name, string error)
+        public ConnectionException(string name, string error)
             : base(GetMessage(name,error))
         {
         }

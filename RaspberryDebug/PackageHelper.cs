@@ -23,14 +23,18 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Microsoft.VisualStudio.Shell;
+
 using Neon.Common;
 using Newtonsoft.Json;
-using BrightIdeasSoftware;
-using System.Reflection;
+
+using Task = System.Threading.Tasks.Task;
+using System.Diagnostics.Contracts;
 
 namespace RaspberryDebug
 {
@@ -110,7 +114,7 @@ namespace RaspberryDebug
         /// Reads the persisted connection settings.
         /// </summary>
         /// <returns>The connections.</returns>
-        public static List<Connection> ReadConnections()
+        public static List<ConnectionInfo> ReadConnections()
         {
             Log.WriteLine("Reading connections");
 
@@ -118,12 +122,12 @@ namespace RaspberryDebug
             {
                 if (!File.Exists(ConnectionsPath))
                 {
-                    return new List<Connection>();
+                    return new List<ConnectionInfo>();
                 }
 
-                var list = NeonHelper.JsonDeserialize<List<Connection>>(File.ReadAllText(ConnectionsPath));
+                var list = NeonHelper.JsonDeserialize<List<ConnectionInfo>>(File.ReadAllText(ConnectionsPath));
 
-                return list ?? new List<Connection>();
+                return list ?? new List<ConnectionInfo>();
             }
             catch (Exception e)
             {
@@ -136,13 +140,13 @@ namespace RaspberryDebug
         /// Persists the connections passed.
         /// </summary>
         /// <param name="connections">The connections.</param>
-        public static void WriteConnections(List<Connection> connections)
+        public static void WriteConnections(List<ConnectionInfo> connections)
         {
             Log.WriteLine("Writing connections");
 
             try
             {
-                connections = connections ?? new List<Connection>();
+                connections = connections ?? new List<ConnectionInfo>();
 
                 File.WriteAllText(ConnectionsPath, NeonHelper.JsonSerialize(connections, Formatting.Indented));
             }
@@ -151,6 +155,33 @@ namespace RaspberryDebug
                 Log.Exception(e);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Runs an action on the UI thread.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns>The tracking <see cref="Task"/>.</returns>
+        public static async Task RunOnUIThreadAsync(Action action)
+        {
+            Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(alwaysYield: true);
+            action();
+        }
+
+        /// <summary>
+        /// Runs an action that returns a value on the UI thread.
+        /// </summary>
+        /// <typeparam name="T">The result type.</typeparam>
+        /// <param name="action">The action.</param>
+        /// <returns>The tracking <see cref="Task"/>.</returns>
+        public static async Task<T> RunOnUIThreadAsync<T>(Func<T> action)
+        {
+            Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(alwaysYield: true);
+            return action();
         }
     }
 }

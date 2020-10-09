@@ -27,6 +27,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Microsoft.VisualStudio.Shell;
+
+using Task = System.Threading.Tasks.Task;
+using System.Diagnostics.Contracts;
+
 namespace RaspberryDebug
 {
     /// <summary>
@@ -42,42 +47,108 @@ namespace RaspberryDebug
     /// </summary>
     public partial class ProgressDialog : Form
     {
-        private bool isClosed = false;
+        //---------------------------------------------------------------------
+        // Static members
 
         /// <summary>
-        /// Set this to true when the operation is complete.
+        /// Executes an action on a background thread while displaying progress on
+        /// the UI thread.
         /// </summary>
-        public bool Done { get; set; } = false;
+        /// <param name="title">The dialog title.</param>
+        /// <param name="seconds">The estimated maximum duration of the operation in seconds.</param>
+        /// <param name="action">The async action.</param>
+        /// <returns>The tracking <see cref="Task"/>.</returns>
+        public static async Task RunAsync(string title, int seconds, Func<Task> action)
+        {
+            Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
+
+            var dialog = (ProgressDialog)null;
+
+            _ = PackageHelper.RunOnUIThreadAsync(
+                () =>
+                {
+                    dialog = new ProgressDialog(title, seconds, Math.Max(seconds - 5, 5));
+                    dialog.ShowDialog();
+                });
+
+            try
+            {
+                await action();
+            }
+            finally
+            {
+                dialog.isDone = true;
+                dialog.WaitUntilClosed();
+            }
+        }
+
+        /// <summary>
+        /// Executes an action that returns a result on a background thread while
+        /// displaying progress on the UI thread.
+        /// </summary>
+        /// <typeparam name="T">The result type.</typeparam>
+        /// <param name="title">The dialog title.</param>
+        /// <param name="seconds">The estimated maximum duration of the operation in seconds.</param>
+        /// <param name="action"></param>
+        /// <returns>The action result.</returns>
+        public static async Task<T> RunAsync<T>(string title, int seconds, Func<Task<T>> action)
+        {
+            Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
+
+            var dialog = (ProgressDialog)null;
+
+            _ = PackageHelper.RunOnUIThreadAsync(
+                () =>
+                {
+                    dialog = new ProgressDialog(title, seconds, Math.Max(seconds - 5, 5));
+                    dialog.ShowDialog();
+                });
+
+            try
+            {
+                return await action();
+            }
+            finally
+            {
+                dialog.isDone = true;
+                dialog.WaitUntilClosed();
+            }
+        }
+
+        //---------------------------------------------------------------------
+        // Instance members
+
+        private bool isDone   = false;
+        private bool isClosed = false;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="title">The dialog title.</param>
-        /// <param name="min">The minimum progress value.</param>
-        /// <param name="max">The maximum progress value.</param>
-        /// <param name="stop">Optionally specifies a value less than <see cref="Max"/> where progress will stop.</param>
-        public ProgressDialog(string title, int min, int max, int stop = int.MaxValue)
+        /// <param name="seconds">The estimated maximum duration of the operation in seconds.</param>
+        /// <param name="stopSeconds">The number of seconds past which the progress bar will stop advancing.</param>
+        private ProgressDialog(string title, int seconds, int stopSeconds)
         {
             InitializeComponent();
 
-            this.Text       = title;
-            this.ControlBox = false;    // Hides the min/max/X title bar buttons
+            this.Text        = title;
+            this.ControlBox  = false;    // Hides the min/max/X title bar buttons
+            this.FormClosed += (s, a) => isClosed = true;
 
-            progressBar.Minimum = min;
-            progressBar.Maximum = max;
+            progressBar.Minimum = 0;
+            progressBar.Maximum = seconds;
 
             timer.Interval = 1000;
             timer.Tick    +=
                 (s, a) =>
                 {
-                    if (Done)
+                    if (isDone)
                     {
                         Close();
-                        isClosed = true;
                         return;
                     }
 
-                    progressBar.Value = Math.Min(progressBar.Value + 1, Math.Min(max, stop));
+                    progressBar.Value = Math.Min(progressBar.Value + 1, Math.Min(seconds, stopSeconds));
                 };
             
             timer.Start();
@@ -86,7 +157,7 @@ namespace RaspberryDebug
         /// <summary>
         /// Waits for the dialog to close itself.
         /// </summary>
-        public void WaitUntilClosed()
+        private void WaitUntilClosed()
         {
             while (!isClosed)
             {

@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    PiStatus.cs
+// FILE:	    Status.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -33,7 +33,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Describes the current status of a remote Raspberry Pi.
     /// </summary>
-    internal class PiStatus
+    internal class Status
     {
         /// <summary>
         /// Constructor.
@@ -43,7 +43,7 @@ namespace RaspberryDebug
         /// <param name="hasDebuffer">Indicates whether the debugger is installed.</param>
         /// <param name="installedSdks">The installed .NET Core SDKs.</param>
         /// <param name="path">The current value of the PATH environment variable.</param>
-        public PiStatus(string architecture, string path, bool hasUnzip, bool hasDebugger, IEnumerable<PiSdk> installedSdks)
+        public Status(string architecture, string path, bool hasUnzip, bool hasDebugger, IEnumerable<Sdk> installedSdks)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(architecture), nameof(architecture));
             Covenant.Requires<ArgumentNullException>(path != null, nameof(path));
@@ -81,6 +81,6 @@ namespace RaspberryDebug
         /// <summary>
         /// Returns information about the .NET Core SDKs installed.
         /// </summary>
-        public IList<PiSdk> InstalledSdks { get; private set; }
+        public IList<Sdk> InstalledSdks { get; private set; }
     }
 }
