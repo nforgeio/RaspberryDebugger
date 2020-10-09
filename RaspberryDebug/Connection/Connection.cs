@@ -22,14 +22,13 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
+
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Debugger.Breakpoints;
+
 using Neon.Common;
 using Neon.IO;
 using Neon.Net;
 using Neon.SSH;
-using Renci.SshNet;
 
 namespace RaspberryDebug
 {
@@ -141,7 +140,7 @@ namespace RaspberryDebug
         /// <param name="text">The error text.</param>
         private void LogInfo(string text)
         {
-            RaspberryDebug.Log.WriteLine($"[{Name}]: {text}");
+            RaspberryDebug.Log.Info($"[{Name}]: {text}");
         }
 
         /// <summary>
@@ -361,7 +360,7 @@ fi
                         // and then download it to our keys folder.  The key file name will
                         // be the host name of the Raspberry.
 
-                        LogInfo("Configuring SSH key pair");
+                        LogInfo("Creating SSH keys");
 
                         var workstationUser    = Environment.GetEnvironmentVariable("USERNAME");
                         var workstationName    = Environment.GetEnvironmentVariable("COMPUTERNAME");
@@ -376,21 +375,21 @@ fi
 $@"
 # Create the key pair
 
-if ! ssh-keygen -t rsa -b 2048 -N '' -C '{workstationUser}@{workstationName}' -f {tempPrivateKeyPath} ; then
-exit 1
+if ! ssh-keygen -t rsa -b 2048 -P '' -C '{workstationUser}@{workstationName}' -f {tempPrivateKeyPath} -m pem ; then
+    exit 1
 fi
 
-# Append the public key to the users [authorized_files].
+# Append the public key to the user's [authorized_keys] file to enable it.
 
-touch {homeFolder}/.ssh/authorized_files
-cat {tempPublicKeyPath} >> {homeFolder}/.ssh/authorized_files
+touch {homeFolder}/.ssh/authorized_keys
+cat {tempPublicKeyPath} >> {homeFolder}/.ssh/authorized_keys
 
 exit 0
 ";
                             ThrowOnError(SudoCommand(CommandBundle.FromScript(createKeyScript)));
 
-                            // Download the public key, persist it to the workstation and then update the
-                            // workstation connections.
+                            // Download the public and private keys, persist them to the workstation
+                            // and then update the workstation connections.
 
                             var connections = PackageHelper.ReadConnections();
                             var connection  = connections.SingleOrDefault(c => c.Host == host);
@@ -403,8 +402,10 @@ exit 0
                                 throw new ConnectionException(this, $"The [{host}] connection no longer exists.  You'll need to recreate it.");
                             }
 
+                            var publicKeyPath  = Path.Combine(PackageHelper.KeysFolder, $"{host}.pub");
                             var privateKeyPath = Path.Combine(PackageHelper.KeysFolder, host);
 
+                            File.WriteAllBytes(publicKeyPath, DownloadBytes(tempPublicKeyPath));
                             File.WriteAllBytes(privateKeyPath, DownloadBytes(tempPrivateKeyPath));
 
                             connection.KeyPath  = privateKeyPath;

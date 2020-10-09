@@ -442,7 +442,7 @@ namespace RaspberryDebug
             else
             {
                 MessageBox.Show(this,
-                                $"Connection Failed:\r\n\r\n{exception.GetType().FullName}\r\n\r\n{exception.Message}\r\n\r\nView the Debug Output for more details.",
+                                $"Connection Failed:\r\n\r\n{exception.GetType().FullName}\r\n{exception.Message}\r\n\r\nView the Debug Output for more details.",
                                 $"Connection Failed",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
