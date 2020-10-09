@@ -54,12 +54,21 @@ namespace RaspberryDebug
         }
 
         /// <summary>
+        /// Writes an information line to the Visual Studio debug pane.
+        /// </summary>
+        /// <param name="text">The information text.</param>
+        public static void Info(string text)
+        {
+            WriteLine($"[{PackageHelper.LogName}]: INFO: {text}");
+        }
+
+        /// <summary>
         /// Writes an error line to the Visual Studio debug pane.
         /// </summary>
         /// <param name="text">The error text.</param>
         public static void Error(string text)
         {
-            WriteLine($"ERROR: {text}");
+            WriteLine($"[{PackageHelper.LogName}]: ERROR: {text}");
         }
 
         /// <summary>
@@ -68,7 +77,7 @@ namespace RaspberryDebug
         /// <param name="text">The error text.</param>
         public static void Warning(string text)
         {
-            WriteLine($"WARNING: {text}");
+            WriteLine($"[{PackageHelper.LogName}]: WARNING: {text}");
         }
 
         /// <summary>

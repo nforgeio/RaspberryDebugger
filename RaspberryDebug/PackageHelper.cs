@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Data;
 using System.IO;
@@ -29,12 +30,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Utilities;
 
 using Neon.Common;
 using Newtonsoft.Json;
 
 using Task = System.Threading.Tasks.Task;
-using System.Diagnostics.Contracts;
 
 namespace RaspberryDebug
 {
@@ -58,6 +60,11 @@ namespace RaspberryDebug
         /// The path to the JSON file defining the Raspberry Pi connections.
         /// </summary>
         public static readonly string ConnectionsPath;
+
+        /// <summary>
+        /// The name used to prefix logged output and status bar text.
+        /// </summary>
+        public const string LogName = "pi-debug";
 
         /// <summary>
         /// Directory on the Raspberry Pi where .NET Core SDKs will be installed along with the
@@ -116,7 +123,7 @@ namespace RaspberryDebug
         /// <returns>The connections.</returns>
         public static List<ConnectionInfo> ReadConnections()
         {
-            Log.WriteLine("Reading connections");
+            Log.Info("Reading connections");
 
             try
             {
@@ -142,7 +149,7 @@ namespace RaspberryDebug
         /// <param name="connections">The connections.</param>
         public static void WriteConnections(List<ConnectionInfo> connections)
         {
-            Log.WriteLine("Writing connections");
+            Log.Info("Writing connections");
 
             try
             {
@@ -158,116 +165,179 @@ namespace RaspberryDebug
         }
 
         //---------------------------------------------------------------------
-        // $hack(jefflill): RootForm related code
+        // Progress related code
 
-        private static RootForm     rootForm      = null;
-        private static int          rootCallDepth = 0;
+        private static IVsThreadedWaitDialog2   waitDialog     = null;
+        private static Stack<string>            operationStack = new Stack<string>();
+        private static string                   rootDescription;
 
         /// <summary>
-        /// <para>
-        /// Executes an asynchronous action within the context of a transparent <see cref="RootForm"/>
-        /// which will be used to provide a way to dispatch operations to the UI thread.  Calls to
-        /// this may be nested but only one <see cref="RootForm"/> will be created.  The form will
-        /// be closed when the last execute call has returned.
-        /// </para>
-        /// <note>
-        /// This may only be called on the UI thread.
-        /// </note>
+        /// Executes an asynchronous action that does not return a result within the context of a 
+        /// Visual Studio progress dialog.  You may make nested calls and this may also be called
+        /// from any thread.
         /// </summary>
+        /// <param name="description">The operation description.</param>
         /// <param name="action">The action.</param>
         /// <returns>The tracking <see cref="Task"/>.</returns>
-        public static async Task ExecuteWithRootFormAsync(Func<Task> action)
+        public static async Task ExecuteWithProgressAsync(string description, Func<Task> action)
         {
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(description), nameof(description));
             Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
-            Covenant.Assert(rootForm == null && rootCallDepth == 0 || rootForm != null && rootCallDepth > 0);
 
-            if (rootForm == null)
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (waitDialog == null)
             {
-                rootForm = new RootForm();
-                rootForm.ShowDialog();
-            }
+                Covenant.Assert(operationStack.Count == 0);
 
-            try
-            {
-                rootCallDepth++;
-                await action();
-            }
-            finally
-            {
-                rootCallDepth--;
+                rootDescription = description;
+                operationStack.Push(description);
 
-                Covenant.Assert(rootCallDepth >= 0);
+                var dialogFactory = (IVsThreadedWaitDialogFactory)RaspberryDebugPackage.GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
 
-                if (rootCallDepth == 0)
-                {
-                    rootForm.Close();
-                    rootForm = null;
-                }
-            }
-        }
+                dialogFactory.CreateInstance(out waitDialog);
 
-        /// <summary>
-        /// <para>
-        /// Executes an asynchronous action that returns a value within the context of a transparent
-        /// <see cref="RootForm"/> which will be used to provide a way to dispatch operations to the 
-        /// UI thread.  Calls to this may be nested but only one <see cref="RootForm"/> will be created. 
-        /// The form will be closed when the last execute call has returned.
-        /// </para>
-        /// <note>
-        /// This may only be called on the UI thread.
-        /// </note>
-        /// </summary>
-        /// <typeparam name="T">The action result type.</typeparam>
-        /// <param name="action">The action.</param>
-        /// <returns>The tracking <see cref="Task"/>.</returns>
-        public static async Task<T> ExecuteWithRootFormAsync<T>(Func<Task<T>> action)
-        {
-            Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
-            Covenant.Assert(rootForm == null && rootCallDepth == 0 || rootForm != null && rootCallDepth > 0);
-            Covenant.Assert(rootForm != null && rootCallDepth > 0);
-
-            if (rootForm == null)
-            {
-                rootForm = new RootForm();
-                rootForm.ShowDialog();
-            }
-
-            try
-            {
-                rootCallDepth++;
-                return await action();
-            }
-            finally
-            {
-                rootCallDepth--;
-
-                Covenant.Assert(rootCallDepth >= 0, "RootForm call depth underflow");
-
-                if (rootCallDepth == 0)
-                {
-                    rootForm.Close();
-                    rootForm = null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Synchronously invokes an action on the UI thread.  This may only be called
-        /// in the context of a <see cref="RootForm"/> execution.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        public static void InvokeOnUIThread(Action action)
-        {
-            Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
-            Covenant.Assert(rootForm != null);
-
-            if (rootForm.InvokeRequired)
-            {
-                rootForm.Invoke(action);
+                waitDialog.StartWaitDialog(
+                    szWaitCaption:          description, 
+                    szWaitMessage:          " ",    // We need this otherwise "Visual Studio" gets displayed
+                    szProgressText:         null, 
+                    varStatusBmpAnim:       null, 
+                    szStatusBarText:        description, 
+                    iDelayToShowDialog:     0,
+                    fIsCancelable:          false, 
+                    fShowMarqueeProgress:   false);
             }
             else
             {
-                action();
+                Covenant.Assert(operationStack.Count > 0);
+
+                operationStack.Push(description);
+
+                waitDialog.UpdateProgress(
+                    szUpdatedWaitMessage:   description,
+                    szProgressText:         null,
+                    szStatusBarText:        null,
+                    iCurrentStep:           0,
+                    iTotalSteps:            0,
+                    fDisableCancel:         true,
+                    pfCanceled:             out var cancelled);
+            }
+
+            try
+            {
+                await action().ConfigureAwait(false);
+            }
+            finally
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var currentDescription = operationStack.Pop();
+
+                if (operationStack.Count == 0)
+                {
+                    waitDialog.EndWaitDialog(out var cancelled);
+
+                    waitDialog      = null;
+                    rootDescription = null;
+                }
+                else
+                {
+                    waitDialog.UpdateProgress(
+                        szUpdatedWaitMessage:   currentDescription,
+                        szProgressText:         null,
+                        szStatusBarText:        rootDescription,
+                        iCurrentStep:           0,
+                        iTotalSteps:            0,
+                        fDisableCancel:         true,
+                        pfCanceled:             out var cancelled);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes an asynchronous action that does not return a result within the context of a 
+        /// Visual Studio progress dialog.  You may make nested calls and this may also be called
+        /// from any thread.
+        /// </summary>
+        /// <typeparam name="TResult">The action result type.</typeparam>
+        /// <param name="description">The operation description.</param>
+        /// <param name="action">The action.</param>
+        /// <returns>The tracking <see cref="Task"/>.</returns>
+        public static async Task<TResult> ExecuteWithProgressAsync<TResult>(string description, Func<Task<TResult>> action)
+        {
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(description), nameof(description));
+            Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
+
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(description), nameof(description));
+            Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (waitDialog == null)
+            {
+                Covenant.Assert(operationStack.Count == 0);
+
+                rootDescription = description;
+                operationStack.Push(description);
+
+                var dialogFactory = (IVsThreadedWaitDialogFactory)RaspberryDebugPackage.GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
+
+                dialogFactory.CreateInstance(out waitDialog);
+
+                waitDialog.StartWaitDialog(
+                    szWaitCaption:          description, 
+                    szWaitMessage:          " ",    // We need this otherwise "Visual Studio" gets displayed
+                    szProgressText:         null, 
+                    varStatusBmpAnim:       null, 
+                    szStatusBarText:        $"[{LogName}]{description}", 
+                    iDelayToShowDialog:     0,
+                    fIsCancelable:          false, 
+                    fShowMarqueeProgress:   false);
+            }
+            else
+            {
+                Covenant.Assert(operationStack.Count > 0);
+
+                operationStack.Push(description);
+
+                waitDialog.UpdateProgress(
+                    szUpdatedWaitMessage: description,
+                    szProgressText: null,
+                    szStatusBarText: null,
+                    iCurrentStep: 0,
+                    iTotalSteps: 0,
+                    fDisableCancel: true,
+                    pfCanceled: out var cancelled);
+            }
+
+            try
+            {
+                return await action().ConfigureAwait(false);
+            }
+            finally
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var currentDescription = operationStack.Pop();
+
+                if (operationStack.Count == 0)
+                {
+                    waitDialog.EndWaitDialog(out var cancelled);
+
+                    waitDialog = null;
+                    rootDescription = null;
+                }
+                else
+                {
+                    waitDialog.UpdateProgress(
+                        szUpdatedWaitMessage:   currentDescription,
+                        szProgressText:         null,
+                        szStatusBarText:        rootDescription,
+                        iCurrentStep:           0,
+                        iTotalSteps:            0,
+                        fDisableCancel:         true,
+                        pfCanceled:             out var cancelled);
+                }
             }
         }
     }

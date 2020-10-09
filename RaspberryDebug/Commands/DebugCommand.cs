@@ -116,7 +116,7 @@ namespace RaspberryDebug
 
             // We need Windows native SSH to be installed.
 
-            Log.WriteLine("Checking for native OpenSSH client");
+            Log.Info("Checking for native OpenSSH client");
 
             var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "sysnative", "openssh", "ssh.exe");
 
@@ -139,19 +139,19 @@ namespace RaspberryDebug
 
                 // Install via Powershell: https://techcommunity.microsoft.com/t5/itops-talk-blog/installing-and-configuring-openssh-on-windows-server-2019/ba-p/309540
 
-                await ProgressDialog.RunAsync("Installing OpenSSH Client", 90,
+                await PackageHelper.ExecuteWithProgressAsync("Installing OpenSSH Client", 
                     async () =>
                     {
                         using (var powershell = new PowerShell())
                         {
-                            Log.WriteLine("Installing OpenSSH");
+                            Log.Info("Installing OpenSSH");
 
                             for (int i = 0; i < 50; i++)
                             {
                                 System.Threading.Thread.Sleep(1000);
                             }
 
-                            Log.WriteLine(powershell.Execute("Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0"));
+                            Log.Info(powershell.Execute("Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0"));
                         }
 
                         MessageBox.Show(
@@ -228,7 +228,7 @@ namespace RaspberryDebug
         /// <returns><c>true</c> on success.</returns>
         private async Task<bool> BuildProjectAsync(ProjectProperties projectProperties)
         {
-            Log.WriteLine($"Building: {projectProperties.FullPath}");
+            Log.Info($"Building: {projectProperties.FullPath}");
 
             var response = await NeonHelper.ExecuteCaptureAsync(
                 "dotnet",
@@ -262,7 +262,7 @@ namespace RaspberryDebug
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Log.WriteLine($"Debugging: {project.FullName}");
+            Log.Info($"Debugging: {project.FullName}");
 
             return false;
         }

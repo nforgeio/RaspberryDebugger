@@ -405,12 +405,12 @@ namespace RaspberryDebug
                 return;
             }
 
-            Log.WriteLine($"[{SelectedConnection.Host}]: Testing...");
+            Log.Info($"[{SelectedConnection.Host}]: Testing Connection");
 
             var currentConnection = SelectedConnection;
             var exception         = (Exception)null;
 
-            await PackageHelper.ExecuteWithRootFormAsync(async () =>
+            await PackageHelper.ExecuteWithProgressAsync("Test connection", async () =>
             {
                 try
                 {

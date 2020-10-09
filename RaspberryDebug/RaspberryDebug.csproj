@@ -60,18 +60,6 @@
       <DependentUpon>ConnectionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\MessageBoxEx.cs" />
-    <Compile Include="Dialogs\ProgressDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Dialogs\ProgressDialog.Designer.cs">
-      <DependentUpon>ProgressDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Dialogs\RootForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Dialogs\RootForm.Designer.cs">
-      <DependentUpon>RootForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Log.cs" />
     <Compile Include="Models\Connection\ConnectionInfo.cs" />
     <Compile Include="Models\Sdk\SdkArchitecture.cs" />
@@ -93,12 +81,6 @@
     <Compile Include="RaspberryDebugPackage.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Dialogs\ProgressDialog.resx">
-      <DependentUpon>ProgressDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Dialogs\RootForm.resx">
-      <DependentUpon>RootForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="sdk-catalog.json" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
@@ -121,6 +103,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.206" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.Utilities">
+      <Version>16.7.30329.38</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.7.3069" />
     <PackageReference Include="Neon.Common">
       <Version>2.3.1</Version>

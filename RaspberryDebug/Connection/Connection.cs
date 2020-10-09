@@ -197,34 +197,38 @@ namespace RaspberryDebug
         /// <returns>Thr tracking <see cref="Task"/>.</returns>
         private async Task InitializeAsync()
         {
-            // Disabling this because it looks like SUDO passwork prompting is disabled
-            // by default for Raspberry Pi OS.
+            await PackageHelper.ExecuteWithProgressAsync(
+                "Connecting...",
+                async () =>
+                {
+                    // Disabling this because it looks like SUDO passwork prompting is disabled
+                    // by default for Raspberry Pi OS.
 #if DISABLED
-            // This call ensures that SUDO password prompting is disabled and the
-            // the required hidden folders exist in the user's home directory.
+                    // This call ensures that SUDO password prompting is disabled and the
+                    // the required hidden folders exist in the user's home directory.
 
-            DisableSudoPrompt(password);
+                    DisableSudoPrompt(password);
 #endif
-            // We need to ensure that [unzip] is installed so that [LinuxSshProxy] command
-            // bundles will work.
+                    // We need to ensure that [unzip] is installed so that [LinuxSshProxy] command
+                    // bundles will work.
 
-            Log($"[{Name}]: Checking for: [unzip]");
+                    Log($"[{Name}]: Checking for: [unzip]");
 
-            var response = SudoCommand("which unzip");
+                    var response = SudoCommand("which unzip");
 
-            if (response.ExitCode != 0)
-            {
-                Log($"[{Name}]: Installing: [unzip]");
+                    if (response.ExitCode != 0)
+                    {
+                        Log($"[{Name}]: Installing: [unzip]");
 
-                ThrowOnError(SudoCommand("sudo apt-get update"));
-                ThrowOnError(SudoCommand("sudo apt-get install -yq unzip"));
-            }
+                        ThrowOnError(SudoCommand("sudo apt-get update"));
+                        ThrowOnError(SudoCommand("sudo apt-get install -yq unzip"));
+                    }
 
-            // We're going to execute a script the gathers everything in a single operation for speed.
+                    // We're going to execute a script the gathers everything in a single operation for speed.
 
-            Log($"[{Name}]: Retrieving status");
+                    Log($"[{Name}]: Retrieving status");
 
-            var script =
+                    var script =
 $@"
 # This script will return the status information via STDOUT line-by-line
 # in this order:
@@ -299,57 +303,58 @@ if ! grep --quiet DOTNET_ROOT /etc/profile ; then
     export PATH=$PATH:$DOTNET_ROOT
 fi
 ";
-            Log($"[{Name}]: Fetching status");
+                    Log($"[{Name}]: Fetching status");
 
-            response = ThrowOnError(SudoCommand(CommandBundle.FromScript(script)));
+                    response = ThrowOnError(SudoCommand(CommandBundle.FromScript(script)));
 
-            using (var reader = new StringReader(response.OutputText))
-            {
-                var architecture = await reader.ReadLineAsync();
-                var path         = await reader.ReadLineAsync();
-                var hasUnzip     = await reader.ReadLineAsync() == "unzip";
-                var hasDebugger  = await reader.ReadLineAsync() == "debugger-installed";
-                var sdkLine      = await reader.ReadLineAsync();
-
-                Log($"[{Name}]: architecture: {architecture}");
-                Log($"[{Name}]: path:         {path}");
-                Log($"[{Name}]: unzip:        {hasUnzip}");
-                Log($"[{Name}]: debugger:     {hasDebugger}");
-                Log($"[{Name}]: sdks:         {sdkLine}");
-
-                // Convert the comma separated SDK names into a [PiSdk] list.
-
-                var sdks = new List<Sdk>();
-
-                foreach (var sdkName in sdkLine.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(sdk => sdk.Trim()))
-                {
-                    // $todo(jefflill): We're only supporting 32-bit SDKs at this time.
-
-                    var sdkCatalogItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == sdkName && item.Architecture == SdkArchitecture.ARM32);
-
-                    if (sdkCatalogItem != null)
+                    using (var reader = new StringReader(response.OutputText))
                     {
-                        sdks.Add(new Sdk(sdkName, sdkCatalogItem.Version));
-                    }
-                    else
-                    {
-                        LogWarning($".NET SDK [{sdkName}] is present on [{Name}] but is not known to the RaspberryDebug extension.  Consider updating the extension.");
-                    }
-                }
+                        var architecture = await reader.ReadLineAsync();
+                        var path = await reader.ReadLineAsync();
+                        var hasUnzip = await reader.ReadLineAsync() == "unzip";
+                        var hasDebugger = await reader.ReadLineAsync() == "debugger-installed";
+                        var sdkLine = await reader.ReadLineAsync();
 
-                PiStatus = new Status(
-                    architecture:  architecture,
-                    path:          path,
-                    hasUnzip:      hasUnzip,
-                    hasDebugger:   hasDebugger,
-                    installedSdks: sdks);
-            }
+                        Log($"[{Name}]: architecture: {architecture}");
+                        Log($"[{Name}]: path:         {path}");
+                        Log($"[{Name}]: unzip:        {hasUnzip}");
+                        Log($"[{Name}]: debugger:     {hasDebugger}");
+                        Log($"[{Name}]: sdks:         {sdkLine}");
+
+                        // Convert the comma separated SDK names into a [PiSdk] list.
+
+                        var sdks = new List<Sdk>();
+
+                        foreach (var sdkName in sdkLine.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(sdk => sdk.Trim()))
+                        {
+                            // $todo(jefflill): We're only supporting 32-bit SDKs at this time.
+
+                            var sdkCatalogItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == sdkName && item.Architecture == SdkArchitecture.ARM32);
+
+                            if (sdkCatalogItem != null)
+                            {
+                                sdks.Add(new Sdk(sdkName, sdkCatalogItem.Version));
+                            }
+                            else
+                            {
+                                LogWarning($".NET SDK [{sdkName}] is present on [{Name}] but is not known to the RaspberryDebug extension.  Consider updating the extension.");
+                            }
+                        }
+
+                        PiStatus = new Status(
+                            architecture: architecture,
+                            path: path,
+                            hasUnzip: hasUnzip,
+                            hasDebugger: hasDebugger,
+                            installedSdks: sdks);
+                    }
+                });
 
             // Create and configure an SSH key for this connection if one doesn't already exist.
 
             if (string.IsNullOrEmpty(keyPath) || !File.Exists(keyPath))
             {
-                await ProgressDialog.RunAsync("Create SSH Key Pair", 60,
+                await PackageHelper.ExecuteWithProgressAsync("Creating SSH keys...",
                     async () =>
                     {
                         // Create a 2048-bit private key with no passphrase on the Raspberry
@@ -474,9 +479,9 @@ rm -f {tempPublicKeyPath}
 
             // Install the SDK.
 
-            LogInfo($"Installing SDK v{targetSdk.Version} on Raspberry");
+            LogInfo($"Installing SDK v{targetSdk.Version}");
 
-            return await ProgressDialog.RunAsync<bool>($"Installing SDK v{targetSdk.Version}", 60,
+            return await PackageHelper.ExecuteWithProgressAsync<bool>($"Installing SDK v{targetSdk.Version}...",
                 async () =>
                 {
                     var installScript =
@@ -538,7 +543,7 @@ exit 0
                 return true;
             }
 
-            return await ProgressDialog.RunAsync<bool>($"Installing [vsdbg] debugger", 60,
+            return await PackageHelper.ExecuteWithProgressAsync<bool>($"Installing [vsdbg] debugger...",
                 async () =>
                 {
                     var installScript =
