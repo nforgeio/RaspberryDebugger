@@ -24,7 +24,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Implements the custom debug connections options panel.
     /// </summary>
-    partial class PiDebugConnectionsPanel
+    partial class ConnectionsPanel
     {
         /// <summary> 
         /// Required designer variable.

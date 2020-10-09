@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    PiDebugConnectionsPanel.cs
+// FILE:	    ConnectionsPanel.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,16 +30,15 @@ using Microsoft.VisualStudio.Threading;
 
 using Neon.Common;
 using BrightIdeasSoftware;
-using System.IO;
 
 namespace RaspberryDebug
 {
     /// <summary>
     /// Implements the debug connections options panel.
     /// </summary>
-    internal partial class PiDebugConnectionsPanel : UserControl
+    internal partial class ConnectionsPanel : UserControl
     {
-        private const int spacing     = 8;
+        private const int spacing       = 8;
 
         private const int defaultColumn = 1;
         private const int hostColumn    = 2;
@@ -47,13 +47,13 @@ namespace RaspberryDebug
         private const int authColumn    = 5;
         private const int blankColumn   = 6;
 
-        private bool                isInitialized = false;
+        private bool                    isInitialized = false;
         private List<ConnectionInfo>    connections;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public PiDebugConnectionsPanel()
+        public ConnectionsPanel()
         {
             InitializeComponent();
         }
@@ -61,7 +61,7 @@ namespace RaspberryDebug
         /// <summary>
         /// The related Visual Studio connections options page.
         /// </summary>
-        internal PiDebugConnectionsPage ConnectionsPage { get; set; }
+        internal ConnectionsPage ConnectionsPage { get; set; }
 
         /// <summary>
         /// Returns the parent window to be used when displaying message boxes

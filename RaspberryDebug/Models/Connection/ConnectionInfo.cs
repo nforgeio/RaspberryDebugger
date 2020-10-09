@@ -97,7 +97,7 @@ namespace RaspberryDebug
 
         /// <summary>
         /// <para>
-        /// This is a bit of a hack to call the <see cref="PiDebugConnectionsPanel.ConnectionIsDefaultChanged"/>
+        /// This is a bit of a hack to call the <see cref="ConnectionsPanel.ConnectionIsDefaultChanged"/>
         /// when the user changes the state of the <see cref="IsDefault"/>  property.  The sender will be
         /// the changed <see cref="ConnectionInfo"/> and the arguments will be empty.
         /// </para>
@@ -106,6 +106,6 @@ namespace RaspberryDebug
         /// appear to have a check box changed event.
         /// </para>
         /// </summary>
-        internal PiDebugConnectionsPanel ConnectionsPanel { get; set; }
+        internal ConnectionsPanel ConnectionsPanel { get; set; }
     }
 }

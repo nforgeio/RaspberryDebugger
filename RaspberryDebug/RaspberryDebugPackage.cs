@@ -35,7 +35,7 @@ namespace RaspberryDebug
     [Guid(RaspberryDebugPackage.PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
-    [ProvideOptionPage(typeof(PiDebugConnectionsPage), "Raspberry Debugger", "Connections", 0, 0, true)]
+    [ProvideOptionPage(typeof(ConnectionsPage), "Raspberry Debugger", "Connections", 0, 0, true)]
     internal sealed class RaspberryDebugPackage : AsyncPackage
     {
         //---------------------------------------------------------------------

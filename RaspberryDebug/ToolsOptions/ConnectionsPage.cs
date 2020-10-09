@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    PiDebugConnectionsPage.cs
+// FILE:	    ConnectionsPage.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Open Source
 //
@@ -31,7 +31,7 @@ namespace RaspberryDebug
     /// Implements our custom debug connections options page.
     /// </summary>
     [Guid("00000000-0000-0000-0000-000000000000")]
-    internal class PiDebugConnectionsPage : DialogPage
+    internal class ConnectionsPage : DialogPage
     {
         /// <summary>
         /// Constructs and returns the custom control used to implement this options page.
@@ -40,7 +40,7 @@ namespace RaspberryDebug
         {
             get
             {
-                var panel = new PiDebugConnectionsPanel();
+                var panel = new ConnectionsPanel();
 
                 panel.ConnectionsPage = this;
                 panel.Initialize();
