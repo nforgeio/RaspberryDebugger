@@ -157,31 +157,118 @@ namespace RaspberryDebug
             }
         }
 
+        //---------------------------------------------------------------------
+        // $hack(jefflill): RootForm related code
+
+        private static RootForm     rootForm      = null;
+        private static int          rootCallDepth = 0;
+
         /// <summary>
-        /// Runs an action on the UI thread.
+        /// <para>
+        /// Executes an asynchronous action within the context of a transparent <see cref="RootForm"/>
+        /// which will be used to provide a way to dispatch operations to the UI thread.  Calls to
+        /// this may be nested but only one <see cref="RootForm"/> will be created.  The form will
+        /// be closed when the last execute call has returned.
+        /// </para>
+        /// <note>
+        /// This may only be called on the UI thread.
+        /// </note>
         /// </summary>
         /// <param name="action">The action.</param>
         /// <returns>The tracking <see cref="Task"/>.</returns>
-        public static async Task RunOnUIThreadAsync(Action action)
+        public static async Task ExecuteWithRootFormAsync(Func<Task> action)
         {
             Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
+            Covenant.Assert(rootForm == null && rootCallDepth == 0 || rootForm != null && rootCallDepth > 0);
 
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(alwaysYield: true);
-            action();
+            if (rootForm == null)
+            {
+                rootForm = new RootForm();
+                rootForm.ShowDialog();
+            }
+
+            try
+            {
+                rootCallDepth++;
+                await action();
+            }
+            finally
+            {
+                rootCallDepth--;
+
+                Covenant.Assert(rootCallDepth >= 0);
+
+                if (rootCallDepth == 0)
+                {
+                    rootForm.Close();
+                    rootForm = null;
+                }
+            }
         }
 
         /// <summary>
-        /// Runs an action that returns a value on the UI thread.
+        /// <para>
+        /// Executes an asynchronous action that returns a value within the context of a transparent
+        /// <see cref="RootForm"/> which will be used to provide a way to dispatch operations to the 
+        /// UI thread.  Calls to this may be nested but only one <see cref="RootForm"/> will be created. 
+        /// The form will be closed when the last execute call has returned.
+        /// </para>
+        /// <note>
+        /// This may only be called on the UI thread.
+        /// </note>
         /// </summary>
-        /// <typeparam name="T">The result type.</typeparam>
+        /// <typeparam name="T">The action result type.</typeparam>
         /// <param name="action">The action.</param>
         /// <returns>The tracking <see cref="Task"/>.</returns>
-        public static async Task<T> RunOnUIThreadAsync<T>(Func<T> action)
+        public static async Task<T> ExecuteWithRootFormAsync<T>(Func<Task<T>> action)
         {
             Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
+            Covenant.Assert(rootForm == null && rootCallDepth == 0 || rootForm != null && rootCallDepth > 0);
+            Covenant.Assert(rootForm != null && rootCallDepth > 0);
 
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(alwaysYield: true);
-            return action();
+            if (rootForm == null)
+            {
+                rootForm = new RootForm();
+                rootForm.ShowDialog();
+            }
+
+            try
+            {
+                rootCallDepth++;
+                return await action();
+            }
+            finally
+            {
+                rootCallDepth--;
+
+                Covenant.Assert(rootCallDepth >= 0, "RootForm call depth underflow");
+
+                if (rootCallDepth == 0)
+                {
+                    rootForm.Close();
+                    rootForm = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Synchronously invokes an action on the UI thread.  This may only be called
+        /// in the context of a <see cref="RootForm"/> execution.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        public static void InvokeOnUIThread(Action action)
+        {
+            Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
+            Covenant.Assert(rootForm != null);
+
+            if (rootForm.InvokeRequired)
+            {
+                rootForm.Invoke(action);
+            }
+            else
+            {
+                action();
+            }
         }
     }
 }

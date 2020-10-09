@@ -66,6 +66,12 @@
     <Compile Include="Dialogs\ProgressDialog.Designer.cs">
       <DependentUpon>ProgressDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\RootForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\RootForm.Designer.cs">
+      <DependentUpon>RootForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Log.cs" />
     <Compile Include="Models\Connection\ConnectionInfo.cs" />
     <Compile Include="Models\Sdk\SdkArchitecture.cs" />
@@ -89,6 +95,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Dialogs\ProgressDialog.resx">
       <DependentUpon>ProgressDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\RootForm.resx">
+      <DependentUpon>RootForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="sdk-catalog.json" />
     <None Include="source.extension.vsixmanifest">

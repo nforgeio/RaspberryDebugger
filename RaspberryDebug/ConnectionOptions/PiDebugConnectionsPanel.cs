@@ -408,10 +408,9 @@ namespace RaspberryDebug
             Log.WriteLine($"[{SelectedConnection.Host}]: Testing...");
 
             var currentConnection = SelectedConnection;
-            var createKeyPair     = !string.IsNullOrEmpty(SelectedConnection.KeyPath) || !File.Exists(SelectedConnection.KeyPath);
             var exception         = (Exception)null;
 
-            await Task.Run(async () =>
+            await PackageHelper.ExecuteWithRootFormAsync(async () =>
             {
                 try
                 {

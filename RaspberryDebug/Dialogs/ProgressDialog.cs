@@ -64,7 +64,7 @@ namespace RaspberryDebug
 
             var dialog = (ProgressDialog)null;
 
-            _ = PackageHelper.RunOnUIThreadAsync(
+            PackageHelper.InvokeOnUIThread(
                 () =>
                 {
                     dialog = new ProgressDialog(title, seconds, Math.Max(seconds - 5, 5));
@@ -97,7 +97,7 @@ namespace RaspberryDebug
 
             var dialog = (ProgressDialog)null;
 
-            _ = PackageHelper.RunOnUIThreadAsync(
+            PackageHelper.InvokeOnUIThread(
                 () =>
                 {
                     dialog = new ProgressDialog(title, seconds, Math.Max(seconds - 5, 5));
