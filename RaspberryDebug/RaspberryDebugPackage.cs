@@ -17,11 +17,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+
+using Neon.Common;
+using Neon.Diagnostics;
+
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebug

@@ -37,6 +37,9 @@ using Neon.Common;
 using Newtonsoft.Json;
 
 using Task = System.Threading.Tasks.Task;
+using Neon.Time;
+using Microsoft.VisualStudio.Threading;
+using System.Threading;
 
 namespace RaspberryDebug
 {
@@ -167,9 +170,112 @@ namespace RaspberryDebug
         //---------------------------------------------------------------------
         // Progress related code
 
-        private static IVsThreadedWaitDialog2   waitDialog     = null;
+        private static IVsThreadedWaitDialog2   progressDialog     = null;
         private static Stack<string>            operationStack = new Stack<string>();
         private static string                   rootDescription;
+
+        /// <summary>
+        /// Used to fake progress in in a <see cref="IVsThreadedWaitDialog2"/>.  I would have
+        /// preferred to use an indeterminate progress dialog, but couldn't find one.
+        /// </summary>
+        private class ProgressUpdater : IDisposable
+        {
+            private bool    isDisposed = false;
+
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            /// <param name="progressDialog">The associated progress dialog.</param>
+            /// <param name="targetSeconds">The maximum seconds to display in the progress bar.</param>
+            /// <param name="maxTargetSeconds">
+            /// The maximum seconds to actually set in the progress bar.  This defaults to
+            /// something a bit less than <paramref name="maxTargetSeconds"/> so the progress
+            /// bar won't reach 100%, as suggested for indeterminate progress situations.
+            /// </param>
+            public ProgressUpdater(IVsThreadedWaitDialog2 progressDialog, int targetSeconds, int maxTargetSeconds = -1)
+            {
+                Covenant.Requires<ArgumentNullException>(progressDialog != null, nameof(progressDialog));
+                Covenant.Requires(targetSeconds >= 0, nameof(targetSeconds));
+                Covenant.Requires(maxTargetSeconds <= targetSeconds, nameof(maxTargetSeconds));
+
+                if (maxTargetSeconds < 0)
+                {
+                    if (targetSeconds == 0)
+                    {
+                        maxTargetSeconds = targetSeconds;
+                    }
+                    else if (targetSeconds >= 30)
+                    {
+                        maxTargetSeconds = targetSeconds - 5;
+                    }
+                    else
+                    {
+                        maxTargetSeconds = targetSeconds - 1;
+                    }
+                }
+
+                CurrentStep = 1;
+                TotalSteps  = targetSeconds;
+
+#if DISABLED
+                // $todo(jefflill):
+                //
+                // I couldn't get this to work.  It always blocks on:
+                //
+                //      ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                //
+                // until the operation has completed.  Not a big deal.  I was just
+                // trying to move the progress bar, but the user will still see
+                // the operation status message updates.
+
+                // We're going to increment the progress every second until the current
+                // step reaches [maxTargetSeconds].
+
+                _ = Task.Run(async () =>
+                {
+                    while (!isDisposed)
+                    {
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
+
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        if (CurrentStep < maxTargetSeconds)
+                        {
+                            CurrentStep++;
+                        }
+
+                        progressDialog?.UpdateProgress(
+                            szUpdatedWaitMessage:   operationStack.Peek(),
+                            szProgressText:         null,
+                            szStatusBarText:        null,
+                            iCurrentStep:           CurrentStep,
+                            iTotalSteps:            TotalSteps,
+                            fDisableCancel:         true,
+                            pfCanceled: out var cancelled);
+
+                        await Task.Yield();
+                    }
+
+                }).ConfigureAwait(false);
+#endif
+            }
+
+            /// <inheritdoc/>
+            public void Dispose()
+            {
+                isDisposed = true;
+            }
+
+            /// <summary>
+            /// Returns the current progress step index.
+            /// </summary>
+            public int CurrentStep { get; private set; }
+
+            /// <summary>
+            /// Returns the current number progress of steps.
+            /// </summary>
+            public int TotalSteps { get; private set; }
+        }
 
         /// <summary>
         /// Executes an asynchronous action that does not return a result within the context of a 
@@ -184,9 +290,11 @@ namespace RaspberryDebug
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(description), nameof(description));
             Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
 
+            var progressUpdater = (ProgressUpdater)null;
+
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (waitDialog == null)
+            if (progressDialog == null)
             {
                 Covenant.Assert(operationStack.Count == 0);
 
@@ -195,9 +303,9 @@ namespace RaspberryDebug
 
                 var dialogFactory = (IVsThreadedWaitDialogFactory)RaspberryDebugPackage.GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
 
-                dialogFactory.CreateInstance(out waitDialog);
+                dialogFactory.CreateInstance(out progressDialog);
 
-                waitDialog.StartWaitDialog(
+                progressDialog.StartWaitDialog(
                     szWaitCaption:          description, 
                     szWaitMessage:          " ",    // We need this otherwise "Visual Studio" gets displayed
                     szProgressText:         null, 
@@ -213,14 +321,16 @@ namespace RaspberryDebug
 
                 operationStack.Push(description);
 
-                waitDialog.UpdateProgress(
+                progressDialog.UpdateProgress(
                     szUpdatedWaitMessage:   description,
                     szProgressText:         null,
                     szStatusBarText:        null,
-                    iCurrentStep:           0,
-                    iTotalSteps:            0,
+                    iCurrentStep:           progressUpdater != null ? progressUpdater.CurrentStep : 0,
+                    iTotalSteps:            progressUpdater != null ? progressUpdater.TotalSteps : 0,
                     fDisableCancel:         true,
                     pfCanceled:             out var cancelled);
+
+                progressUpdater = new ProgressUpdater(progressDialog, 60);  // Hardcoding to 60 second target progress
             }
 
             try
@@ -231,18 +341,21 @@ namespace RaspberryDebug
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                progressUpdater?.Dispose();
+                progressUpdater = null;
+
                 var currentDescription = operationStack.Pop();
 
                 if (operationStack.Count == 0)
                 {
-                    waitDialog.EndWaitDialog(out var cancelled);
+                    progressDialog.EndWaitDialog(out var cancelled);
 
-                    waitDialog      = null;
+                    progressDialog  = null;
                     rootDescription = null;
                 }
                 else
                 {
-                    waitDialog.UpdateProgress(
+                    progressDialog.UpdateProgress(
                         szUpdatedWaitMessage:   currentDescription,
                         szProgressText:         null,
                         szStatusBarText:        rootDescription,
@@ -268,12 +381,11 @@ namespace RaspberryDebug
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(description), nameof(description));
             Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
 
-            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(description), nameof(description));
-            Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
+            var progressUpdater = (ProgressUpdater)null;
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (waitDialog == null)
+            if (progressDialog == null)
             {
                 Covenant.Assert(operationStack.Count == 0);
 
@@ -282,9 +394,9 @@ namespace RaspberryDebug
 
                 var dialogFactory = (IVsThreadedWaitDialogFactory)RaspberryDebugPackage.GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
 
-                dialogFactory.CreateInstance(out waitDialog);
+                dialogFactory.CreateInstance(out progressDialog);
 
-                waitDialog.StartWaitDialog(
+                progressDialog.StartWaitDialog(
                     szWaitCaption:          description, 
                     szWaitMessage:          " ",    // We need this otherwise "Visual Studio" gets displayed
                     szProgressText:         null, 
@@ -293,6 +405,8 @@ namespace RaspberryDebug
                     iDelayToShowDialog:     0,
                     fIsCancelable:          false, 
                     fShowMarqueeProgress:   false);
+
+                progressUpdater = new ProgressUpdater(progressDialog, 60);  // Hardcoding to 60 second target progress
             }
             else
             {
@@ -300,13 +414,13 @@ namespace RaspberryDebug
 
                 operationStack.Push(description);
 
-                waitDialog.UpdateProgress(
-                    szUpdatedWaitMessage: description,
-                    szProgressText: null,
-                    szStatusBarText: null,
-                    iCurrentStep: 0,
-                    iTotalSteps: 0,
-                    fDisableCancel: true,
+                progressDialog.UpdateProgress(
+                    szUpdatedWaitMessage:   description,
+                    szProgressText:         null,
+                    szStatusBarText:        null,
+                    iCurrentStep:           progressUpdater != null ? progressUpdater.CurrentStep : 0,
+                    iTotalSteps:            progressUpdater != null ? progressUpdater.TotalSteps : 0,
+                    fDisableCancel:         true,
                     pfCanceled: out var cancelled);
             }
 
@@ -318,18 +432,21 @@ namespace RaspberryDebug
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                progressUpdater?.Dispose();
+                progressUpdater = null;
+
                 var currentDescription = operationStack.Pop();
 
                 if (operationStack.Count == 0)
                 {
-                    waitDialog.EndWaitDialog(out var cancelled);
+                    progressDialog.EndWaitDialog(out var cancelled);
 
-                    waitDialog = null;
+                    progressDialog = null;
                     rootDescription = null;
                 }
                 else
                 {
-                    waitDialog.UpdateProgress(
+                    progressDialog.UpdateProgress(
                         szUpdatedWaitMessage:   currentDescription,
                         szProgressText:         null,
                         szStatusBarText:        rootDescription,
