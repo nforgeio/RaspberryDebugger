@@ -135,9 +135,24 @@ namespace RaspberryDebug
                     return new List<ConnectionInfo>();
                 }
 
-                var list = NeonHelper.JsonDeserialize<List<ConnectionInfo>>(File.ReadAllText(ConnectionsPath));
+                var connections = NeonHelper.JsonDeserialize<List<ConnectionInfo>>(File.ReadAllText(ConnectionsPath));
 
-                return list ?? new List<ConnectionInfo>();
+                if (connections == null)
+                {
+                    connections = new List<ConnectionInfo>();
+                }
+
+                // When there's only one connection, make it the default since
+                // most users will probably only have one Raspberry.  This will
+                // make things much easier for them and probably reduce support
+                // requests.
+
+                if (connections.Count == 1)
+                {
+                    connections.Single().IsDefault = true;
+                }
+
+                return connections;
             }
             catch (Exception e)
             {
