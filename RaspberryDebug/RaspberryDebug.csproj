@@ -55,6 +55,13 @@
     <Compile Include="Connection\Connection.cs" />
     <Compile Include="Connection\Status.cs" />
     <Compile Include="Connection\Sdk.cs" />
+    <Compile Include="CustomPages\ProjectPropertiesPage.cs" />
+    <Compile Include="CustomPages\ProjectPropertiesPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomPages\ProjectPropertiesPanel.Designer.cs">
+      <DependentUpon>ProjectPropertiesPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\ConnectionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -75,13 +82,13 @@
     <Compile Include="Models\Sdk\SdkCatalogItem.cs" />
     <Compile Include="Models\Connection\AuthenticationType.cs" />
     <Compile Include="Models\VisualStudio\ProjectProperties.cs" />
-    <Compile Include="ToolsOptions\ConnectionsPanel.cs">
+    <Compile Include="CustomPages\ConnectionsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ToolsOptions\ConnectionsPanel.Designer.cs">
+    <Compile Include="CustomPages\ConnectionsPanel.Designer.cs">
       <DependentUpon>ConnectionsPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="ToolsOptions\ConnectionsPage.cs">
+    <Compile Include="CustomPages\ConnectionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PackageHelper.cs" />
@@ -89,6 +96,9 @@
     <Compile Include="RaspberryDebugPackage.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="CustomPages\ProjectPropertiesPanel.resx">
+      <DependentUpon>ProjectPropertiesPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\KeysDialog.resx">
       <DependentUpon>KeysDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -113,6 +123,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.AppDesigner">
+      <Version>15.0.6142705</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.ManagedInterfaces">
+      <Version>8.0.50728</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.206" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VisualStudio.Utilities">
       <Version>16.7.30329.38</Version>
@@ -140,7 +156,7 @@
     <Content Include="Resources\DebugRaspberryCommand.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ToolsOptions\ConnectionsPanel.resx">
+    <EmbeddedResource Include="CustomPages\ConnectionsPanel.resx">
       <DependentUpon>ConnectionsPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\ConnectionDialog.resx">
