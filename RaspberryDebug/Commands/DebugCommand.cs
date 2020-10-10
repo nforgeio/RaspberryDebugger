@@ -35,6 +35,7 @@ using Neon.Common;
 using Neon.Windows;
 
 using Task = System.Threading.Tasks.Task;
+using System.Diagnostics.Contracts;
 
 namespace RaspberryDebug
 {
@@ -43,6 +44,8 @@ namespace RaspberryDebug
     /// </summary>
     internal sealed class DebugCommand
     {
+        private DTE2    dte;
+
         /// <summary>
         /// Command ID.
         /// </summary>
@@ -67,6 +70,7 @@ namespace RaspberryDebug
         private DebugCommand(AsyncPackage package, OleMenuCommandService commandService)
         {
             this.package = package ?? throw new ArgumentNullException(nameof(package));
+            this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
@@ -165,9 +169,7 @@ namespace RaspberryDebug
 
             // Identify the startup project.
 
-            var solution = GetSolution();
-
-            if (solution == null)
+            if (Solution == null)
             {
                 MessageBox.Show(
                     "Please open a Visual Studio solution.",
@@ -178,7 +180,7 @@ namespace RaspberryDebug
                 return;
             }
 
-            var project = GetStartupProject(solution);
+            var project = GetStartupProject(Solution);
 
             if (project == null)
             {
@@ -191,7 +193,8 @@ namespace RaspberryDebug
                 return;
             }
 
-            // We need to capture the relevant project properties on the UI thread.
+            // We need to capture the relevant project properties whiler we're
+            // on the UI thread so they'll be available on background threads.
 
             var projectProperties = ProjectProperties.Clone(project);
 
@@ -209,7 +212,7 @@ namespace RaspberryDebug
             // Publish the project locally.  We're publishing, not building so all
             // required binaries and files will be generated.
 
-            if (!await BuildProjectAsync(projectProperties))
+            if (!await BuildProjectAsync(Solution, project, projectProperties))
             {
                 MessageBox.Show(
                     "[dotnet publish] failed for the project.\r\n\r\nLook at the debug output to see what happened.",
@@ -224,11 +227,37 @@ namespace RaspberryDebug
         /// <summary>
         /// Builds a project.
         /// </summary>
-        /// <param name="project">The project properties.</param>
+        /// <param name="solution">The solution.</param>
+        /// <param name="project">The project.</param>
+        /// <param name="projectProperties">The project properties.</param>
         /// <returns><c>true</c> on success.</returns>
-        private async Task<bool> BuildProjectAsync(ProjectProperties projectProperties)
+        private async Task<bool> BuildProjectAsync(Solution solution, Project project, ProjectProperties projectProperties)
         {
-            Log.Info($"Building: {projectProperties.FullPath}");
+            Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
+            Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
+            Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
+
+            // Build the project within the context of VS to ensure that all changed
+            // files are saved and all dependencies are built first.  Then we'll
+            // verify that there were no errors before proceeding.
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            solution.SolutionBuild.BuildProject(solution.SolutionBuild.ActiveConfiguration.Name, project.UniqueName, WaitForBuildToFinish: true);
+
+            var errorList = dte.ToolWindows.ErrorList.ErrorItems;
+
+            if (errorList.Count > 0)
+            {
+                return false;
+            }
+
+            await Task.Yield();
+
+            // Publish the project so all required binaries and assets end up
+            // in the output folder.
+
+            Log.Info($"Publishing: {projectProperties.FullPath}");
 
             var response = await NeonHelper.ExecuteCaptureAsync(
                 "dotnet",
@@ -268,15 +297,9 @@ namespace RaspberryDebug
         }
 
         /// <summary>
-        /// Returns the current root solution.
+        /// Returns the current root solution or <c>null</c>.
         /// </summary>
-        /// <returns>The current solution or <c>null</c>.</returns>
-        private Solution GetSolution()
-        {
-            var dte = (DTE2)Package.GetGlobalService(typeof(SDTE));
-
-            return dte.Solution;
-        }
+        private Solution Solution => dte.Solution;
 
         /// <summary>
         /// Returns the current Visual Studio startup project.
