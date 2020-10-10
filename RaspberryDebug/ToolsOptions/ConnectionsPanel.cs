@@ -83,7 +83,7 @@ namespace RaspberryDebug
         {
             // Ensure that the controls are laid out correctly for the initial panel size.
 
-            PiDebugOptionsPanel_SizeChanged(this, EventArgs.Empty);
+            OptionsPanel_SizeChanged(this, EventArgs.Empty);
 
             // We need to update the button enable/disable state when the connections
             // view selection changes.
@@ -190,30 +190,6 @@ namespace RaspberryDebug
         }
 
         /// <summary>
-        /// Invokes an action on the UI thread and waits for it to complete.
-        /// </summary>
-        /// <param name="action"></param>
-        private void Invoke(Action action)
-        {
-            if (action == null)
-            {
-                return; // Nothing to do
-            }
-
-            if (InvokeRequired)
-            {
-                Invoke((MethodInvoker)delegate
-                {
-                    action();
-                });
-            }
-            else
-            {
-                action();
-            }
-        }
-
-        /// <summary>
         /// Reads the Raspberry Pi connections persisted to Visual Studio
         /// and loads them into the list view.
         /// </summary>
@@ -263,13 +239,13 @@ namespace RaspberryDebug
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The arguments.</param>
-        private void PiDebugOptionsPanel_SizeChanged(object sender, EventArgs args)
+        private void OptionsPanel_SizeChanged(object sender, EventArgs args)
         {
             var buttonLeft = this.Width - addButton.Width - spacing;
 
             addButton.Left         = buttonLeft;
             editButton.Left        = buttonLeft;
-            testButton.Left        = buttonLeft;
+            verifyButton.Left        = buttonLeft;
             removeButton.Left      = buttonLeft;
 
             titleLabel.Left        = spacing;
@@ -343,7 +319,7 @@ namespace RaspberryDebug
 
             addButton.Enabled    = true;
             editButton.Enabled   = 
-            testButton.Enabled   = 
+            verifyButton.Enabled = 
             removeButton.Enabled = connectionSelected;
         }
 
@@ -392,12 +368,12 @@ namespace RaspberryDebug
         }
 
         /// <summary>
-        /// Tests the connection settings by establishing a connection to the Raspberry Pi.
+        /// Verifies the connection settings by establishing a connection to the Raspberry Pi.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The arguments.</param>
 #pragma warning disable VSTHRD100
-        private async void testButton_Click(object sender, EventArgs args)
+        private async void verifyButton_Click(object sender, EventArgs args)
 #pragma warning restore VSTHRD100
         {
             if (SelectedConnection == null)
@@ -405,12 +381,12 @@ namespace RaspberryDebug
                 return;
             }
 
-            Log.Info($"[{SelectedConnection.Host}]: Testing Connection");
+            Log.Info($"[{SelectedConnection.Host}]: Verify Connection");
 
             var currentConnection = SelectedConnection;
             var exception         = (Exception)null;
 
-            await PackageHelper.ExecuteWithProgressAsync("Test connection", async () =>
+            await PackageHelper.ExecuteWithProgressAsync("Verify connection", async () =>
             {
                 try
                 {

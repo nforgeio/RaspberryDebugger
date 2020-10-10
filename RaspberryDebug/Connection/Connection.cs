@@ -67,13 +67,17 @@ namespace RaspberryDebug
 
                 SshCredentials credentials;
 
-                if (string.IsNullOrEmpty(connectionInfo.KeyPath))
+                if (string.IsNullOrEmpty(connectionInfo.PrivateKeyPath))
                 {
+                    Log($"[{connectionInfo.Host}]: Auth via username/password");
+
                     credentials = SshCredentials.FromUserPassword(connectionInfo.User, connectionInfo.Password);
                 }
                 else
                 {
-                    credentials = SshCredentials.FromPrivateKey(connectionInfo.User, File.ReadAllText(connectionInfo.KeyPath));
+                    Log($"[{connectionInfo.Host}]: Auth via SSH keys");
+
+                    credentials = SshCredentials.FromPrivateKey(connectionInfo.User, File.ReadAllText(connectionInfo.PrivateKeyPath));
                 }
 
                 var connection = new Connection(connectionInfo.Host, address, connectionInfo, credentials);
@@ -96,16 +100,23 @@ namespace RaspberryDebug
         /// <param name="text">The text.</param>
         private new static void Log(string text = "")
         {
-            RaspberryDebug.Log.WriteLine(text);
+            if (string.IsNullOrEmpty(text))
+            {
+                RaspberryDebug.Log.WriteLine(text);
+            }
+            else
+            {
+                RaspberryDebug.Log.Info(text);
+            }
         }
 
         //---------------------------------------------------------------------
         // Instance members
-
-        private string host;
-        private string username;
-        private string password;
-        private string keyPath;
+        
+        private string      host;
+        private string      username;
+        private string      password;
+        private string      keyPath;
 
         /// <summary>
         /// Constructs a connection using a password.
@@ -120,7 +131,7 @@ namespace RaspberryDebug
             this.host     = connectionInfo.Host;
             this.username = connectionInfo.User;
             this.password = connectionInfo.Password;
-            this.keyPath  = connectionInfo.KeyPath;
+            this.keyPath  = connectionInfo.PrivateKeyPath;
 
             // Disable connection level logging, etc.
 
@@ -389,7 +400,7 @@ exit 0
                             ThrowOnError(SudoCommand(CommandBundle.FromScript(createKeyScript)));
 
                             // Download the public and private keys, persist them to the workstation
-                            // and then update the workstation connections.
+                            // and then update the connection info.
 
                             var connections = PackageHelper.ReadConnections();
                             var connection  = connections.SingleOrDefault(c => c.Host == host);
@@ -408,8 +419,8 @@ exit 0
                             File.WriteAllBytes(publicKeyPath, DownloadBytes(tempPublicKeyPath));
                             File.WriteAllBytes(privateKeyPath, DownloadBytes(tempPrivateKeyPath));
 
-                            connection.KeyPath  = privateKeyPath;
-                            connection.Password = null;     // We don't need the password any longer
+                            connection.PrivateKeyPath = privateKeyPath;
+                            connection.PublicKeyPath  = publicKeyPath;
 
                             PackageHelper.WriteConnections(connections);
                         }

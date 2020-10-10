@@ -64,7 +64,7 @@ namespace RaspberryDebug
             this.titleLabel = new System.Windows.Forms.Label();
             this.addButton = new System.Windows.Forms.Button();
             this.editButton = new System.Windows.Forms.Button();
-            this.testButton = new System.Windows.Forms.Button();
+            this.verifyButton = new System.Windows.Forms.Button();
             this.removeButton = new System.Windows.Forms.Button();
             this.connectionsView = new BrightIdeasSoftware.ObjectListView();
             ((System.ComponentModel.ISupportInitialize)(this.connectionsView)).BeginInit();
@@ -99,15 +99,15 @@ namespace RaspberryDebug
             this.editButton.UseVisualStyleBackColor = true;
             this.editButton.Click += new System.EventHandler(this.editButton_Click);
             // 
-            // testButton
+            // verifyButton
             // 
-            this.testButton.Location = new System.Drawing.Point(417, 79);
-            this.testButton.Name = "testButton";
-            this.testButton.Size = new System.Drawing.Size(75, 23);
-            this.testButton.TabIndex = 4;
-            this.testButton.Text = "Test";
-            this.testButton.UseVisualStyleBackColor = true;
-            this.testButton.Click += new System.EventHandler(this.testButton_Click);
+            this.verifyButton.Location = new System.Drawing.Point(417, 79);
+            this.verifyButton.Name = "verifyButton";
+            this.verifyButton.Size = new System.Drawing.Size(75, 23);
+            this.verifyButton.TabIndex = 4;
+            this.verifyButton.Text = "Verify";
+            this.verifyButton.UseVisualStyleBackColor = true;
+            this.verifyButton.Click += new System.EventHandler(this.verifyButton_Click);
             // 
             // removeButton
             // 
@@ -144,20 +144,20 @@ namespace RaspberryDebug
             this.connectionsView.ColumnWidthChanging += new System.Windows.Forms.ColumnWidthChangingEventHandler(this.connectionsView_ColumnWidthChanging);
             this.connectionsView.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.connectionsView_MouseDoubleClick);
             // 
-            // PiDebugConnectionsPanel
+            // ConnectionsPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.connectionsView);
             this.Controls.Add(this.removeButton);
-            this.Controls.Add(this.testButton);
+            this.Controls.Add(this.verifyButton);
             this.Controls.Add(this.editButton);
             this.Controls.Add(this.addButton);
             this.Controls.Add(this.titleLabel);
-            this.Name = "PiDebugConnectionsPanel";
+            this.Name = "ConnectionsPanel";
             this.Size = new System.Drawing.Size(505, 367);
             this.Load += new System.EventHandler(this.PiDebugOptionsPanel_Load);
-            this.SizeChanged += new System.EventHandler(this.PiDebugOptionsPanel_SizeChanged);
+            this.SizeChanged += new System.EventHandler(this.OptionsPanel_SizeChanged);
             ((System.ComponentModel.ISupportInitialize)(this.connectionsView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -169,7 +169,7 @@ namespace RaspberryDebug
         private System.Windows.Forms.Label titleLabel;
         private System.Windows.Forms.Button addButton;
         private System.Windows.Forms.Button editButton;
-        private System.Windows.Forms.Button testButton;
+        private System.Windows.Forms.Button verifyButton;
         private System.Windows.Forms.Button removeButton;
         private BrightIdeasSoftware.ObjectListView connectionsView;
     }

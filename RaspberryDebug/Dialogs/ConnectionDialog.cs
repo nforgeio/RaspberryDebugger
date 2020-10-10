@@ -39,7 +39,6 @@ namespace RaspberryDebug
     {
         private const char passwordChar = '•';
 
-        private bool                edit;
         private List<ConnectionInfo>    existingConnections;
 
         /// <summary>
@@ -53,7 +52,6 @@ namespace RaspberryDebug
             InitializeComponent();
 
             this.Connection          = connection;
-            this.edit                = edit;
             this.Text                = edit ? "Edit Connection" : "New Connection";
             this.existingConnections = existingConnections;
 
@@ -67,6 +65,7 @@ namespace RaspberryDebug
                 passwordTextBox.Text         = connection.Password;
                 passwordTextBox.PasswordChar = passwordChar;
                 showPasswordCheckBox.Checked = false;
+                keysButton.Enabled           = false;   // $todo(jefflill): Implement this
             };
         }
 
@@ -187,6 +186,16 @@ namespace RaspberryDebug
         private void showPasswordCheckBox_CheckedChanged(object sender, EventArgs args)
         {
             passwordTextBox.PasswordChar = showPasswordCheckBox.Checked ? (char)0 : passwordChar;
+        }
+
+        /// <summary>
+        /// Handles Keys button clicks.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="args">The arguments.</param>
+        private void keysButton_Click(object sender, EventArgs args)
+        {
+            throw new NotImplementedException();
         }
     }
 }

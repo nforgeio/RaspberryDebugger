@@ -82,18 +82,26 @@ namespace RaspberryDebug
         public string Password { get; set; } = "raspberry";
 
         /// <summary>
+        /// Path to the private key for this connection or <c>null</c> when one
+        /// hasn't been initialized yet.
+        /// </summary>
+        [JsonProperty(PropertyName = "PrivateKeyPath", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(null)]
+        public string PrivateKeyPath { get; set; } = null;
+
+        /// <summary>
         /// Path to the public key for this connection or <c>null</c> when one
         /// hasn't been initialized yet.
         /// </summary>
-        [JsonProperty(PropertyName = "KeyPath", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonProperty(PropertyName = "PublicKeyPath", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [DefaultValue(null)]
-        public string KeyPath { get; set; } = null;
+        public string PublicKeyPath { get; set; } = null;
 
         /// <summary>
         /// Describes the authentication method.
         /// </summary>
         [JsonIgnore]
-        public string Authentication => string.IsNullOrEmpty(KeyPath) ? "PASSWORD" : "SSH-KEY";
+        public string Authentication => string.IsNullOrEmpty(PrivateKeyPath) ? "PASSWORD" : "SSH KEY";
 
         /// <summary>
         /// <para>

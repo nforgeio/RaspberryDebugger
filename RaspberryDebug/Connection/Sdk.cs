@@ -33,7 +33,7 @@ namespace RaspberryDebug
     /// <summary>
     /// Holds information about a .NET Core SDK installed on a Raspberry Pi.
     /// </summary>
-    public class Sdk
+    internal class Sdk
     {
         /// <summary>
         /// Constructor.

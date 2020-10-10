@@ -61,6 +61,12 @@
     <Compile Include="Dialogs\ConnectionDialog.Designer.cs">
       <DependentUpon>ConnectionDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\KeysDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\KeysDialog.Designer.cs">
+      <DependentUpon>KeysDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\MessageBoxEx.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Models\Connection\ConnectionInfo.cs" />
@@ -83,6 +89,9 @@
     <Compile Include="RaspberryDebugPackage.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Dialogs\KeysDialog.resx">
+      <DependentUpon>KeysDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="sdk-catalog.json" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>

@@ -69,6 +69,7 @@ namespace RaspberryDebug
             this.cancelButton = new System.Windows.Forms.Button();
             this.userLabel = new System.Windows.Forms.Label();
             this.userTextBox = new System.Windows.Forms.TextBox();
+            this.keysButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // hostLabel
@@ -125,7 +126,7 @@ namespace RaspberryDebug
             this.showPasswordCheckBox.Location = new System.Drawing.Point(254, 110);
             this.showPasswordCheckBox.Name = "showPasswordCheckBox";
             this.showPasswordCheckBox.Size = new System.Drawing.Size(53, 17);
-            this.showPasswordCheckBox.TabIndex = 6;
+            this.showPasswordCheckBox.TabIndex = 5;
             this.showPasswordCheckBox.Text = "Show";
             this.showPasswordCheckBox.UseVisualStyleBackColor = true;
             this.showPasswordCheckBox.CheckedChanged += new System.EventHandler(this.showPasswordCheckBox_CheckedChanged);
@@ -135,7 +136,7 @@ namespace RaspberryDebug
             this.okButton.Location = new System.Drawing.Point(309, 18);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
-            this.okButton.TabIndex = 5;
+            this.okButton.TabIndex = 6;
             this.okButton.Text = "OK";
             this.okButton.UseVisualStyleBackColor = true;
             this.okButton.Click += new System.EventHandler(this.okButton_Click);
@@ -143,10 +144,10 @@ namespace RaspberryDebug
             // cancelButton
             // 
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(309, 48);
+            this.cancelButton.Location = new System.Drawing.Point(309, 49);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
-            this.cancelButton.TabIndex = 6;
+            this.cancelButton.TabIndex = 67;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
@@ -167,6 +168,16 @@ namespace RaspberryDebug
             this.userTextBox.Size = new System.Drawing.Size(157, 20);
             this.userTextBox.TabIndex = 3;
             // 
+            // keysButton
+            // 
+            this.keysButton.Location = new System.Drawing.Point(309, 81);
+            this.keysButton.Name = "keysButton";
+            this.keysButton.Size = new System.Drawing.Size(75, 23);
+            this.keysButton.TabIndex = 8;
+            this.keysButton.Text = "Keys...";
+            this.keysButton.UseVisualStyleBackColor = true;
+            this.keysButton.Click += new System.EventHandler(this.keysButton_Click);
+            // 
             // ConnectionDialog
             // 
             this.AcceptButton = this.okButton;
@@ -174,6 +185,7 @@ namespace RaspberryDebug
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(408, 147);
+            this.Controls.Add(this.keysButton);
             this.Controls.Add(this.userTextBox);
             this.Controls.Add(this.userLabel);
             this.Controls.Add(this.cancelButton);
@@ -210,5 +222,6 @@ namespace RaspberryDebug
         private Button cancelButton;
         private Label userLabel;
         private TextBox userTextBox;
+        private Button keysButton;
     }
 }
