@@ -24,11 +24,12 @@ using System.Linq;
 using System.Net;
 
 using System.Threading.Tasks;
-
+using Microsoft.VisualStudio.OLE.Interop;
 using Neon.Common;
 using Neon.IO;
 using Neon.Net;
 using Neon.SSH;
+using Renci.SshNet.Common;
 
 namespace RaspberryDebug
 {
@@ -45,9 +46,10 @@ namespace RaspberryDebug
         /// connection information is passed.
         /// </summary>
         /// <param name="connectionInfo">The connection information.</param>
+        /// <param name="usePassword">Optionally forces use of the password instead of the public key.</param>
         /// <returns>The connection.</returns>
         /// <exception cref="Exception">Thrown when the connection could not be established.</exception>
-        public static async Task<Connection> ConnectAsync(ConnectionInfo connectionInfo)
+        public static async Task<Connection> ConnectAsync(ConnectionInfo connectionInfo, bool usePassword = false)
         {
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
 
@@ -67,7 +69,7 @@ namespace RaspberryDebug
 
                 SshCredentials credentials;
 
-                if (string.IsNullOrEmpty(connectionInfo.PrivateKeyPath))
+                if (string.IsNullOrEmpty(connectionInfo.PrivateKeyPath) || usePassword)
                 {
                     Log($"[{connectionInfo.Host}]: Auth via username/password");
 
@@ -86,6 +88,64 @@ namespace RaspberryDebug
                 await connection.InitializeAsync();
 
                 return connection;
+            }
+            catch (SshProxyException e)
+            {
+                if (usePassword ||
+                    e.InnerException == null || 
+                    e.InnerException.GetType() != typeof(SshAuthenticationException))
+                {
+                    RaspberryDebug.Log.Exception(e, $"[{connectionInfo.Host}]");
+                    throw;
+                }
+
+                if (string.IsNullOrEmpty(connectionInfo.PrivateKeyPath) ||
+                    string.IsNullOrEmpty(connectionInfo.Password))
+                {
+                    RaspberryDebug.Log.Exception(e, $"[{connectionInfo.Host}]");
+                    throw;
+                }
+
+                RaspberryDebug.Log.Warning($"[{connectionInfo.Host}]: SSH auth failed: Try using the password and reauthorizing the public key");
+
+                // SSH private key authentication didn't work.  This commonly happens
+                // after the user has reimaged the Raspberry.  It's likely that the
+                // user has setup the same username/password, so we'll try logging in
+                // with those and just configure the current public key to be accepted
+                // on the Raspberry.
+
+                try
+                {
+                    var connection = await ConnectAsync(connectionInfo, usePassword: true);
+
+                    // Append the public key to the user's [authorized_keys] file if it's
+                    // not already present.
+
+                    RaspberryDebug.Log.Info($"[{connectionInfo.Host}]: Reauthorizing the public key");
+
+                    var homeFolder = LinuxPath.Combine("/", "home", connectionInfo.User);
+                    var publicKey  = File.ReadAllText(connectionInfo.PublicKeyPath).Trim();
+                    var keyScript  =
+$@"
+touch {homeFolder}/.ssh/authorized_keys
+
+if ! grep --quiet '{publicKey}' {homeFolder}/.ssh/authorized_keys ; then
+    echo '{publicKey}' >> {homeFolder}/.ssh/authorized_keys
+    exit $?
+fi
+
+exit 0
+";
+                    connection.ThrowOnError(connection.RunCommand(CommandBundle.FromScript(keyScript)));
+                    return connection;
+                }
+                catch (Exception e2)
+                {
+                    // We've done all we can.
+
+                    RaspberryDebug.Log.Exception(e2, $"[{connectionInfo.Host}]");
+                    throw;
+                }
             }
             catch (Exception e)
             {
@@ -397,7 +457,7 @@ cat {tempPublicKeyPath} >> {homeFolder}/.ssh/authorized_keys
 
 exit 0
 ";
-                            ThrowOnError(SudoCommand(CommandBundle.FromScript(createKeyScript)));
+                            ThrowOnError(RunCommand(CommandBundle.FromScript(createKeyScript)));
 
                             // Download the public and private keys, persist them to the workstation
                             // and then update the connection info.
@@ -438,6 +498,9 @@ rm -f {tempPublicKeyPath}
 
                         await Task.CompletedTask;
                     });
+            }
+            else
+            {
             }
         }
 

@@ -185,7 +185,7 @@ namespace RaspberryDebug
         //---------------------------------------------------------------------
         // Progress related code
 
-        private static IVsThreadedWaitDialog2   progressDialog     = null;
+        private static IVsThreadedWaitDialog2   progressDialog = null;
         private static Stack<string>            operationStack = new Stack<string>();
         private static string                   rootDescription;
 
