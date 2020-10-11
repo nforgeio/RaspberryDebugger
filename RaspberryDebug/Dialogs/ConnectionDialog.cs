@@ -163,10 +163,12 @@ namespace RaspberryDebug
 
             var testConnectionInfo = new ConnectionInfo()
             {
-                Host     = hostText,
-                Port     = port,
-                User     = userText,
-                Password = passwordText
+                Host           = hostText,
+                Port           = port,
+                User           = userText,
+                Password       = passwordText,
+                PrivateKeyPath = ConnectionInfo.PrivateKeyPath,
+                PublicKeyPath  = ConnectionInfo.PublicKeyPath
             };
 
             try
