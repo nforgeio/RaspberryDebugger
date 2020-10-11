@@ -193,16 +193,14 @@ namespace RaspberryDebug
                     connections = new List<ConnectionInfo>();
                 }
 
-                // When there's only one connection, make it the default since
-                // most users will probably only have one Raspberry.  This will
-                // make things much easier for them and probably reduce support
-                // requests.
+                // Ensure that at least one connection is marked as default.  We'll
+                // select the first one as sorted by name if necessary.
 
-                if (connections.Count == 1)
+                if (connections.Count > 0 && !connections.Any(connection => connection.IsDefault))
                 {
-                    connections.Single().IsDefault = true;
+                    connections.OrderBy(connection => connection.Host.ToLowerInvariant()).Single().IsDefault = true;
                 }
-
+                
                 return connections;
             }
             catch (Exception e)
@@ -223,6 +221,14 @@ namespace RaspberryDebug
             try
             {
                 connections = connections ?? new List<ConnectionInfo>();
+
+                // Ensure that at least one connection is marked as default.  We'll
+                // select the first one as sorted by name if necessary.
+
+                if (connections.Count > 0 && !connections.Any(connection => connection.IsDefault))
+                {
+                    connections.OrderBy(connection => connection.Host.ToLowerInvariant()).First().IsDefault = true;
+                }
 
                 File.WriteAllText(ConnectionsPath, NeonHelper.JsonSerialize(connections, Formatting.Indented));
             }
