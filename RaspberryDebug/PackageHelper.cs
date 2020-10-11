@@ -48,6 +48,8 @@ namespace RaspberryDebug
     /// </summary>
     internal static class PackageHelper
     {
+        private static List<Sdk> cachedSdks = null;
+
         /// <summary>
         /// The path to the <b>%USERPROFILE%\.pi-debug</b> folder where the package
         /// will persist its settings and other files.
@@ -117,6 +119,55 @@ namespace RaspberryDebug
                 var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
 
                 SdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
+            }
+        }
+
+        /// <summary>
+        /// Returns the .NET SDKs currently installed on the workstation.
+        /// </summary>
+        public static List<Sdk> InstalledSdks
+        {
+            get
+            {
+                if (cachedSdks != null)
+                {
+                    return cachedSdks;
+                }
+
+                var response = NeonHelper.ExecuteCapture("dotnet", new object[] { "--list-sdks" });
+
+                if (response.ExitCode != 0)
+                {
+                    throw new Exception($"[dotnet --list-sdks] failed with exitcode={response.ExitCode}]");
+                }
+
+                // The output will look something like this:
+                //
+                //      2.1.403 [C:\Program Files\dotnet\sdk]
+                //      3.0.100-preview9-014004 [C:\Program Files\dotnet\sdk]
+                //      3.1.100 [C:\Program Files\dotnet\sdk]
+                //      3.1.301 [C:\Program Files\dotnet\sdk]
+                //      3.1.402 [C:\Program Files\dotnet\sdk]
+                //
+                // We'll just extract the SDK name (up to the space) and lookup the version
+                // from our catalog.  SDKs that aren't in our catalog will have a NULL
+                // version set.
+
+                cachedSdks = new List<Sdk>();
+
+                using (var reader = new StringReader(response.OutputText))
+                {
+                    foreach (var line in reader.Lines())
+                    {
+                        var name    = line.Split(' ').First().Trim();
+                        var sdkItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == name);
+                        var version = sdkItem?.Version;
+
+                        cachedSdks.Add(new Sdk(name, version));
+                    }
+                }
+
+                return cachedSdks;
             }
         }
 

@@ -22,6 +22,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net;
+
 using Neon.Common;
 using Neon.Net;
 using Neon.SSH;
@@ -43,7 +44,6 @@ namespace RaspberryDebug
         public Sdk(string name, string version)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(name), nameof(name));
-            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(version), nameof(version));
 
             this.Name    = name;
             this.Version = version;

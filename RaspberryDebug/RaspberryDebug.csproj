@@ -55,13 +55,6 @@
     <Compile Include="Connection\Connection.cs" />
     <Compile Include="Connection\Status.cs" />
     <Compile Include="Connection\Sdk.cs" />
-    <Compile Include="CustomPages\ProjectPropertiesPage.cs" />
-    <Compile Include="CustomPages\ProjectPropertiesPanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CustomPages\ProjectPropertiesPanel.Designer.cs">
-      <DependentUpon>ProjectPropertiesPanel.cs</DependentUpon>
-    </Compile>
     <Compile Include="Dialogs\ConnectionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -96,9 +89,6 @@
     <Compile Include="RaspberryDebugPackage.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CustomPages\ProjectPropertiesPanel.resx">
-      <DependentUpon>ProjectPropertiesPanel.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\KeysDialog.resx">
       <DependentUpon>KeysDialog.cs</DependentUpon>
     </EmbeddedResource>

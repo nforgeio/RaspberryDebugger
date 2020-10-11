@@ -36,6 +36,8 @@ using Neon.Windows;
 
 using Task = System.Threading.Tasks.Task;
 using System.Diagnostics.Contracts;
+using System.Text;
+using Microsoft.VisualStudio.PlatformUI;
 
 namespace RaspberryDebug
 {
@@ -193,7 +195,7 @@ namespace RaspberryDebug
                 return;
             }
 
-            // We need to capture the relevant project properties whiler we're
+            // We need to capture the relevant project properties while we're
             // on the UI thread so they'll be available on background threads.
 
             var projectProperties = ProjectProperties.Clone(project);
