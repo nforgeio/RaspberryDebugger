@@ -58,8 +58,8 @@
         <Parent guid="guidRaspberryDebugPackageCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
-          <ButtonText>Start Debugging Raspberry</ButtonText>
-          <ToolTipText>Debug .NET Core Raspberry Pi OS application</ToolTipText>
+          <ButtonText>Start Debugging on Raspberry</ButtonText>
+          <ToolTipText>Debug .NET Core Raspberry application</ToolTipText>
         </Strings>
       </Button>
     </Buttons>

@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -35,14 +36,11 @@ using Neon.Common;
 using Neon.Windows;
 
 using Task = System.Threading.Tasks.Task;
-using System.Diagnostics.Contracts;
-using System.Text;
-using Microsoft.VisualStudio.PlatformUI;
 
 namespace RaspberryDebug
 {
     /// <summary>
-    /// Handles the <b>Start Raspberry Debugging</b> command.
+    /// Handles the <b>Start Debugging on Raspberry</b> command.
     /// </summary>
     internal sealed class DebugCommand
     {
@@ -203,8 +201,57 @@ namespace RaspberryDebug
             if (!projectProperties.IsNetCore)
             {
                 MessageBox.Show(
-                    "Invalid Project Type.",
-                    "Only .NET Core projects are supported for debugging on a Raspberry Pi.",
+                    "Only .NETCoreApp v3.1 projects are supported for Raspberry debugging.",
+                    "Invalid Project Type",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            if (!projectProperties.IsExecutable)
+            {
+                MessageBox.Show(
+                    "Only projects types that generate an executable program are supported for Raspberry debugging.",
+                    "Invalid Project Type",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            if (string.IsNullOrEmpty(projectProperties.SdkVersion))
+            {
+                MessageBox.Show(
+                    "The .NET Core SDK version could not be identified.",
+                    "Invalid Project Type",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            var sdkVersion = Version.Parse(projectProperties.SdkVersion);
+
+            if (sdkVersion < Version.Parse("3.1") || Version.Parse("4.0") < sdkVersion)
+            {
+                MessageBox.Show(
+                    $"The .NET Core SDK [{sdkVersion}] is not supported.  Only .NET Core [3.1.x] is supported at this time.",
+                    "SDK Not Supported",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            // Publish the project locally.  We're publishing, not building so all
+            // required binaries and files will be generated.
+
+            if (!await BuildProjectAsync(Solution, project, projectProperties))
+            {
+                MessageBox.Show(
+                    "[dotnet publish] failed for the project.\r\n\r\nLook at the debug output to see what happened.",
+                    "Build Failed",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
@@ -225,6 +272,16 @@ namespace RaspberryDebug
 
                 if (connectionInfo == null)
                 {
+                    if (MessageBoxEx.Show(
+                        $"Raspberry connection information required.  Would you like to create a connection now?",
+                        "Raspberry Connection Required",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Error,
+                        MessageBoxDefaultButton.Button1) == DialogResult.No)
+                    {
+                        return;
+                    }
+
                     connectionInfo = new ConnectionInfo();
 
                     var connectionDialog = new ConnectionDialog(connectionInfo, edit: false, existingConnections: existingConnections);
@@ -249,20 +306,6 @@ namespace RaspberryDebug
 
                     return;
                 }
-            }
-
-            // Publish the project locally.  We're publishing, not building so all
-            // required binaries and files will be generated.
-
-            if (!await BuildProjectAsync(Solution, project, projectProperties))
-            {
-                MessageBox.Show(
-                    "[dotnet publish] failed for the project.\r\n\r\nLook at the debug output to see what happened.",
-                    "Build Failed",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
-                return;
             }
         }
 

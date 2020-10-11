@@ -18,22 +18,25 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Diagnostics.Contracts;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-
 using EnvDTE;
 using EnvDTE80;
 
-using Task = System.Threading.Tasks.Task;
-using System.Diagnostics.Contracts;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+
 using Newtonsoft.Json.Linq;
+
+using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebug
 {
@@ -60,22 +63,44 @@ namespace RaspberryDebug
             Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            //Read the project file to find out more about the project.
-
             var projectFolder = Path.GetDirectoryName(project.FullName);
             var projectFile   = File.ReadAllText(project.FullName);
             var isNetCore     = true;
+            var sdkVersion    = (string)null;
 
-            if (projectFile.Trim().StartsWith("<Project "))
-            {
-                isNetCore = true;
-            }
-            else
-            {
-                // This doesn't look like a .NET Core project so it not supported.
+            // Read the properties we care about from the project.
 
-                isNetCore = false;
+            var targetFrameworkMonikers = (string)null;
+            var outputFileName          = (string)null;
+            var outputType              = -1;
+            var executableName          = (string)null;
+
+            foreach (Property property in project.Properties)
+            {
+                switch (property.Name)
+                {
+                    case "TargetFrameworkMoniker":
+
+                        targetFrameworkMonikers = (string)property.Value;
+                        break;
+
+                    case "OutputFileName":
+
+                        outputFileName = (string)property.Value;
+                        break;
+
+                    case "OutputType":
+
+                        outputType = (int)property.Value;
+                        break;
+                }
             }
+
+            var monikers = targetFrameworkMonikers.Split(',');
+
+            isNetCore      = monikers[0] == ".NETCoreApp";
+            sdkVersion     = monikers[1].StartsWith("Version=v") ? monikers[1].Substring("Version=v".Length) : null;
+            executableName = Path.GetFileNameWithoutExtension(outputFileName);
 
             // Load [Properties/launchSettings.json] if present to obtain the command line
             // arguments and environment variables as well as the target connection.  Note
@@ -134,7 +159,10 @@ namespace RaspberryDebug
                 FullPath             = project.FullName,
                 Configuration        = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
                 IsNetCore            = isNetCore,
+                SdkVersion           = sdkVersion,
                 OutputFolder         = Path.Combine(projectFolder, project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString()),
+                IsExecutable         = outputType == 1,     // 1=EXE
+                ExecutableName       = executableName,
                 AssemblyName         = project.Properties.Item("AssemblyName").Value.ToString(),
                 DebugHost            = debugHost,
                 CommandLineArgs      = commandLineArgs,
@@ -161,6 +189,13 @@ namespace RaspberryDebug
         public bool IsNetCore { get; private set; }
 
         /// <summary>
+        /// Returns the projects .NET Core SDK version.  Note that this will probably include
+        /// just the major and minor versions of the SDK.  This may also return <c>null</c>
+        /// if the SSK version could not be identified.
+        /// </summary>
+        public string SdkVersion { get; private set; }
+
+        /// <summary>
         /// Returns the project's build configuration.
         /// </summary>
         public string Configuration { get; private set; }
@@ -169,6 +204,17 @@ namespace RaspberryDebug
         /// Returns the fully qualified path to the project's output directory.
         /// </summary>
         public string OutputFolder { get; private set; }
+
+        /// <summary>
+        /// Indicates that the program is an execuable as opposed to something
+        /// else, like a DLL.
+        /// </summary>
+        public bool IsExecutable { get; private set; }
+
+        /// <summary>
+        /// Returns the name of the generated executable file.
+        /// </summary>
+        public string ExecutableName { get; private set; }
 
         /// <summary>
         /// Returns the publish runtime.
