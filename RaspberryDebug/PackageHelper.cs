@@ -281,7 +281,7 @@ namespace RaspberryDebug
                     szStatusBarText:        description, 
                     iDelayToShowDialog:     0,
                     fIsCancelable:          false, 
-                    fShowMarqueeProgress:   false);
+                    fShowMarqueeProgress:   true);
             }
             else
             {
@@ -371,7 +371,7 @@ namespace RaspberryDebug
                     szStatusBarText:        $"[{LogName}]{description}", 
                     iDelayToShowDialog:     0,
                     fIsCancelable:          false, 
-                    fShowMarqueeProgress:   false);
+                    fShowMarqueeProgress:   true);
             }
             else
             {
