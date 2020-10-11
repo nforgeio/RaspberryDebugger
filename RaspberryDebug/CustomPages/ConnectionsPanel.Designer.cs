@@ -101,20 +101,20 @@ namespace RaspberryDebug
             // 
             // verifyButton
             // 
-            this.verifyButton.Location = new System.Drawing.Point(417, 79);
+            this.verifyButton.Location = new System.Drawing.Point(417, 124);
             this.verifyButton.Name = "verifyButton";
             this.verifyButton.Size = new System.Drawing.Size(75, 23);
-            this.verifyButton.TabIndex = 4;
+            this.verifyButton.TabIndex = 5;
             this.verifyButton.Text = "Verify";
             this.verifyButton.UseVisualStyleBackColor = true;
             this.verifyButton.Click += new System.EventHandler(this.verifyButton_Click);
             // 
             // removeButton
             // 
-            this.removeButton.Location = new System.Drawing.Point(417, 108);
+            this.removeButton.Location = new System.Drawing.Point(417, 79);
             this.removeButton.Name = "removeButton";
             this.removeButton.Size = new System.Drawing.Size(75, 23);
-            this.removeButton.TabIndex = 5;
+            this.removeButton.TabIndex = 4;
             this.removeButton.Text = "Remove";
             this.removeButton.UseVisualStyleBackColor = true;
             this.removeButton.Click += new System.EventHandler(this.removeButton_Click);

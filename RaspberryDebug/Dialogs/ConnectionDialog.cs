@@ -44,14 +44,14 @@ namespace RaspberryDebug
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="connection">The connection being created or edited.</param>
+        /// <param name="connectionInfo">The information for the connection being created or edited.</param>
         /// <param name="edit">Pass <c>true</c> when editing, <c>false</c> for creating a new connection.</param>
         /// <param name="existingConnections">The existing connection.</param>
-        public ConnectionDialog(ConnectionInfo connection, bool edit, List<ConnectionInfo> existingConnections)
+        public ConnectionDialog(ConnectionInfo connectionInfo, bool edit, List<ConnectionInfo> existingConnections)
         {
             InitializeComponent();
 
-            this.Connection          = connection;
+            this.ConnectionInfo      = connectionInfo;
             this.Text                = edit ? "Edit Connection" : "New Connection";
             this.existingConnections = existingConnections;
 
@@ -59,10 +59,10 @@ namespace RaspberryDebug
 
             this.Load += (s, a) =>
             {
-                hostTextBox.Text             = connection.Host;
-                portTextBox.Text             = connection.Port.ToString();
-                userTextBox.Text             = connection.User;
-                passwordTextBox.Text         = connection.Password;
+                hostTextBox.Text             = connectionInfo.Host;
+                portTextBox.Text             = connectionInfo.Port.ToString();
+                userTextBox.Text             = connectionInfo.User;
+                passwordTextBox.Text         = connectionInfo.Password;
                 passwordTextBox.PasswordChar = passwordChar;
                 showPasswordCheckBox.Checked = false;
                 keysButton.Enabled           = false;   // $todo(jefflill): Implement this
@@ -72,14 +72,16 @@ namespace RaspberryDebug
         /// <summary>
         /// Returns the connection being created or edited.
         /// </summary>
-        internal ConnectionInfo Connection { get; private set; }
+        internal ConnectionInfo ConnectionInfo { get; private set; }
 
         /// <summary>
         /// Handles the OK button.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="args">The arguments.</param>
-        private void okButton_Click(object sender, EventArgs args)
+#pragma warning disable VSTHRD100
+        private async void okButton_Click(object sender, EventArgs args)
+#pragma warning restore VSTHRD100
         {
             //-----------------------------------------------------------------
             // Validate the host
@@ -102,11 +104,11 @@ namespace RaspberryDebug
                 return;
             }
 
-            if (existingConnections.Any(connection => connection != this.Connection && connection.Host == hostText))
+            if (existingConnections.Any(connection => connection != this.ConnectionInfo && connection.Host == hostText))
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();
-                MessageBoxEx.Show(this, $"[{hostText}] is already being used by another connection.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, $"[{hostText}] is already referenced by another connection.", "Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -158,12 +160,43 @@ namespace RaspberryDebug
             }
 
             //-----------------------------------------------------------------
-            // Everything looks good, so update the connection and returns.
+            // The properties look OK, so establish a connection to verify.
 
-            Connection.Host     = hostText;
-            Connection.Port     = port;
-            Connection.User     = userText;
-            Connection.Password = passwordText;
+            var testConnectionInfo = new ConnectionInfo()
+            {
+                Host     = hostText,
+                Port     = port,
+                User     = userText,
+                Password = passwordText
+            };
+
+            try
+            {
+                using (await Connection.ConnectAsync(testConnectionInfo))
+                {
+                }
+            }
+            catch
+            {
+                MessageBoxEx.Show(
+                    this,
+                    $"Unable to connect to: {hostText}\r\n\r\nMake sure your Raspberry is turned on and verify your username and password.",
+                    "Connection Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            //-----------------------------------------------------------------
+            // Everything looks good, so update the connection and return.
+
+            ConnectionInfo.Host           = hostText;
+            ConnectionInfo.Port           = port;
+            ConnectionInfo.User           = userText;
+            ConnectionInfo.Password       = passwordText;
+            ConnectionInfo.PrivateKeyPath = testConnectionInfo.PrivateKeyPath;
+            ConnectionInfo.PublicKeyPath  = testConnectionInfo.PublicKeyPath;
 
             DialogResult = DialogResult.OK;
         }

@@ -173,10 +173,7 @@ exit 0
         //---------------------------------------------------------------------
         // Instance members
         
-        private string      host;
-        private string      username;
-        private string      password;
-        private string      keyPath;
+        private ConnectionInfo  connectionInfo;
 
         /// <summary>
         /// Constructs a connection using a password.
@@ -188,10 +185,7 @@ exit 0
         private Connection(string name, IPAddress address, ConnectionInfo connectionInfo, SshCredentials credentials)
             : base(name, address, credentials, connectionInfo.Port, logWriter: null)
         {
-            this.host     = connectionInfo.Host;
-            this.username = connectionInfo.User;
-            this.password = connectionInfo.Password;
-            this.keyPath  = connectionInfo.PrivateKeyPath;
+            this.connectionInfo = connectionInfo;
 
             // Disable connection level logging, etc.
 
@@ -422,7 +416,7 @@ fi
 
             // Create and configure an SSH key for this connection if one doesn't already exist.
 
-            if (string.IsNullOrEmpty(keyPath) || !File.Exists(keyPath))
+            if (string.IsNullOrEmpty(connectionInfo.PrivateKeyPath) || !File.Exists(connectionInfo.PrivateKeyPath))
             {
                 await PackageHelper.ExecuteWithProgressAsync("Creating SSH keys...",
                     async () =>
@@ -436,7 +430,7 @@ fi
                         var workstationUser    = Environment.GetEnvironmentVariable("USERNAME");
                         var workstationName    = Environment.GetEnvironmentVariable("COMPUTERNAME");
                         var keyName            = Guid.NewGuid().ToString("d");
-                        var homeFolder         = LinuxPath.Combine("/", "home", username);
+                        var homeFolder         = LinuxPath.Combine("/", "home", connectionInfo.User);
                         var tempPrivateKeyPath = LinuxPath.Combine(homeFolder, keyName);
                         var tempPublicKeyPath  = LinuxPath.Combine(homeFolder, $"{keyName}.pub");
 
@@ -462,27 +456,24 @@ exit 0
                             // Download the public and private keys, persist them to the workstation
                             // and then update the connection info.
 
-                            var connections = PackageHelper.ReadConnections();
-                            var connection  = connections.SingleOrDefault(c => c.Host == host);
-
-                            if (connection == null)
-                            {
-                                // Another instance of VS must have deleted this connection 
-                                // out from under us.
-
-                                throw new ConnectionException(this, $"The [{host}] connection no longer exists.  You'll need to recreate it.");
-                            }
-
-                            var publicKeyPath  = Path.Combine(PackageHelper.KeysFolder, $"{host}.pub");
-                            var privateKeyPath = Path.Combine(PackageHelper.KeysFolder, host);
+                            var connections            = PackageHelper.ReadConnections();
+                            var existingConnectionInfo = connections.SingleOrDefault(c => c.Host == connectionInfo.Host);
+                            var publicKeyPath          = Path.Combine(PackageHelper.KeysFolder, $"{connectionInfo.Host}.pub");
+                            var privateKeyPath         = Path.Combine(PackageHelper.KeysFolder, connectionInfo.Host);
 
                             File.WriteAllBytes(publicKeyPath, DownloadBytes(tempPublicKeyPath));
                             File.WriteAllBytes(privateKeyPath, DownloadBytes(tempPrivateKeyPath));
 
-                            connection.PrivateKeyPath = privateKeyPath;
-                            connection.PublicKeyPath  = publicKeyPath;
+                            connectionInfo.PrivateKeyPath = privateKeyPath;
+                            connectionInfo.PublicKeyPath  = publicKeyPath;
 
-                            PackageHelper.WriteConnections(connections);
+                            if (existingConnectionInfo != null)
+                            {
+                                existingConnectionInfo.PrivateKeyPath = privateKeyPath;
+                                existingConnectionInfo.PublicKeyPath  = publicKeyPath;
+
+                                PackageHelper.WriteConnections(connections);
+                            }
                         }
                         finally
                         {
