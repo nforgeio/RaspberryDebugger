@@ -52,7 +52,7 @@ namespace RaspberryDebug
             InitializeComponent();
 
             this.ConnectionInfo      = connectionInfo;
-            this.Text                = edit ? "Edit Connection" : "New Connection";
+            this.Text                = edit ? "Edit Raspberry Connection" : "New Raspberry Connection";
             this.existingConnections = existingConnections;
 
             // Initialize the controls on load.

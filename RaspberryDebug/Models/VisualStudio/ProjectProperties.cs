@@ -33,6 +33,7 @@ using EnvDTE80;
 
 using Task = System.Threading.Tasks.Task;
 using System.Diagnostics.Contracts;
+using Newtonsoft.Json.Linq;
 
 namespace RaspberryDebug
 {
@@ -59,10 +60,11 @@ namespace RaspberryDebug
             Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            // $hack(jefflill): Read the project file to find out more about the project.
+            //Read the project file to find out more about the project.
 
-            var projectFile = File.ReadAllText(project.FullName);
-            var isNetCore   = true;
+            var projectFolder = Path.GetDirectoryName(project.FullName);
+            var projectFile   = File.ReadAllText(project.FullName);
+            var isNetCore     = true;
 
             if (projectFile.Trim().StartsWith("<Project "))
             {
@@ -70,19 +72,73 @@ namespace RaspberryDebug
             }
             else
             {
-                // This doesn't look like a .NET Core project so it won't be supported.
+                // This doesn't look like a .NET Core project so it not supported.
 
                 isNetCore = false;
             }
 
+            // Load [Properties/launchSettings.json] if present to obtain the command line
+            // arguments and environment variables as well as the target connection.  Note
+            // that we're going to use the profile named for the project and ignore any others.
+
+            var launchSettingsPath   = Path.Combine(projectFolder, "Properties", "launchSettings.json");
+            var debugHost            = (string)null;
+            var commandLineArgs      = (string)null;
+            var environmentVariables = new Dictionary<string, string>();
+
+            if (File.Exists(launchSettingsPath))
+            {
+                var settings = JObject.Parse(File.ReadAllText(launchSettingsPath));
+                var profiles = settings.Property("profiles");
+
+                if (profiles != null)
+                {
+                    foreach (var profile in ((JObject)profiles.Value).Properties())
+                    {
+                        if (profile.Name == project.Name)
+                        {
+                            var profileObject              = (JObject)profile.Value;
+                            var environmentVariablesObject = (JObject)profileObject.Property("environmentVariables")?.Value;
+
+                            commandLineArgs = (string)profileObject.Property("commandLineArgs")?.Value;
+
+                            if (environmentVariablesObject != null)
+                            {
+                                // NOTE: The [@RASPBERRY] variable (case insensitive) is reserved and specifies
+                                // the connection host when present.  It is never passed to the target program.
+
+                                foreach (var variable in environmentVariablesObject.Properties())
+                                {
+                                    if (variable.Name.Equals("@RASPBERRY", StringComparison.InvariantCultureIgnoreCase))
+                                    {
+                                        debugHost = (string)variable.Value;
+                                    }
+                                    else
+                                    {
+                                        environmentVariables[variable.Name] = (string)variable.Value;
+                                    }
+                                }
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Return the properties.
+
             return new ProjectProperties()
             {
-                Name          = project.Name,
-                FullPath      = project.FullName,
-                Configuration = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
-                IsNetCore     = isNetCore,
-                OutputFolder  = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(project.FullName), project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString())),
-                AssemblyName  = project.Properties.Item("AssemblyName").Value.ToString()
+                Name                 = project.Name,
+                FullPath             = project.FullName,
+                Configuration        = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
+                IsNetCore            = isNetCore,
+                OutputFolder         = Path.Combine(projectFolder, project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString()),
+                AssemblyName         = project.Properties.Item("AssemblyName").Value.ToString(),
+                DebugHost            = debugHost,
+                CommandLineArgs      = commandLineArgs,
+                EnvironmentVariables = environmentVariables
             };
         }
 
@@ -128,5 +184,21 @@ namespace RaspberryDebug
         /// Returns the name of the output assembly.
         /// </summary>
         public string AssemblyName { get; private set; }
+
+        /// <summary>
+        /// Returns the host identifying the target Raspberry or <c>null</c> when
+        /// the default Raspberry connection should be used.
+        /// </summary>
+        public string DebugHost { get; private set; }
+
+        /// <summary>
+        /// Returns the command line arguments to be passed to the debugged program.
+        /// </summary>
+        public string CommandLineArgs { get; private set; }
+
+        /// <summary>
+        /// Returns the environment variables to be passed to the debugged program.
+        /// </summary>
+        public Dictionary<string, string> EnvironmentVariables { get; private set; }
     }
 }

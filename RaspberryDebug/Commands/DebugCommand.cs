@@ -211,6 +211,46 @@ namespace RaspberryDebug
                 return;
             }
 
+            // Map the debug host we got from the project properties (if any) to
+            // one of our Raspberry connections.  If no host is specified, we'll
+            // use the default connection or prompt the user to create a connection.
+            // We'll display an error if a host is specified and but doesn't exist.
+
+            var existingConnections = PackageHelper.ReadConnections();
+            var connectionInfo      = (ConnectionInfo)null;
+
+            if (string.IsNullOrEmpty(projectProperties.DebugHost))
+            {
+                connectionInfo = existingConnections.SingleOrDefault(info => info.IsDefault);
+
+                if (connectionInfo == null)
+                {
+                    connectionInfo = new ConnectionInfo();
+
+                    var connectionDialog = new ConnectionDialog(connectionInfo, edit: false, existingConnections: existingConnections);
+
+                    if (connectionDialog.ShowDialog() == DialogResult.Cancel)
+                    {
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                connectionInfo = existingConnections.SingleOrDefault(info => info.Host.Equals(projectProperties.DebugHost, StringComparison.InvariantCultureIgnoreCase));
+
+                if (connectionInfo == null)
+                {
+                    MessageBoxEx.Show(
+                        $"The [{projectProperties.DebugHost}] Raspberry connection does not exist.\r\n\r\nPlease add the connection via: Tools/Options/Raspberry Debugger/Connections",
+                        "Cannot Locate Raspberry Connection",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+
+                    return;
+                }
+            }
+
             // Publish the project locally.  We're publishing, not building so all
             // required binaries and files will be generated.
 
