@@ -54,7 +54,7 @@ namespace RaspberryDebug
         /// </summary>
         /// <param name="project">The source project.</param>
         /// <returns>The cloned <see cref="ProjectProperties"/>.</returns>
-        public static ProjectProperties Clone(Project project)
+        public static ProjectProperties CopyFrom(Project project)
         {
             Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
             ThreadHelper.ThrowIfNotOnUIThread();

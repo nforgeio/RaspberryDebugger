@@ -69,6 +69,7 @@ namespace RaspberryDebug
             this.cancelButton = new System.Windows.Forms.Button();
             this.userLabel = new System.Windows.Forms.Label();
             this.userTextBox = new System.Windows.Forms.TextBox();
+            this.instructionsTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // hostLabel
@@ -167,13 +168,26 @@ namespace RaspberryDebug
             this.userTextBox.Size = new System.Drawing.Size(157, 20);
             this.userTextBox.TabIndex = 3;
             // 
+            // instructionsTextBox
+            // 
+            this.instructionsTextBox.BackColor = System.Drawing.SystemColors.Control;
+            this.instructionsTextBox.Enabled = false;
+            this.instructionsTextBox.Location = new System.Drawing.Point(25, 151);
+            this.instructionsTextBox.Multiline = true;
+            this.instructionsTextBox.Name = "instructionsTextBox";
+            this.instructionsTextBox.Size = new System.Drawing.Size(359, 52);
+            this.instructionsTextBox.TabIndex = 68;
+            this.instructionsTextBox.Text = "We\'ll use password authentication for the first connection so we can automaticall" +
+    "y generate and configure the SSH key pair on your Raspberry and workstation";
+            // 
             // ConnectionDialog
             // 
             this.AcceptButton = this.okButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(408, 147);
+            this.ClientSize = new System.Drawing.Size(408, 215);
+            this.Controls.Add(this.instructionsTextBox);
             this.Controls.Add(this.userTextBox);
             this.Controls.Add(this.userLabel);
             this.Controls.Add(this.cancelButton);
@@ -210,5 +224,6 @@ namespace RaspberryDebug
         private Button cancelButton;
         private Label userLabel;
         private TextBox userTextBox;
+        private TextBox instructionsTextBox;
     }
 }

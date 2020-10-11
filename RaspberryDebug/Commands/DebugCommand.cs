@@ -169,7 +169,7 @@ namespace RaspberryDebug
                     });
             }
 
-            // Identify the startup project.
+            // Identify the current startup project (if any).
 
             if (Solution == null)
             {
@@ -195,10 +195,10 @@ namespace RaspberryDebug
                 return;
             }
 
-            // We need to capture the relevant project properties while we're
-            // on the UI thread so they'll be available on background threads.
+            // We need to capture the relevant project properties while we're still
+            // on the UI thread so we'll have them on background threads.
 
-            var projectProperties = ProjectProperties.Clone(project);
+            var projectProperties = ProjectProperties.CopyFrom(project);
 
             if (!projectProperties.IsNetCore)
             {

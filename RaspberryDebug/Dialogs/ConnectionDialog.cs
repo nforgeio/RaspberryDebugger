@@ -65,6 +65,7 @@ namespace RaspberryDebug
                 passwordTextBox.Text         = connectionInfo.Password;
                 passwordTextBox.PasswordChar = passwordChar;
                 showPasswordCheckBox.Checked = false;
+                instructionsTextBox.Visible  = string.IsNullOrEmpty(connectionInfo.PrivateKeyPath);
             };
         }
 
