@@ -65,7 +65,6 @@ namespace RaspberryDebug
                 passwordTextBox.Text         = connectionInfo.Password;
                 passwordTextBox.PasswordChar = passwordChar;
                 showPasswordCheckBox.Checked = false;
-                keysButton.Enabled           = false;   // $todo(jefflill): Implement this
             };
         }
 

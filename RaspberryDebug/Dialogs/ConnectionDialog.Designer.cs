@@ -69,7 +69,6 @@ namespace RaspberryDebug
             this.cancelButton = new System.Windows.Forms.Button();
             this.userLabel = new System.Windows.Forms.Label();
             this.userTextBox = new System.Windows.Forms.TextBox();
-            this.keysButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // hostLabel
@@ -168,16 +167,6 @@ namespace RaspberryDebug
             this.userTextBox.Size = new System.Drawing.Size(157, 20);
             this.userTextBox.TabIndex = 3;
             // 
-            // keysButton
-            // 
-            this.keysButton.Location = new System.Drawing.Point(309, 81);
-            this.keysButton.Name = "keysButton";
-            this.keysButton.Size = new System.Drawing.Size(75, 23);
-            this.keysButton.TabIndex = 8;
-            this.keysButton.Text = "Keys...";
-            this.keysButton.UseVisualStyleBackColor = true;
-            this.keysButton.Click += new System.EventHandler(this.keysButton_Click);
-            // 
             // ConnectionDialog
             // 
             this.AcceptButton = this.okButton;
@@ -185,7 +174,6 @@ namespace RaspberryDebug
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(408, 147);
-            this.Controls.Add(this.keysButton);
             this.Controls.Add(this.userTextBox);
             this.Controls.Add(this.userLabel);
             this.Controls.Add(this.cancelButton);
@@ -222,6 +210,5 @@ namespace RaspberryDebug
         private Button cancelButton;
         private Label userLabel;
         private TextBox userTextBox;
-        private Button keysButton;
     }
 }
