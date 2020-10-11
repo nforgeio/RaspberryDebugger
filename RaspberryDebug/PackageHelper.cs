@@ -40,6 +40,7 @@ using Task = System.Threading.Tasks.Task;
 using Neon.Time;
 using Microsoft.VisualStudio.Threading;
 using System.Threading;
+using Microsoft.VisualStudio.PlatformUI;
 
 namespace RaspberryDebug
 {
@@ -298,13 +299,19 @@ namespace RaspberryDebug
                     pfCanceled:             out var cancelled);
             }
 
+            var orgCursor = Cursor.Current;
+
             try
             {
+                Cursor.Current = Cursors.WaitCursor;
+
                 await action().ConfigureAwait(false);
             }
             finally
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                Cursor.Current = orgCursor;
 
                 var currentDescription = operationStack.Pop();
 
@@ -382,13 +389,19 @@ namespace RaspberryDebug
                     pfCanceled:             out var cancelled);
             }
 
+            var orgCursor = Cursor.Current;
+
             try
             {
+                Cursor.Current = Cursors.WaitCursor;
+
                 return await action().ConfigureAwait(false);
             }
             finally
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                
+                Cursor.Current = orgCursor;
 
                 var currentDescription = operationStack.Pop();
 
