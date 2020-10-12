@@ -250,7 +250,7 @@ namespace RaspberryDebug
             if (!await BuildProjectAsync(Solution, project, projectProperties))
             {
                 MessageBox.Show(
-                    "[dotnet publish] failed for the project.\r\n\r\nLook at the debug output to see what happened.",
+                    "[dotnet publish] failed for the project.\r\n\r\nLook at the Debug Output for more details.",
                     "Build Failed",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -286,7 +286,12 @@ namespace RaspberryDebug
 
                     var connectionDialog = new ConnectionDialog(connectionInfo, edit: false, existingConnections: existingConnections);
 
-                    if (connectionDialog.ShowDialog() == DialogResult.Cancel)
+                    if (connectionDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        existingConnections.Add(connectionInfo);
+                        PackageHelper.WriteConnections(existingConnections);
+                    }
+                    else
                     {
                         return;
                     }
@@ -301,6 +306,63 @@ namespace RaspberryDebug
                     MessageBoxEx.Show(
                         $"The [{projectProperties.DebugHost}] Raspberry connection does not exist.\r\n\r\nPlease add the connection via: Tools/Options/Raspberry Debugger/Connections",
                         "Cannot Locate Raspberry Connection",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+
+                    return;
+                }
+            }
+
+            // Identify the most recent SDK installed on the workstation that has the same 
+            // major and minor version numbers as the project.  We'll ensure that the same
+            // SDK is installed on the Raspberry (further below).
+
+            var targetSdk = (Sdk)null;
+
+            foreach (var workstationSdk in PackageHelper.InstalledSdks
+                .Where(sdk => sdk.Version != null && sdk.Version.StartsWith(projectProperties.SdkVersion + ".")))
+            {
+                if (targetSdk == null)
+                {
+                    targetSdk = workstationSdk;
+                }
+                else if (SemanticVersion.Parse(targetSdk.Version) < SemanticVersion.Parse(workstationSdk.Version))
+                {
+                    targetSdk = workstationSdk;
+                }
+            }
+
+            if (targetSdk == null)
+            {
+                MessageBoxEx.Show(
+                    $"We cannot find a .NET SDK implementing v[{projectProperties.SdkVersion}] on this workstation.",
+                    "Cannot Find .NET SDK",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            // Connect to the Raspberry and ensure that the SDK and debugger are installed.
+
+            using (var connection = await Connection.ConnectAsync(connectionInfo))
+            {
+                if (!await connection.InstallSdkAsync(targetSdk.Version))
+                {
+                    MessageBoxEx.Show(
+                        $"Cannot install the .NET SDK [v{targetSdk.Version}] on the Raspberry.  Check the Debug Output for more details.",
+                        "SDK Installation Failed",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+
+                    return;
+                }
+
+                if (!await connection.InstallDebuggerAsync())
+                {
+                    MessageBoxEx.Show(
+                        $"Cannot install the VSDBG debugger on the Raspberry.  Check the Debug Output for more details.",
+                        "Debugger Installation Failed",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
 

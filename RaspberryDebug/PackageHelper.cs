@@ -81,7 +81,7 @@ namespace RaspberryDebug
         /// <summary>
         /// Directory on the Raspberry Pi where the <b>vsdbg</b> remote debugger will be installed.
         /// </summary>
-        public const string RemoteDebugRoot = RemoteDotnetRootPath + "/vsdbg";
+        public const string RemoteDebuggerRoot = RemoteDotnetRootPath + "/vsdbg";
 
         /// <summary>
         /// Returns information about the known .NET Core SDKs,
@@ -161,7 +161,7 @@ namespace RaspberryDebug
                     foreach (var line in reader.Lines())
                     {
                         var name    = line.Split(' ').First().Trim();
-                        var sdkItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == name);
+                        var sdkItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == name && item.Architecture == SdkArchitecture.ARM32);
                         var version = sdkItem?.Version;
 
                         cachedSdks.Add(new Sdk(name, version));

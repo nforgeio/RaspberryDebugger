@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-
+using Neon.Common;
 using Newtonsoft.Json;
 
 namespace RaspberryDebug
@@ -29,6 +29,8 @@ namespace RaspberryDebug
     /// </summary>
     internal class SdkCatalogItem
     {
+        private bool?   isStandAlone;
+
         /// <summary>
         /// The SDK name (like "3.1.402").
         /// </summary>
@@ -58,5 +60,26 @@ namespace RaspberryDebug
         /// </summary>
         [JsonProperty(PropertyName = "SHA512", Required = Required.Always)]
         public string SHA512 { get; set; }
+
+        /// <summary>
+        /// Indicates that this is a standaloneg SDK vs. one integrated into Visual Studio;
+        /// </summary>
+        [JsonIgnore]
+        public bool IsStandalone
+        {
+            get
+            {
+                if (isStandAlone.HasValue)
+                {
+                    return isStandAlone.Value;
+                }
+
+                // Standalone SDKs seem to have name patch versions < 200.
+
+                isStandAlone = SemanticVersion.Parse(Name).Patch < 200;
+
+                return isStandAlone.Value;
+            }
+        }
     }
 }

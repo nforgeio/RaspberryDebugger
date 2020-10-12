@@ -222,15 +222,5 @@ namespace RaspberryDebug
         {
             passwordTextBox.PasswordChar = showPasswordCheckBox.Checked ? (char)0 : passwordChar;
         }
-
-        /// <summary>
-        /// Handles Keys button clicks.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="args">The arguments.</param>
-        private void keysButton_Click(object sender, EventArgs args)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

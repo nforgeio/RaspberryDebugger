@@ -53,7 +53,7 @@ namespace RaspberryDebug
             this.PATH          = path;
             this.HasUnzip      = hasUnzip;
             this.HasDebugger   = hasDebugger;
-            this.InstalledSdks = installedSdks.ToList().AsReadOnly();
+            this.InstalledSdks = installedSdks.ToList();
         }
 
         /// <summary>
@@ -81,6 +81,6 @@ namespace RaspberryDebug
         /// <summary>
         /// Returns information about the .NET Core SDKs installed.
         /// </summary>
-        public IList<Sdk> InstalledSdks { get; private set; }
+        public List<Sdk> InstalledSdks { get; private set; }
     }
 }

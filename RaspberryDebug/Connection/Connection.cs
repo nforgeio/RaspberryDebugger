@@ -262,7 +262,7 @@ exit 0
         private async Task InitializeAsync()
         {
             await PackageHelper.ExecuteWithProgressAsync(
-                "Connecting...",
+                $"Connecting to [{Name}]...",
                 async () =>
                 {
                     // Disabling this because it looks like SUDO passwork prompting is disabled
@@ -311,7 +311,7 @@ $@"
 # Set the SDK and debugger installation paths.
 
 DOTNET_ROOT={PackageHelper.RemoteDotnetRootPath}
-DEBUGFOLDER={PackageHelper.RemoteDebugRoot}
+DEBUGFOLDER={PackageHelper.RemoteDebuggerRoot}
 
 # Get the chip architecture
 
@@ -340,7 +340,7 @@ fi
 # List the SDK folders.  These folder names are the same as the
 # corresponding SDK name.  We'll list the files on one line
 # with the SDK names separated by commas.  We'll return a blank
-#line if the SDK directory doesn't exist.
+# line if the SDK directory doesn't exist.
 
 if [ -d $DOTNET_ROOT/sdk ] ; then
     ls -m $DOTNET_ROOT/sdk
@@ -355,16 +355,18 @@ mkdir -p /lib/dotnet
 chown root:root /lib/dotnet
 chmod 755 /lib/dotnet
 
+# Set these for the current session:
+
+export DOTNET_ROOT={PackageHelper.RemoteDotnetRootPath}
+export PATH=$PATH:$DOTNET_ROOT
+
+# and for future sessions too:
+
 if ! grep --quiet DOTNET_ROOT /etc/profile ; then
 
-    echo ''                                >> /etc/profile
-    echo 'export DOTNET_ROOT=$DOTNET_ROOT' >> /etc/profile
-    echo 'export PATH=$PATH:$DOTNET_ROOT'  >> /etc/profile
-
-# Set these for the current session too:
-
-    export DOTNET_ROOT=$DOTNET_ROOT
-    export PATH=$PATH:$DOTNET_ROOT
+    echo """"                                >> /etc/profile
+    echo ""export DOTNET_ROOT=$DOTNET_ROOT"" >> /etc/profile
+    echo ""export PATH=$PATH:$DOTNET_ROOT""  >> /etc/profile
 fi
 ";
                     Log($"[{Name}]: Fetching status");
@@ -490,19 +492,16 @@ rm -f {tempPublicKeyPath}
                         await Task.CompletedTask;
                     });
             }
-            else
-            {
-            }
         }
 
         /// <summary>
         /// Installs the specified .NET Core SDK on the Raspberry if it's not already installed.
         /// </summary>
-        /// <param name="sdkItem">The SDK catalog information.</param>
+        /// <param name="sdkVersion">The SDK version.</param>
         /// <returns><c>true</c> on success.</returns>
-        public async Task<bool> InstallSdkAsync(SdkCatalogItem sdkItem)
+        public async Task<bool> InstallSdkAsync(string sdkVersion)
         {
-            Covenant.Requires<ArgumentNullException>(sdkItem != null, nameof(sdkItem));
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(sdkVersion), nameof(sdkVersion));
 
             // $todo(jefflill):
             //
@@ -514,33 +513,32 @@ rm -f {tempPublicKeyPath}
             //
             // We may want to re-evaluate this in the future.
 
-            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkItem.Version))
+            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkVersion))
             {
-                return true;    // Already installed
+                await Task.FromResult(true);    // Already installed
             }
 
-            LogInfo($".NET Core SDK [v{sdkItem.Version}] is not installed.");
+            LogInfo($".NET Core SDK [v{sdkVersion}] is not installed.");
 
-            // Locate the standalone SDK for the request .NET version.  Note that
-            // standalone SDKs seem to have patch number is less than 200.
+            // Locate the standalone SDK for the request .NET version.
 
-            var targetSdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == sdkItem.Version && SemanticVersion.Parse(sdkItem.Version).Patch < 200);
+            var targetSdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.IsStandalone && item.Version == sdkVersion && item.Architecture == SdkArchitecture.ARM32);
 
             if (targetSdk == null)
             {
                 // Fall back to the Visual Studio SDK, if there is one.
 
-                targetSdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == sdkItem.Version);
-                LogInfo($"Cannot find SDK [{sdkItem.Name}] for falling back to [{targetSdk.Name}], version [v{targetSdk.Version}].");
+                targetSdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == sdkVersion);
+                LogInfo($"Cannot find standalone SDK for [{sdkVersion}] for falling back to [{targetSdk.Name}], version [v{targetSdk.Version}].");
             }
 
             if (targetSdk == null)
             {
-                LogError($"RasberryDebug is unaware of the [{sdkItem.Name}/{sdkItem.Version}] .NET Core SDK.");
+                LogError($"RasberryDebug is unaware of .NET Core SDK [v{sdkVersion}].");
                 LogError($"Try updating the RasberryDebug extension or report this issue at:");
                 LogError($"https://github.com/jefflill/RaspberryDebug/issues/");
 
-                return false;
+                await Task.FromResult(false);
             }
 
             // Install the SDK.
@@ -552,15 +550,21 @@ rm -f {tempPublicKeyPath}
                 {
                     var installScript =
 $@"
-if ! rm $TMP/dotnet-sdk.tar.gz ; then
+export DOTNET_ROOT={PackageHelper.RemoteDotnetRootPath}
+
+if ! rm -f $TMP/dotnet-sdk.tar.gz ; then
     exit 1
 fi
 
-if ! wget -O $TMP/dotnet-sdk.tar.gz {targetSdk.Link} ; then
+if ! wget --quiet -O $TMP/dotnet-sdk.tar.gz {targetSdk.Link} ; then
     exit 1
 fi
 
-if ! tar zxf $TMP/dotnet-sdk.tar.gz -C $DOTNET_ROOT ; then
+if ! mkdir -p $DOTNET_ROOT ; then
+    exit 1
+fi
+
+if ! tar -zxf $TMP/dotnet-sdk.tar.gz -C $DOTNET_ROOT ; then
     exit 1
 fi
 
@@ -572,28 +576,25 @@ exit 0
 ";
                     try
                     {
-                        return await Task<bool>.Run(() =>
+                        var response = SudoCommand(CommandBundle.FromScript(installScript));
+
+                        if (response.ExitCode == 0)
                         {
-                            var response = SudoCommand(CommandBundle.FromScript(installScript));
+                            // Add the newly installed SDK to the list of installed SDKs.
 
-                            if (response.ExitCode == 0)
-                            {
-                                // Add the newly installed SDK to the list of installed SDKs.
-
-                                PiStatus.InstalledSdks.Add(new Sdk(targetSdk.Name, targetSdk.Version));
-                                return true;
-                            }
-                            else
-                            {
-                                LogError(response.AllText);
-                                return false;
-                            }
-                        });
+                            PiStatus.InstalledSdks.Add(new Sdk(targetSdk.Name, targetSdk.Version));
+                            return await Task.FromResult(true);
+                        }
+                        else
+                        {
+                            LogError(response.AllText);
+                            return await Task.FromResult(false);
+                        }
                     }
                     catch (Exception e)
                     {
                         LogException(e);
-                        return false;
+                        return await Task.FromResult(false);
                     }
                 });
         }
@@ -606,15 +607,17 @@ exit 0
         {
             if (PiStatus.HasDebugger)
             {
-                return true;
+                return await Task.FromResult(true);
             }
+
+            LogInfo($"Installing VSDBG to: [{PackageHelper.RemoteDebuggerRoot}]");
 
             return await PackageHelper.ExecuteWithProgressAsync<bool>($"Installing [vsdbg] debugger...",
                 async () =>
                 {
                     var installScript =
 $@"
-if ! curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /lib/dotnet/vsdbg ; then
+if ! curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l {PackageHelper.RemoteDebuggerRoot} ; then
     exit 1
 fi
 
@@ -622,28 +625,25 @@ exit 0
 ";
                     try
                     {
-                        return await Task<bool>.Run(() =>
+                        var response = SudoCommand(CommandBundle.FromScript(installScript));
+
+                        if (response.ExitCode == 0)
                         {
-                            var response = SudoCommand(CommandBundle.FromScript(installScript));
+                            // Indicate that debugger is now installed.
 
-                            if (response.ExitCode == 0)
-                            {
-                                // Indicate that debugger is now installed.
-
-                                PiStatus.HasDebugger = true;
-                                return true;
-                            }
-                            else
-                            {
-                                LogError(response.AllText);
-                                return false;
-                            }
-                        });
+                            PiStatus.HasDebugger = true;
+                            return await Task.FromResult(true);
+                        }
+                        else
+                        {
+                            LogError(response.AllText);
+                            return await Task.FromResult(false);
+                        }
                     }
                     catch (Exception e)
                     {
                         LogException(e);
-                        return false;
+                        return await Task.FromResult(false);
                     }
                 });
         }
@@ -669,7 +669,7 @@ exit 0
             // We're going to ZIP the program files locally and then transfer the zipped
             // files to the Raspberry to be expanded there.
 
-            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteDebugRoot, programName);
+            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteDebuggerRoot, programName);
             var deployScript =
 $@"
 if ! rm -rf {debugFolder} ; then
@@ -690,32 +690,29 @@ exit 0
 
             try
             {
-                return await Task<bool>.Run(() =>
+                LogInfo($"Uploading program to: [{debugFolder}]");
+
+                var bundle = new CommandBundle(deployScript);
+
+                bundle.AddZip("program.zip", programFolder);
+
+                var response = SudoCommand(bundle);
+
+                if (response.ExitCode == 0)
                 {
-                    LogInfo($"Uploading program to: [{debugFolder}]");
-
-                    var bundle = new CommandBundle(deployScript);
-
-                    bundle.AddZip("program.zip", programFolder);
-
-                    var response = SudoCommand(bundle);
-
-                    if (response.ExitCode == 0)
-                    {
-                        LogInfo($"Program uploaded");
-                        return true;
-                    }
-                    else
-                    {
-                        LogError(response.AllText);
-                        return false;
-                    }
-                });
+                    LogInfo($"Program uploaded");
+                    return await Task.FromResult(true);
+                }
+                else
+                {
+                    LogError(response.AllText);
+                    return await Task.FromResult(false);
+                }
             }
             catch (Exception e)
             {
                 LogException(e);
-                return false;
+                return await Task.FromResult(false);
             }
         }
     }
