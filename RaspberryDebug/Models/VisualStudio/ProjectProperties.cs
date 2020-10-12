@@ -20,10 +20,12 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
 using System.Drawing.Imaging;
+using System.Drawing.Text;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -73,7 +75,6 @@ namespace RaspberryDebug
             var targetFrameworkMonikers = (string)null;
             var outputFileName          = (string)null;
             var outputType              = -1;
-            var executableName          = (string)null;
 
             foreach (Property property in project.Properties)
             {
@@ -98,9 +99,8 @@ namespace RaspberryDebug
 
             var monikers = targetFrameworkMonikers.Split(',');
 
-            isNetCore      = monikers[0] == ".NETCoreApp";
-            sdkVersion     = monikers[1].StartsWith("Version=v") ? monikers[1].Substring("Version=v".Length) : null;
-            executableName = Path.GetFileNameWithoutExtension(outputFileName);
+            isNetCore  = monikers[0] == ".NETCoreApp";
+            sdkVersion = monikers[1].StartsWith("Version=v") ? monikers[1].Substring("Version=v".Length) : null;
 
             // Load [Properties/launchSettings.json] if present to obtain the command line
             // arguments and environment variables as well as the target connection.  Note
@@ -108,7 +108,7 @@ namespace RaspberryDebug
 
             var launchSettingsPath   = Path.Combine(projectFolder, "Properties", "launchSettings.json");
             var debugHost            = (string)null;
-            var commandLineArgs      = (string)null;
+            var commandLineArgs      = new List<string>();
             var environmentVariables = new Dictionary<string, string>();
 
             if (File.Exists(launchSettingsPath))
@@ -125,7 +125,7 @@ namespace RaspberryDebug
                             var profileObject              = (JObject)profile.Value;
                             var environmentVariablesObject = (JObject)profileObject.Property("environmentVariables")?.Value;
 
-                            commandLineArgs = (string)profileObject.Property("commandLineArgs")?.Value;
+                            commandLineArgs = ParseArgs((string)profileObject.Property("commandLineArgs")?.Value);
 
                             if (environmentVariablesObject != null)
                             {
@@ -162,12 +162,148 @@ namespace RaspberryDebug
                 SdkVersion           = sdkVersion,
                 OutputFolder         = Path.Combine(projectFolder, project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString()),
                 IsExecutable         = outputType == 1,     // 1=EXE
-                ExecutableName       = executableName,
                 AssemblyName         = project.Properties.Item("AssemblyName").Value.ToString(),
                 DebugHost            = debugHost,
                 CommandLineArgs      = commandLineArgs,
                 EnvironmentVariables = environmentVariables
             };
+        }
+
+        /// <summary>
+        /// Parses command line arguments from a string, trying to handle things like 
+        /// double and single quotes as well as escaped characters.
+        /// </summary>
+        /// <param name="commandLine">The source command line or <c>null</c>.</param>
+        /// <returns>The list of parsed arguments.</returns>
+        private static List<string> ParseArgs(string commandLine)
+        {
+            commandLine = commandLine.Trim();
+
+            var args = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(commandLine))
+            {
+                return args;
+            }
+
+            var pos = 0;
+
+            while (pos < commandLine.Length)
+            {
+                // Skip past any whitespace.
+
+                if (char.IsWhiteSpace(commandLine[pos]))
+                {
+                    while (pos < commandLine.Length && char.IsWhiteSpace(commandLine[pos]))
+                    {
+                        pos++;
+                    }
+
+                    continue;
+                }
+
+                var arg = string.Empty;
+
+                switch (commandLine[pos])
+                {
+                    case '\'':
+
+                        // Single quoted string argument: scan for the terminating single quote.
+
+                        pos++;
+
+                        while (pos < commandLine.Length && commandLine[pos] != '\'')
+                        {
+                            if (commandLine[pos] == '\\')
+                            {
+                                // Escaped character
+
+                                arg += commandLine[pos++];
+
+                                if (pos >= commandLine.Length)
+                                {
+                                    throw new ArgumentException($"Invalid escape in: [{commandLine}]");
+                                }
+
+                                arg += commandLine[pos++];
+                            }
+                            else
+                            {
+                                arg += commandLine[pos];
+                            }
+                        }
+
+                        pos++;
+                        break;
+
+                    case '"':
+
+                        // Double quoted string argument: scan for the terminating double quote.
+
+                        pos++;
+
+                        while (pos < commandLine.Length && commandLine[pos] != '"')
+                        {
+                            if (commandLine[pos] == '\\')
+                            {
+                                // Escaped character
+
+                                arg += commandLine[pos++];
+
+                                if (pos >= commandLine.Length)
+                                {
+                                    throw new ArgumentException($"Invalid escape in: [{commandLine}]");
+                                }
+
+                                arg += commandLine[pos++];
+                            }
+                            else
+                            {
+                                arg += commandLine[pos];
+                            }
+                        }
+
+                        pos++;
+                        break;
+
+                    default:
+
+                        // Space delimited argument: scan for the terminating whitespace.
+
+                        pos++;
+
+                        while (pos < commandLine.Length && !char.IsWhiteSpace(commandLine[pos]))
+                        {
+                            if (commandLine[pos] == '\\')
+                            {
+                                // Escaped character
+
+                                arg += commandLine[pos++];
+
+                                if (pos >= commandLine.Length)
+                                {
+                                    throw new ArgumentException($"Invalid escape in: [{commandLine}]");
+                                }
+
+                                arg += commandLine[pos++];
+                            }
+                            else
+                            {
+                                arg += commandLine[pos];
+                            }
+                        }
+
+                        pos++;
+                        break;
+                }
+
+                if (arg.Length > 0)
+                {
+                    args.Add(Regex.Unescape(arg));
+                }
+
+                return args;
+            }
         }
 
         //--------------------------------------------------------------------
@@ -212,11 +348,6 @@ namespace RaspberryDebug
         public bool IsExecutable { get; private set; }
 
         /// <summary>
-        /// Returns the name of the generated executable file.
-        /// </summary>
-        public string ExecutableName { get; private set; }
-
-        /// <summary>
         /// Returns the publish runtime.
         /// </summary>
         public string Runtime => "linux-arm";
@@ -240,7 +371,7 @@ namespace RaspberryDebug
         /// <summary>
         /// Returns the command line arguments to be passed to the debugged program.
         /// </summary>
-        public string CommandLineArgs { get; private set; }
+        public List<string> CommandLineArgs { get; private set; }
 
         /// <summary>
         /// Returns the environment variables to be passed to the debugged program.

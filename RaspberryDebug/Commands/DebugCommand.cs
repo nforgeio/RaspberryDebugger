@@ -36,6 +36,8 @@ using Neon.Common;
 using Neon.Windows;
 
 using Task = System.Threading.Tasks.Task;
+using Neon.IO;
+using Newtonsoft.Json.Linq;
 
 namespace RaspberryDebug
 {
@@ -542,6 +544,50 @@ namespace RaspberryDebug
             }
 
             return project;
+        }
+
+        /// <summary>
+        /// Creates a temporary launch settings file for the application that allows
+        /// it to be launched and debugged on the remote Raspberry using the connection
+        /// information and project properties passed.
+        /// </summary>
+        /// <param name="connectionInfo">The connection information.</param>
+        /// <param name="projectProperties">The project properties.</param>
+        /// <returns>The <see cref="TempFile"/> referencing the created launch file.</returns>
+        private Task<TempFile> CreateLaunchSettingsAsync(ConnectionInfo connectionInfo, ProjectProperties projectProperties)
+        {
+            Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
+            Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
+
+            var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
+            var args = new JArray();
+
+            var rootObject = 
+                new JObject
+                (
+                    new JProperty("version", "0.2.0"),
+                    new JProperty("adapter", Path.Combine(systemRoot, "sysnative", "openssh", "ssh.exe")),
+                    new JProperty("adapterArgs", $"{connectionInfo.User}@{connectionInfo.Host} -i \"{connectionInfo.PrivateKeyPath}\" --interpreter=vscode"),
+                    new JProperty("configurations",
+                        new JArray
+                        (
+                            new JObject
+                            (
+                                new JProperty("project", "default"),
+                                new JProperty("type", "coreclr"),
+                                new JProperty("request", "launch"),
+                                new JProperty("program", $"~/{projectProperties.Name}/{projectProperties.AssemblyName}.dll"),
+
+                                new JProperty("args", ""),
+
+                                new JProperty("cwd", $"~/{projectProperties.Name}"),
+                                new JProperty("stopAtEntry", "false"),
+                                new JProperty("console", "internalConsole")
+                            )
+                        )
+                    )
+                );
         }
     }
 }
