@@ -146,6 +146,39 @@ namespace RaspberryDebug
                 return;
             }
 
+            var hasWhitespace = false;
+            var hasQuote      = false;
+
+            foreach (var ch in userText)
+            {
+                if (char.IsWhiteSpace(ch))
+                {
+                    hasWhitespace = true;
+                    break;
+                }
+                else if (ch == '\'' || ch == '"')
+                {
+                    hasQuote = true;
+                    break;
+                }
+            }
+
+            if (hasWhitespace)
+            {
+                userTextBox.Focus();
+                userTextBox.SelectAll();
+                MessageBoxEx.Show(this, "Username may not include whitespace.", "Error", MessageBoxButtons.OK);
+                return;
+            }
+
+            if (hasQuote)
+            {
+                userTextBox.Focus();
+                userTextBox.SelectAll();
+                MessageBoxEx.Show(this, "Username may not include single or double quotes.", "Error", MessageBoxButtons.OK);
+                return;
+            }
+
             //-----------------------------------------------------------------
             // Validate the password.
 
@@ -156,6 +189,39 @@ namespace RaspberryDebug
                 passwordTextBox.Focus();
                 passwordTextBox.SelectAll();
                 MessageBoxEx.Show(this, "You must specify a password.", "Error", MessageBoxButtons.OK);
+                return;
+            }
+
+            hasWhitespace = false;
+            hasQuote      = false;
+
+            foreach (var ch in passwordText)
+            {
+                if (char.IsWhiteSpace(ch))
+                {
+                    hasWhitespace = true;
+                    break;
+                }
+                else if (ch == '\'' || ch == '"')
+                {
+                    hasQuote = true;
+                    break;
+                }
+            }
+
+            if (hasWhitespace)
+            {
+                passwordTextBox.Focus();
+                passwordTextBox.SelectAll();
+                MessageBoxEx.Show(this, "Password may not include whitespace.", "Error", MessageBoxButtons.OK);
+                return;
+            }
+
+            if (hasQuote)
+            {
+                passwordTextBox.Focus();
+                passwordTextBox.SelectAll();
+                MessageBoxEx.Show(this, "Password may not include single or double quotes.", "Error", MessageBoxButtons.OK);
                 return;
             }
 
