@@ -515,7 +515,7 @@ rm -f {tempPublicKeyPath}
 
             if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkVersion))
             {
-                await Task.FromResult(true);    // Already installed
+                return await Task.FromResult(true);    // Already installed
             }
 
             LogInfo($".NET Core SDK [v{sdkVersion}] is not installed.");
@@ -538,7 +538,7 @@ rm -f {tempPublicKeyPath}
                 LogError($"Try updating the RasberryDebug extension or report this issue at:");
                 LogError($"https://github.com/jefflill/RaspberryDebug/issues/");
 
-                await Task.FromResult(false);
+                return await Task.FromResult(false);
             }
 
             // Install the SDK.
