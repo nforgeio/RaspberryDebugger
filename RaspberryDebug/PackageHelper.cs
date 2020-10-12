@@ -84,6 +84,12 @@ namespace RaspberryDebug
         public const string RemoteDebuggerRoot = RemoteDotnetRootPath + "/vsdbg";
 
         /// <summary>
+        /// Directory on the Raspberry Pi where the folder for the uploaded program binaries
+        /// will be located.
+        /// </summary>
+        public const string RemoteBinaryRoot = "~/.vsdbg";
+
+        /// <summary>
         /// Returns information about the known .NET Core SDKs,
         /// </summary>
         public static SdkCatalog SdkCatalog { get; private set; }

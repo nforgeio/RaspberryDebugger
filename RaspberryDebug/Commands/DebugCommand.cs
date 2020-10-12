@@ -247,7 +247,7 @@ namespace RaspberryDebug
             // Publish the project locally.  We're publishing, not building so all
             // required binaries and files will be generated.
 
-            if (!await BuildProjectAsync(Solution, project, projectProperties))
+            if (!await PublishProjectAsync(Solution, project, projectProperties))
             {
                 MessageBox.Show(
                     "[dotnet publish] failed for the project.\r\n\r\nLook at the Debug Output for more details.",
@@ -343,10 +343,12 @@ namespace RaspberryDebug
                 return;
             }
 
-            // Connect to the Raspberry and ensure that the SDK and debugger are installed.
+            // Establish a Raspberry connection to handle some things before we start the debugger.
 
             using (var connection = await Connection.ConnectAsync(connectionInfo))
             {
+                // Ensure that the SDK is installed.
+
                 if (!await connection.InstallSdkAsync(targetSdk.Version))
                 {
                     MessageBoxEx.Show(
@@ -358,10 +360,25 @@ namespace RaspberryDebug
                     return;
                 }
 
+                // Ensure that the debugger is installed.
+
                 if (!await connection.InstallDebuggerAsync())
                 {
                     MessageBoxEx.Show(
                         $"Cannot install the VSDBG debugger on the Raspberry.  Check the Debug Output for more details.",
+                        "Debugger Installation Failed",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+
+                    return;
+                }
+
+                // Upload the program binaries.
+
+                if (!await connection.UploadProgramAsync(projectProperties.Name, projectProperties.PublishFolder))
+                {
+                    MessageBoxEx.Show(
+                        $"Cannot upload the program binaries to the Raspberry.  Check the Debug Output for more details.",
                         "Debugger Installation Failed",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
@@ -378,7 +395,7 @@ namespace RaspberryDebug
         /// <param name="project">The project.</param>
         /// <param name="projectProperties">The project properties.</param>
         /// <returns><c>true</c> on success.</returns>
-        private async Task<bool> BuildProjectAsync(Solution solution, Project project, ProjectProperties projectProperties)
+        private async Task<bool> PublishProjectAsync(Solution solution, Project project, ProjectProperties projectProperties)
         {
             Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
             Covenant.Requires<ArgumentNullException>(project != null, nameof(project));

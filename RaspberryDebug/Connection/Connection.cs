@@ -669,7 +669,7 @@ exit 0
             // We're going to ZIP the program files locally and then transfer the zipped
             // files to the Raspberry to be expanded there.
 
-            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteDebuggerRoot, programName);
+            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteBinaryRoot, programName);
             var deployScript =
 $@"
 if ! rm -rf {debugFolder} ; then
@@ -680,7 +680,7 @@ if ! mkdir -p {debugFolder} ; then
     exit 1
 fi
 
-if ! unzip program.zip -o -d {debugFolder} ; then
+if ! unzip program.zip -d {debugFolder} ; then
     exit 1
 fi
 
@@ -696,7 +696,7 @@ exit 0
 
                 bundle.AddZip("program.zip", programFolder);
 
-                var response = SudoCommand(bundle);
+                var response = RunCommand(bundle);
 
                 if (response.ExitCode == 0)
                 {
