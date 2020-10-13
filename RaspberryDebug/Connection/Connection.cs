@@ -301,7 +301,6 @@ $@"
 # PATH environment variable
 # Unzip Installed (""unzip"" or ""unzip-missing"")
 # Debugger Installed (""debugger-installed"" or ""debugger-missing"")
-# Debugger Running (""debugger-running"" or ""debugger-not-running"")
 # List of installed SDKs names (e.g. 3.1.108) separated by commas
 #
 # This script also ensures that the [/lib/dotnet] directory exists, that
@@ -310,8 +309,8 @@ $@"
 
 # Set the SDK and debugger installation paths.
 
-DOTNET_ROOT={PackageHelper.RemoteDotnetRootPath}
-DEBUGFOLDER={PackageHelper.RemoteDebuggerRoot}
+DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
+DEBUGFOLDER={PackageHelper.RemoteDebuggerFolder}
 
 # Get the chip architecture
 
@@ -357,7 +356,7 @@ chmod 755 /lib/dotnet
 
 # Set these for the current session:
 
-export DOTNET_ROOT={PackageHelper.RemoteDotnetRootPath}
+export DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
 export PATH=$PATH:$DOTNET_ROOT
 
 # and for future sessions too:
@@ -550,7 +549,7 @@ rm -f {tempPublicKeyPath}
                 {
                     var installScript =
 $@"
-export DOTNET_ROOT={PackageHelper.RemoteDotnetRootPath}
+export DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
 
 if ! rm -f $TMP/dotnet-sdk.tar.gz ; then
     exit 1
@@ -610,14 +609,14 @@ exit 0
                 return await Task.FromResult(true);
             }
 
-            LogInfo($"Installing VSDBG to: [{PackageHelper.RemoteDebuggerRoot}]");
+            LogInfo($"Installing VSDBG to: [{PackageHelper.RemoteDebuggerFolder}]");
 
             return await PackageHelper.ExecuteWithProgressAsync<bool>($"Installing [vsdbg] debugger...",
                 async () =>
                 {
                     var installScript =
 $@"
-if ! curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l {PackageHelper.RemoteDebuggerRoot} ; then
+if ! curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l {PackageHelper.RemoteDebuggerFolder} ; then
     exit 1
 fi
 
@@ -668,31 +667,31 @@ exit 0
             // We're going to ZIP the program files locally and then transfer the zipped
             // files to the Raspberry to be expanded there.
 
-            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
-            var deployScript =
+            var binaryFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
+            var uploadScript =
 $@"
 
-# Remove the debug folder if it exists.
+# Ensure that the debug folder exists.
 
-if ! rm -rf {debugFolder} ; then
+if ! touch {binaryFolder} ; then
     exit 1
 fi
 
-# Recreate the debug folder.
+# Clear all existing program files.
 
-if ! mkdir -p {debugFolder} ; then
+if ! rm -rf {binaryFolder} ; then
     exit 1
 fi
 
 # Unzip the binary and other files to the debug folder.
 
-if ! unzip program.zip -d {debugFolder} ; then
+if ! unzip program.zip -d {binaryFolder} ; then
     exit 1
 fi
 
-# The executabe needs execute permissions.
+# The wrapper program needs execute permissions.
 
-if ! chmod 770 {debugFolder}/{assemblyName} ; then
+if ! chmod 770 {binaryFolder}/{assemblyName} ; then
     exit 1
 fi
 
@@ -702,9 +701,9 @@ exit 0
 
             try
             {
-                LogInfo($"Uploading program to: [{debugFolder}]");
+                LogInfo($"Uploading program to: [{binaryFolder}]");
 
-                var bundle = new CommandBundle(deployScript);
+                var bundle = new CommandBundle(uploadScript);
 
                 bundle.AddZip("program.zip", publishedBinaryFolder);
 

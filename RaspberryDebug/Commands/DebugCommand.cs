@@ -593,16 +593,17 @@ namespace RaspberryDebug
                 (
                     new JProperty("version", "0.2.0"),
                     new JProperty("adapter", Path.Combine(systemRoot, "sysnative", "openssh", "ssh.exe")),
-                    new JProperty("adapterArgs", $"-i \"{connectionInfo.PrivateKeyPath}\" {connectionInfo.User}@{connectionInfo.Host} --interpreter=vscode"),
+                    new JProperty("adapterArgs", $"-i \"{connectionInfo.PrivateKeyPath}\" {connectionInfo.User}@{connectionInfo.Host} {PackageHelper.RemoteDebuggerPath} --interpreter=vscode --engineLogging={binaryFolder}/log.txt"),
                     new JProperty("configurations",
                         new JArray
                         (
                             new JObject
                             (
+                                new JProperty("name", "Debug on Raspberry"),
                                 new JProperty("project", "default"),
                                 new JProperty("type", "coreclr"),
                                 new JProperty("request", "launch"),
-                                new JProperty("program", LinuxPath.Combine(binaryFolder, projectProperties.AssemblyName)),
+                                new JProperty("program", LinuxPath.Combine(binaryFolder, projectProperties.AssemblyName + ".dll")),
                                 new JProperty("args", args),
                                 new JProperty("cwd", binaryFolder),
                                 new JProperty("stopAtEntry", "false"),
@@ -612,7 +613,7 @@ namespace RaspberryDebug
                     )
                 );
 
-            var tempFile = new TempFile(".launchSettings.json");
+            var tempFile = new TempFile(".launch.json");
 
             using (var stream = new FileStream(tempFile.Path, FileMode.CreateNew, FileAccess.ReadWrite))
             {
