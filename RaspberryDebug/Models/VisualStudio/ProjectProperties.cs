@@ -72,30 +72,8 @@ namespace RaspberryDebug
 
             // Read the properties we care about from the project.
 
-            var targetFrameworkMonikers = (string)null;
-            var outputFileName          = (string)null;
-            var outputType              = -1;
-
-            foreach (Property property in project.Properties)
-            {
-                switch (property.Name)
-                {
-                    case "TargetFrameworkMoniker":
-
-                        targetFrameworkMonikers = (string)property.Value;
-                        break;
-
-                    case "OutputFileName":
-
-                        outputFileName = (string)property.Value;
-                        break;
-
-                    case "OutputType":
-
-                        outputType = (int)property.Value;
-                        break;
-                }
-            }
+            var targetFrameworkMonikers = (string)project.Properties.Item("TargetFrameworkMoniker").Value;
+            var outputType              = (int)project.Properties.Item("OutputType").Value;
 
             var monikers = targetFrameworkMonikers.Split(',');
 
@@ -161,6 +139,7 @@ namespace RaspberryDebug
                 IsNetCore            = isNetCore,
                 SdkVersion           = sdkVersion,
                 OutputFolder         = Path.Combine(projectFolder, project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString()),
+                OutputFileName       = (string)project.Properties.Item("OutputFileName").Value,
                 IsExecutable         = outputType == 1,     // 1=EXE
                 AssemblyName         = project.Properties.Item("AssemblyName").Value.ToString(),
                 DebugHost            = debugHost,
@@ -229,7 +208,7 @@ namespace RaspberryDebug
                             }
                             else
                             {
-                                arg += commandLine[pos];
+                                arg += commandLine[pos++];
                             }
                         }
 
@@ -259,7 +238,7 @@ namespace RaspberryDebug
                             }
                             else
                             {
-                                arg += commandLine[pos];
+                                arg += commandLine[pos++];
                             }
                         }
 
@@ -270,27 +249,9 @@ namespace RaspberryDebug
 
                         // Space delimited argument: scan for the terminating whitespace.
 
-                        pos++;
-
                         while (pos < commandLine.Length && !char.IsWhiteSpace(commandLine[pos]))
                         {
-                            if (commandLine[pos] == '\\')
-                            {
-                                // Escaped character
-
-                                arg += commandLine[pos++];
-
-                                if (pos >= commandLine.Length)
-                                {
-                                    throw new ArgumentException($"Invalid escape in: [{commandLine}]");
-                                }
-
-                                arg += commandLine[pos++];
-                            }
-                            else
-                            {
-                                arg += commandLine[pos];
-                            }
+                            arg += commandLine[pos++];
                         }
 
                         pos++;
@@ -301,9 +262,9 @@ namespace RaspberryDebug
                 {
                     args.Add(Regex.Unescape(arg));
                 }
-
-                return args;
             }
+            
+            return args;
         }
 
         //--------------------------------------------------------------------
@@ -361,6 +322,11 @@ namespace RaspberryDebug
         /// Returns the name of the output assembly.
         /// </summary>
         public string AssemblyName { get; private set; }
+
+        /// <summary>
+        /// Returns the name of the output binary file.
+        /// </summary>
+        public string OutputFileName { get; private set; }
 
         /// <summary>
         /// Returns the host identifying the target Raspberry or <c>null</c> when

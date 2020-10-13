@@ -38,6 +38,7 @@ using Neon.Windows;
 using Task = System.Threading.Tasks.Task;
 using Neon.IO;
 using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace RaspberryDebug
 {
@@ -133,7 +134,7 @@ namespace RaspberryDebug
 
                 var button = MessageBox.Show(
                     "Raspberry debugging requires the Windows OpenSSH client.\r\n\r\nWould you like to install this now (restart required)?",
-                    "OpenSSH Client Required",
+                    "Windows OpenSSH Client Required",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question,
                     MessageBoxDefaultButton.Button2);
@@ -239,6 +240,17 @@ namespace RaspberryDebug
             {
                 MessageBox.Show(
                     $"The .NET Core SDK [{sdkVersion}] is not supported.  Only .NET Core [3.1.x] is supported at this time.",
+                    "SDK Not Supported",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            if (projectProperties.AssemblyName.Contains(' '))
+            {
+                MessageBox.Show(
+                    $"Your assembly name [{projectProperties.AssemblyName}] includes a space.  This isn't supported.",
                     "SDK Not Supported",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -386,6 +398,13 @@ namespace RaspberryDebug
                         MessageBoxIcon.Error);
 
                     return;
+                }
+
+                // Generate a temporary [launchSettings.json] file and launch the debugger.
+
+                using (var tempFile = await CreateLaunchSettingsAsync(connectionInfo, projectProperties))
+                {
+                    dte.ExecuteCommand("DebugAdapterHost.Launch", $"/LaunchJson:\"{tempFile.Path}\"");
                 }
             }
         }
@@ -554,21 +573,27 @@ namespace RaspberryDebug
         /// <param name="connectionInfo">The connection information.</param>
         /// <param name="projectProperties">The project properties.</param>
         /// <returns>The <see cref="TempFile"/> referencing the created launch file.</returns>
-        private Task<TempFile> CreateLaunchSettingsAsync(ConnectionInfo connectionInfo, ProjectProperties projectProperties)
+        private async Task<TempFile> CreateLaunchSettingsAsync(ConnectionInfo connectionInfo, ProjectProperties projectProperties)
         {
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
             Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
 
-            var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            var systemRoot   = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            var binaryFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(connectionInfo.User), projectProperties.Name);
 
             var args = new JArray();
 
-            var rootObject = 
+            foreach (var arg in projectProperties.CommandLineArgs)
+            {
+                args.Add(arg);
+            }
+
+            var settings = 
                 new JObject
                 (
                     new JProperty("version", "0.2.0"),
                     new JProperty("adapter", Path.Combine(systemRoot, "sysnative", "openssh", "ssh.exe")),
-                    new JProperty("adapterArgs", $"{connectionInfo.User}@{connectionInfo.Host} -i \"{connectionInfo.PrivateKeyPath}\" --interpreter=vscode"),
+                    new JProperty("adapterArgs", $"-i \"{connectionInfo.PrivateKeyPath}\" {connectionInfo.User}@{connectionInfo.Host} --interpreter=vscode"),
                     new JProperty("configurations",
                         new JArray
                         (
@@ -577,17 +602,24 @@ namespace RaspberryDebug
                                 new JProperty("project", "default"),
                                 new JProperty("type", "coreclr"),
                                 new JProperty("request", "launch"),
-                                new JProperty("program", $"~/{projectProperties.Name}/{projectProperties.AssemblyName}.dll"),
-
-                                new JProperty("args", ""),
-
-                                new JProperty("cwd", $"~/{projectProperties.Name}"),
+                                new JProperty("program", LinuxPath.Combine(binaryFolder, projectProperties.AssemblyName)),
+                                new JProperty("args", args),
+                                new JProperty("cwd", binaryFolder),
                                 new JProperty("stopAtEntry", "false"),
                                 new JProperty("console", "internalConsole")
                             )
                         )
                     )
                 );
+
+            var tempFile = new TempFile(".launchSettings.json");
+
+            using (var stream = new FileStream(tempFile.Path, FileMode.CreateNew, FileAccess.ReadWrite))
+            {
+                await stream.WriteAsync(Encoding.UTF8.GetBytes(settings.ToString()));
+            }
+
+            return tempFile;
         }
     }
 }

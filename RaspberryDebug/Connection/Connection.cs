@@ -653,34 +653,46 @@ exit 0
         /// any existing files.
         /// </summary>
         /// <param name="programName">The program name</param>
-        /// <param name="programFolder">Path to the folder holding the program files.</param>
+        /// <param name="assemblyName">The addembly name.</param>
+        /// <param name="sourceBinaryFolder">Path to the workstation folder holding the program files.</param>
         /// <returns><c>true</c> on success.</returns>
-        public async Task<bool> UploadProgramAsync(string programName, string programFolder)
+        public async Task<bool> UploadProgramAsync(string programName, string assemblyName, string sourceBinaryFolder)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(programName), nameof(programName));
-            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(programFolder), nameof(programFolder));
-            Covenant.Requires<ArgumentNullException>(Directory.Exists(programFolder), nameof(programFolder));
-
-            // Replace any spaces in the program name with underscores so we don't
-            // have to worry about quoting.
-
-            programName = programName.Replace(' ', '_');
+            Covenant.Requires<ArgumentException>(!programName.Contains(' '), nameof(programName));
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(assemblyName), nameof(assemblyName));
+            Covenant.Requires<ArgumentException>(!assemblyName.Contains(' '), nameof(assemblyName));
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(sourceBinaryFolder), nameof(sourceBinaryFolder));
+            Covenant.Requires<ArgumentNullException>(Directory.Exists(sourceBinaryFolder), nameof(sourceBinaryFolder));
 
             // We're going to ZIP the program files locally and then transfer the zipped
             // files to the Raspberry to be expanded there.
 
-            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteBinaryRoot, programName);
+            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
             var deployScript =
 $@"
+
+# Remove the debug folder if it exists.
+
 if ! rm -rf {debugFolder} ; then
     exit 1
 fi
+
+# Recreate the debug folder.
 
 if ! mkdir -p {debugFolder} ; then
     exit 1
 fi
 
+# Unzip the binary and other files to the debug folder.
+
 if ! unzip program.zip -d {debugFolder} ; then
+    exit 1
+fi
+
+# The executabe needs execute permissions.
+
+if ! chmod 770 {debugFolder}/{assemblyName} ; then
     exit 1
 fi
 
@@ -694,7 +706,7 @@ exit 0
 
                 var bundle = new CommandBundle(deployScript);
 
-                bundle.AddZip("program.zip", programFolder);
+                bundle.AddZip("program.zip", sourceBinaryFolder);
 
                 var response = RunCommand(bundle);
 

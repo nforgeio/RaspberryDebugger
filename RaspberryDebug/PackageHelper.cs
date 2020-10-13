@@ -41,6 +41,7 @@ using Neon.Time;
 using Microsoft.VisualStudio.Threading;
 using System.Threading;
 using Microsoft.VisualStudio.PlatformUI;
+using Neon.IO;
 
 namespace RaspberryDebug
 {
@@ -84,10 +85,16 @@ namespace RaspberryDebug
         public const string RemoteDebuggerRoot = RemoteDotnetRootPath + "/vsdbg";
 
         /// <summary>
-        /// Directory on the Raspberry Pi where the folder for the uploaded program binaries
-        /// will be located.
+        /// Returns the root directory on the Raspberry Pi where the folder where 
+        /// program binaries will be uploaded for the named user.  Each program will
+        /// have a subdirectory named for the program.
         /// </summary>
-        public const string RemoteBinaryRoot = "~/.vsdbg";
+        public static string RemoteDebugBinaryRoot(string username)
+        {
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(username), nameof(username));
+
+            return LinuxPath.Combine("/", "home", username, "vsdbg");
+        }
 
         /// <summary>
         /// Returns information about the known .NET Core SDKs,
