@@ -39,6 +39,7 @@ using Task = System.Threading.Tasks.Task;
 using Neon.IO;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using Newtonsoft.Json.Serialization;
 
 namespace RaspberryDebug
 {
@@ -581,7 +582,24 @@ namespace RaspberryDebug
             var systemRoot   = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
             var binaryFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(connectionInfo.User), projectProperties.Name);
 
+            // NOTE:
+            //
+            // We're having the remote [vsdbg] debugger launch our program as:
+            //
+            //      dotnet program.dll args
+            //
+            // where:
+            //
+            //      dotnet          - is the fully qualified path to the dotnet SDK tool on the remote machine
+            //      program.dll     - is the fully qualified path to our program DLL
+            //      args            - are the arguments to be passed to our program
+            //
+            // This means that we need add [program.dll] as the first argument, followed 
+            // by the program arguments.
+
             var args = new JArray();
+
+            args.Add(LinuxPath.Combine(binaryFolder, projectProperties.AssemblyName + ".dll"));
 
             foreach (var arg in projectProperties.CommandLineArgs)
             {
@@ -600,10 +618,9 @@ namespace RaspberryDebug
                             new JObject
                             (
                                 new JProperty("name", "Debug on Raspberry"),
-                                new JProperty("project", "default"),
                                 new JProperty("type", "coreclr"),
                                 new JProperty("request", "launch"),
-                                new JProperty("program", LinuxPath.Combine(binaryFolder, projectProperties.AssemblyName + ".dll")),
+                                new JProperty("program", LinuxPath.Combine(PackageHelper.RemoteDotnetFolder, "dotnet")),
                                 new JProperty("args", args),
                                 new JProperty("cwd", binaryFolder),
                                 new JProperty("stopAtEntry", "false"),
