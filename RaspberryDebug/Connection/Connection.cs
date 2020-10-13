@@ -535,7 +535,7 @@ rm -f {tempPublicKeyPath}
             {
                 LogError($"RasberryDebug is unaware of .NET Core SDK [v{sdkVersion}].");
                 LogError($"Try updating the RasberryDebug extension or report this issue at:");
-                LogError($"https://github.com/jefflill/RaspberryDebug/issues/");
+                LogError($"https://github.com/nforgeio/RaspberryDebugger/issues");
 
                 return await Task.FromResult(false);
             }
