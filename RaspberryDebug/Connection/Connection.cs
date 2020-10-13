@@ -654,16 +654,16 @@ exit 0
         /// </summary>
         /// <param name="programName">The program name</param>
         /// <param name="assemblyName">The addembly name.</param>
-        /// <param name="sourceBinaryFolder">Path to the workstation folder holding the program files.</param>
+        /// <param name="publishedBinaryFolder">Path to the workstation folder holding the program files.</param>
         /// <returns><c>true</c> on success.</returns>
-        public async Task<bool> UploadProgramAsync(string programName, string assemblyName, string sourceBinaryFolder)
+        public async Task<bool> UploadProgramAsync(string programName, string assemblyName, string publishedBinaryFolder)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(programName), nameof(programName));
             Covenant.Requires<ArgumentException>(!programName.Contains(' '), nameof(programName));
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(assemblyName), nameof(assemblyName));
             Covenant.Requires<ArgumentException>(!assemblyName.Contains(' '), nameof(assemblyName));
-            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(sourceBinaryFolder), nameof(sourceBinaryFolder));
-            Covenant.Requires<ArgumentNullException>(Directory.Exists(sourceBinaryFolder), nameof(sourceBinaryFolder));
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(publishedBinaryFolder), nameof(publishedBinaryFolder));
+            Covenant.Requires<ArgumentNullException>(Directory.Exists(publishedBinaryFolder), nameof(publishedBinaryFolder));
 
             // We're going to ZIP the program files locally and then transfer the zipped
             // files to the Raspberry to be expanded there.
@@ -706,7 +706,7 @@ exit 0
 
                 var bundle = new CommandBundle(deployScript);
 
-                bundle.AddZip("program.zip", sourceBinaryFolder);
+                bundle.AddZip("program.zip", publishedBinaryFolder);
 
                 var response = RunCommand(bundle);
 

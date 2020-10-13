@@ -156,6 +156,7 @@ namespace RaspberryDebug
         /// <returns>The list of parsed arguments.</returns>
         private static List<string> ParseArgs(string commandLine)
         {
+            commandLine = commandLine ?? string.Empty;
             commandLine = commandLine.Trim();
 
             var args = new List<string>();

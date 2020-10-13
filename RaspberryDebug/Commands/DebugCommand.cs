@@ -389,7 +389,7 @@ namespace RaspberryDebug
 
                 // Upload the program binaries.
 
-                if (!await connection.UploadProgramAsync(projectProperties.Name, projectProperties.PublishFolder))
+                if (!await connection.UploadProgramAsync(projectProperties.Name, projectProperties.AssemblyName, projectProperties.PublishFolder))
                 {
                     MessageBoxEx.Show(
                         $"Cannot upload the program binaries to the Raspberry.  Check the Debug Output for more details.",
