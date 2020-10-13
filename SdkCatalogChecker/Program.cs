@@ -27,7 +27,7 @@ using Neon.Common;
 using Neon.Cryptography;
 
 using Newtonsoft.Json;
-using RaspberryDebug;
+using RaspberryDebugger;
 
 namespace NetCoreCatalogChecker
 {
@@ -57,7 +57,7 @@ namespace NetCoreCatalogChecker
         /// <returns>The tracking <see cref="Task"/>.</returns>
         public static async Task Main(string[] args)
         {
-            var catalogPath = Path.GetFullPath(Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "..", "..", "..", "..", "RaspberryDebug", "sdk-catalog.json"));
+            var catalogPath = Path.GetFullPath(Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "..", "..", "..", "..", "RaspberryDebugger", "sdk-catalog.json"));
             var catalog     = (SdkCatalog)null;
             var ok          = true;
 
