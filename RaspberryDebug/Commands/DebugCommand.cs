@@ -22,6 +22,7 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -33,13 +34,12 @@ using EnvDTE;
 using EnvDTE80;
 
 using Neon.Common;
+using Neon.IO;
 using Neon.Windows;
 
-using Task = System.Threading.Tasks.Task;
-using Neon.IO;
 using Newtonsoft.Json.Linq;
-using System.Text;
-using Newtonsoft.Json.Serialization;
+
+using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebug
 {
@@ -606,6 +606,13 @@ namespace RaspberryDebug
                 args.Add(arg);
             }
 
+            var environmentVariables = new JObject();
+
+            foreach (var variable in projectProperties.EnvironmentVariables)
+            {
+                environmentVariables.Add(variable.Key, variable.Value);
+            }
+
             var settings = 
                 new JObject
                 (
@@ -624,7 +631,8 @@ namespace RaspberryDebug
                                 new JProperty("args", args),
                                 new JProperty("cwd", binaryFolder),
                                 new JProperty("stopAtEntry", "false"),
-                                new JProperty("console", "internalConsole")
+                                new JProperty("console", "internalConsole"),
+                                new JProperty("env", environmentVariables)
                             )
                         )
                     )
