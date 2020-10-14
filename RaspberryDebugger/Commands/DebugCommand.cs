@@ -73,6 +73,8 @@ namespace RaspberryDebugger
         /// <param name="commandService">Command service to add command to, not null.</param>
         private DebugCommand(AsyncPackage package, OleMenuCommandService commandService)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             this.package = package ?? throw new ArgumentNullException(nameof(package));
             this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 

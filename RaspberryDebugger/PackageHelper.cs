@@ -258,6 +258,28 @@ namespace RaspberryDebugger
             }
         }
 
+        /// <summary>
+        /// Updates the Visual Studio user interface.  This is performed asynchronously
+        /// by default which will result in better performance.
+        /// </summary>
+        /// <param name="synchronously">
+        /// Optionally specifies that the update should be performed immediately,
+        /// before the method returns.
+        /// </param>
+        internal static void UpdateVisualStudioUI(bool synchronously = false)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var vsShell = (IVsUIShell)RaspberryDebugPackage.GetGlobalService(typeof(IVsUIShell));
+
+            if (vsShell != null)
+            {
+                var hr = vsShell.UpdateCommandUI(synchronously ? 1 : 0);
+
+                Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
+            }
+        }
+
         //---------------------------------------------------------------------
         // Progress related code
 

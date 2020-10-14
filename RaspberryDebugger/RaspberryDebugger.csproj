@@ -148,9 +148,6 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\DebugRaspberryCommand.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="CustomPages\ConnectionsPanel.resx">
       <DependentUpon>ConnectionsPanel.cs</DependentUpon>
     </EmbeddedResource>

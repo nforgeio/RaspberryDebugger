@@ -21,6 +21,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+using EnvDTE;
+using EnvDTE80;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -39,6 +42,7 @@ namespace RaspberryDebugger
     /// </summary>
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(RaspberryDebugPackage.PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
@@ -122,6 +126,12 @@ namespace RaspberryDebugger
         //---------------------------------------------------------------------
         // Instance members
 
+        private DTE2            dte;
+        private CommandEvents   debugStartCommandEvent;
+        private CommandEvents   debugStartWithoutDebuggingCommandEvent;
+        private CommandEvents   debugStartDebugTargetCommandEvent;
+        private CommandEvents   debugRestartCommandEvent;
+
         /// <summary>
         /// Initializes the package.
         /// </summary>
@@ -131,6 +141,7 @@ namespace RaspberryDebugger
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             Instance = this;
+            dte      = (DTE2)(await GetServiceAsync(typeof(SDTE)));
 
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
@@ -144,9 +155,64 @@ namespace RaspberryDebugger
 
             debugWindow.GetPane(ref generalPaneGuid, out debugPane);
 
+            // Intercept the debugger commands and quickly decide whether the startup project is enabled
+            // for Raspberry remote debugging so we can invoke our custom commands instead.  We'll just
+            // let the default command implementations do their thing when we're not doing Raspberry
+            // debugging.
+
+            debugStartCommandEvent                 = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x127];
+            debugStartWithoutDebuggingCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x170];
+            debugStartDebugTargetCommandEvent      = dte.Events.CommandEvents["{6E87CFAD-6C05-4ADF-9CD7-3B7943875B7C}", 0x101];
+            debugRestartCommandEvent               = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x128];
+
+            debugStartCommandEvent.BeforeExecute                 += DebugStartCommandEvent_BeforeExecute;
+            debugStartWithoutDebuggingCommandEvent.BeforeExecute += DebugStartWithoutDebuggingCommandEvent_BeforeExecute;
+            debugStartDebugTargetCommandEvent.BeforeExecute      += DebugStartDebugTargetCommandEvent_BeforeExecute;
+            debugRestartCommandEvent.BeforeExecute               += DebugRestartCommandEvent_BeforeExecute;
+
             // Initialize the new commands.
 
             await DebugCommand.InitializeAsync(this);
+        }
+
+        //---------------------------------------------------------------------
+        // Command interceptors
+
+        /// <summary>
+        /// Executes a command by command set GUID and command ID.
+        /// </summary>
+        /// <param name="commandSet">The command set GUID.</param>
+        /// <param name="commandId">The command ID.</param>
+        /// <param name="arg">Optionall command argument.</param>
+        /// <returns>The command result.</returns>
+        private object ExecuteCommand(Guid commandSet, int commandId, object arg = null)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var result = (object)null;
+
+            dte.Commands.Raise(commandSet.ToString(), commandId, ref arg, ref result);
+
+            return result;
+        }
+
+        private void DebugStartCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        {
+            CancelDefault = true;
+
+            ExecuteCommand(DebugCommand.CommandSet, DebugCommand.CommandId); 
+        }
+
+        private void DebugStartWithoutDebuggingCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        {
+        }
+
+        private void DebugStartDebugTargetCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        {
+        }
+
+        private void DebugRestartCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        {
         }
     }
 }
