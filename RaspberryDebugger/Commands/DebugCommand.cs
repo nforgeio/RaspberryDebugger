@@ -56,9 +56,9 @@ namespace RaspberryDebugger
         public const int CommandId = 0x0100;
 
         /// <summary>
-        /// Command menu group (command set GUID).
+        /// Package command set ID.
         /// </summary>
-        public static readonly Guid CommandSet = new Guid("3e88353d-7372-44fb-a34f-502ec7453200");
+        public static readonly Guid CommandSet = RaspberryDebugPackage.CommandSet;
 
         /// <summary>
         /// VS Package that provides this command, not null.
@@ -73,12 +73,13 @@ namespace RaspberryDebugger
         /// <param name="commandService">Command service to add command to, not null.</param>
         private DebugCommand(AsyncPackage package, OleMenuCommandService commandService)
         {
+            Covenant.Requires<ArgumentNullException>(package != null, nameof(package));
+            Covenant.Requires<ArgumentNullException>(commandService != null, nameof(commandService));
+
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.package = package ?? throw new ArgumentNullException(nameof(package));
+            this.package = package;
             this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
-
-            commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
             var menuCommandID = new CommandID(CommandSet, CommandId);
             var menuItem      = new MenuCommand(this.Execute, menuCommandID);
@@ -102,13 +103,11 @@ namespace RaspberryDebugger
         /// <param name="package">Owner package, not null.</param>
         public static async Task InitializeAsync(AsyncPackage package)
         {
-            // Switch to the main thread - the call to AddCommand in DebugRaspberryCommand's constructor requires
-            // the UI thread.
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
 
             var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
 
-            Instance = new DebugCommand(package, commandService);
+            DebugCommand.Instance = new DebugCommand(package, commandService);
         }
 
         /// <summary>

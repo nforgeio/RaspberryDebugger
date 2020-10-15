@@ -51,6 +51,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Commands\DebugCommand.cs" />
+    <Compile Include="Commands\SettingsCommand.cs" />
     <Compile Include="Connection\ConnectionException.cs" />
     <Compile Include="Connection\Connection.cs" />
     <Compile Include="Connection\Status.cs" />

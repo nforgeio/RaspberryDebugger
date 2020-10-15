@@ -57,6 +57,11 @@ namespace RaspberryDebugger
         /// </summary>
         public const string PackageGuidString = "fed3a92c-c8e2-40a3-a38f-ce7d35088ea5";
 
+        /// <summary>
+        /// Command set ID for the package.
+        /// </summary>
+        public static readonly Guid CommandSet = new Guid("3e88353d-7372-44fb-a34f-502ec7453200");
+
         private static object               debugSyncLock = new object();
         private static IVsOutputWindowPane  debugPane     = null;
         private static Queue<string>        debugLogQueue = new Queue<string>();
@@ -173,6 +178,7 @@ namespace RaspberryDebugger
             // Initialize the new commands.
 
             await DebugCommand.InitializeAsync(this);
+            await SettingsCommand.InitializeAsync(this);
         }
 
         //---------------------------------------------------------------------
@@ -198,6 +204,8 @@ namespace RaspberryDebugger
 
         private void DebugStartCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             CancelDefault = true;
 
             ExecuteCommand(DebugCommand.CommandSet, DebugCommand.CommandId); 
@@ -205,14 +213,17 @@ namespace RaspberryDebugger
 
         private void DebugStartWithoutDebuggingCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
         }
 
         private void DebugStartDebugTargetCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
         }
 
         private void DebugRestartCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
         }
     }
 }
