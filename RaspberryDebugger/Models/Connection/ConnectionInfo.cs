@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using Neon.Net;
@@ -30,7 +31,10 @@ namespace RaspberryDebugger
     /// </summary>
     internal class ConnectionInfo
     {
-        private bool    isDefault;
+        private bool        isDefault;
+        private string      host;
+        private string      user = "pi";
+        private string      cachedName;
 
         /// <summary>
         /// Returns the value to be used for sorting the connection.
@@ -42,7 +46,18 @@ namespace RaspberryDebugger
         /// Returns the connection name like: user@host
         /// </summary>
         [JsonIgnore]
-        public string Name => $"{User}@{Host}";
+        public string Name
+        {
+            get
+            {
+                if (cachedName != null)
+                {
+                    return cachedName;
+                }
+
+                return cachedName = $"{User}@{Host}";
+            }
+        }
 
         /// <summary>
         /// Indicates that this is the default connection.
@@ -66,7 +81,16 @@ namespace RaspberryDebugger
         /// The Raspberry Pi host name or IP address.
         /// </summary>
         [JsonProperty(PropertyName = "Host", Required = Required.Always)]
-        public string Host { get; set; }
+        public string Host
+        {
+            get => host;
+            
+            set
+            {
+                host      = value;
+                cachedName = null;
+            }
+        }
 
         /// <summary>
         /// The SSH port.
@@ -78,7 +102,16 @@ namespace RaspberryDebugger
         /// The user name.
         /// </summary>
         [JsonProperty(PropertyName = "User", Required = Required.Always)]
-        public string User { get; set; } = "pi";
+        public string User
+        {
+            get => user;
+
+            set
+            {
+                user       = value;
+                cachedName = null;
+            }
+        }
 
         /// <summary>
         /// The password.

@@ -30,6 +30,7 @@ using Neon.Common;
 using Neon.Net;
 using System.Diagnostics.Contracts;
 using EnvDTE;
+using System.Text.RegularExpressions;
 
 namespace RaspberryDebugger
 {
@@ -38,10 +39,8 @@ namespace RaspberryDebugger
     /// </summary>
     public partial class SettingsDialog : Form
     {
-        private const string disabledItem = "[debugging disabled]";
-        private const string defaultItem  = "[default connection]";
-
-        private ProjectSettings     projectSettings;
+        private ProjectSettings             projectSettings;
+        private Dictionary<string, int>     connectionNameToIndex;
 
         /// <summary>
         /// Constructor.
@@ -51,21 +50,56 @@ namespace RaspberryDebugger
         {
             Covenant.Requires<ArgumentNullException>(projectSettings != null);
 
-            InitializeComponent();
-
             this.projectSettings = projectSettings;
 
-            // Initialize the combo box with the available connections.
+            InitializeComponent();
+
+            // The instructions include "\r\n" sequences that need to be replaced with
+            // actual CR/LF characters.
+
+            instructionsTextBox.Text = Regex.Unescape(instructionsTextBox.Text);
+
+            // Initialize the combo box with the available connections and select
+            // the current one.
+
+            connectionNameToIndex = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
 
             var connections = PackageHelper.ReadConnections(disableLogging: true);
+            var index       = 0;
 
             targetComboBox.Items.Clear();
-            targetComboBox.Items.Add(disabledItem);
-            targetComboBox.Items.Add(defaultItem);
+
+            targetComboBox.Items.Add(ProjectSettings.DisabledConnectionName);
+            connectionNameToIndex.Add(ProjectSettings.DisabledConnectionName, index++);
+
+            targetComboBox.Items.Add(ProjectSettings.DefaultConnectionName);
+            connectionNameToIndex.Add(ProjectSettings.DefaultConnectionName, index++);
 
             foreach (var connection in connections.OrderBy(connection => connection.SortKey))
             {
                 targetComboBox.Items.Add(connection.Name);
+                connectionNameToIndex.Add(connection.Name, index++);
+            }
+
+            if (!projectSettings.EnableRemoteDebugging)
+            {
+                targetComboBox.SelectedIndex = connectionNameToIndex[ProjectSettings.DisabledConnectionName];
+            }
+            else
+            {
+                // If the connection named in the settings exists select it,
+                // otherwise select the default.
+
+                var selectedConnection = connections.FirstOrDefault(connection => connection.Name.Equals(projectSettings.RemoteDebugTarget, StringComparison.InvariantCultureIgnoreCase));
+
+                if (projectSettings.RemoteDebugTarget == null || selectedConnection == null)
+                {
+                    targetComboBox.SelectedIndex = connectionNameToIndex[ProjectSettings.DefaultConnectionName];
+                }
+                else
+                {
+                    targetComboBox.SelectedIndex = connectionNameToIndex[selectedConnection.Name];
+                }
             }
         }
 
@@ -80,12 +114,12 @@ namespace RaspberryDebugger
 
             switch (selectedItem)
             {
-                case disabledItem:
+                case ProjectSettings.DisabledConnectionName:
 
                     projectSettings.EnableRemoteDebugging = false;
                     break;
 
-                case defaultItem:
+                case ProjectSettings.DefaultConnectionName:
 
                     projectSettings.EnableRemoteDebugging = true;
                     projectSettings.RemoteDebugTarget     = null;   // NULL means default

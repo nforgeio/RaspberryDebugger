@@ -386,7 +386,7 @@ namespace RaspberryDebugger
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            return Path.Combine(solution.FullName, ".vs", "raspberry-projects.json");
+            return Path.Combine(Path.GetDirectoryName(solution.FullName), ".vs", "raspberry-projects.json");
         }
 
         /// <summary>
@@ -455,7 +455,7 @@ namespace RaspberryDebugger
             var path = GetRaspberryProjectsPath(solution);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllText(path, NeonHelper.JsonSerialize(projects));
+            File.WriteAllText(path, NeonHelper.JsonSerialize(projects, Formatting.Indented));
         }
 
         /// <summary>

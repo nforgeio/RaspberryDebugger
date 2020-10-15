@@ -54,7 +54,11 @@ namespace RaspberryDebugger
                 }
                 else
                 {
-                    return new ProjectSettings();
+                    settings = new ProjectSettings();
+
+                    this[projectGuid] = settings;
+
+                    return settings;
                 }
             }
 

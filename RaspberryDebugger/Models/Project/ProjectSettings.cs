@@ -31,6 +31,16 @@ namespace RaspberryDebugger
     public class ProjectSettings
     {
         /// <summary>
+        /// Connection combo box item indicating that Raspberry debugging is disabled.
+        /// </summary>
+        public const string DisabledConnectionName = "[debugging disabled]";
+
+        /// <summary>
+        /// Connection combo box item indicating that the default Raspberry connection should be used.
+        /// </summary>
+        public const string DefaultConnectionName  = "[default connection]";
+
+        /// <summary>
         /// Default constructor that returns settings with remote debugging disabled.
         /// </summary>
         public ProjectSettings()

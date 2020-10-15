@@ -28,10 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsDialog));
             this.targetLabel = new System.Windows.Forms.Label();
             this.targetComboBox = new System.Windows.Forms.ComboBox();
             this.okButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
+            this.instructionsTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // targetLabel
@@ -48,12 +50,12 @@
             this.targetComboBox.FormattingEnabled = true;
             this.targetComboBox.Location = new System.Drawing.Point(106, 14);
             this.targetComboBox.Name = "targetComboBox";
-            this.targetComboBox.Size = new System.Drawing.Size(165, 21);
+            this.targetComboBox.Size = new System.Drawing.Size(239, 21);
             this.targetComboBox.TabIndex = 2;
             // 
             // okButton
             // 
-            this.okButton.Location = new System.Drawing.Point(304, 13);
+            this.okButton.Location = new System.Drawing.Point(363, 13);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
             this.okButton.TabIndex = 3;
@@ -64,7 +66,7 @@
             // cancelButton
             // 
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(304, 45);
+            this.cancelButton.Location = new System.Drawing.Point(363, 44);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 4;
@@ -72,13 +74,24 @@
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
+            // instructionsTextBox
+            // 
+            this.instructionsTextBox.Location = new System.Drawing.Point(15, 52);
+            this.instructionsTextBox.Multiline = true;
+            this.instructionsTextBox.Name = "instructionsTextBox";
+            this.instructionsTextBox.ReadOnly = true;
+            this.instructionsTextBox.Size = new System.Drawing.Size(330, 85);
+            this.instructionsTextBox.TabIndex = 5;
+            this.instructionsTextBox.Text = resources.GetString("instructionsTextBox.Text");
+            // 
             // SettingsDialog
             // 
             this.AcceptButton = this.okButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(391, 126);
+            this.ClientSize = new System.Drawing.Size(450, 151);
+            this.Controls.Add(this.instructionsTextBox);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.okButton);
             this.Controls.Add(this.targetComboBox);
@@ -100,5 +113,6 @@
         private System.Windows.Forms.ComboBox targetComboBox;
         private System.Windows.Forms.Button okButton;
         private System.Windows.Forms.Button cancelButton;
+        private System.Windows.Forms.TextBox instructionsTextBox;
     }
 }

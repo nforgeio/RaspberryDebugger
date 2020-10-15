@@ -208,8 +208,9 @@ namespace RaspberryDebugger
         /// </summary>
         /// <returns>
         /// <c>null</c> if the project does not have Raspberry settings or is not an eligible
-        /// .NET Core project, <b>"[default]"</b> when the project targets the default Raspberry 
-        /// connection, otherwise the name of  the specific target connection will be returned.
+        /// .NET Core project, <see cref="ProjectSettings.DefaultConnectionName"/> when the project
+        /// targets the default Raspberry connection, otherwise the name of the specific target 
+        /// connection will be returned.
         /// </returns>
         private string GetConnectionName()
         {
@@ -234,7 +235,7 @@ namespace RaspberryDebugger
                 return null;
             }
 
-            return projectSettings.RemoteDebugTarget ?? "[default]";
+            return projectSettings.RemoteDebugTarget ?? ProjectSettings.DefaultConnectionName;
         }
 
         /// <summary>
