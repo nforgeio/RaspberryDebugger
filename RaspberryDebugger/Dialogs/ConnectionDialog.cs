@@ -92,7 +92,7 @@ namespace RaspberryDebugger
             {
                 hostTextBox.Focus();
                 hostTextBox.SelectAll();
-                MessageBoxEx.Show(this, "You must specify a host name or IP address.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "You must specify a host name or IP address.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -100,7 +100,7 @@ namespace RaspberryDebugger
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();
-                MessageBoxEx.Show(this, $"[{hostText}] is not a valid IPv4 address or host name.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, $"[{hostText}] is not a valid IPv4 address or host name.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace RaspberryDebugger
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();
-                MessageBoxEx.Show(this, "You must specify the SSH port.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "You must specify the SSH port.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -121,7 +121,7 @@ namespace RaspberryDebugger
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();
-                MessageBoxEx.Show(this, $"[{portText}] is not a valid SSH port.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, $"[{portText}] is not a valid SSH port.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -134,7 +134,7 @@ namespace RaspberryDebugger
             {
                 userTextBox.Focus();
                 userTextBox.SelectAll();
-                MessageBoxEx.Show(this, "You must specify a username.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "You must specify a username.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -159,7 +159,7 @@ namespace RaspberryDebugger
             {
                 userTextBox.Focus();
                 userTextBox.SelectAll();
-                MessageBoxEx.Show(this, "Username may not include whitespace.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "Username may not include whitespace.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -167,7 +167,7 @@ namespace RaspberryDebugger
             {
                 userTextBox.Focus();
                 userTextBox.SelectAll();
-                MessageBoxEx.Show(this, "Username may not include single or double quotes.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "Username may not include single or double quotes.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -180,7 +180,7 @@ namespace RaspberryDebugger
             {
                 passwordTextBox.Focus();
                 passwordTextBox.SelectAll();
-                MessageBoxEx.Show(this, "You must specify a password.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "You must specify a password.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -205,7 +205,7 @@ namespace RaspberryDebugger
             {
                 passwordTextBox.Focus();
                 passwordTextBox.SelectAll();
-                MessageBoxEx.Show(this, "Password may not include whitespace.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "Password may not include whitespace.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -213,7 +213,7 @@ namespace RaspberryDebugger
             {
                 passwordTextBox.Focus();
                 passwordTextBox.SelectAll();
-                MessageBoxEx.Show(this, "Password may not include single or double quotes.", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "Password may not include single or double quotes.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
@@ -226,7 +226,7 @@ namespace RaspberryDebugger
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();
-                MessageBoxEx.Show(this, $"Another coinnection already exists for [{connectionName}].", "Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, $"Another connection already exists for [{connectionName}].", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
