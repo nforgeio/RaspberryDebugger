@@ -458,9 +458,9 @@ exit 0
                             // and then update the connection info.
 
                             var connections            = PackageHelper.ReadConnections();
-                            var existingConnectionInfo = connections.SingleOrDefault(c => c.Host == connectionInfo.Host);
-                            var publicKeyPath          = Path.Combine(PackageHelper.KeysFolder, $"{connectionInfo.Host}.pub");
-                            var privateKeyPath         = Path.Combine(PackageHelper.KeysFolder, connectionInfo.Host);
+                            var existingConnectionInfo = connections.SingleOrDefault(c => c.Name == connectionInfo.Name);
+                            var publicKeyPath          = Path.Combine(PackageHelper.KeysFolder, $"{connectionInfo.Name}.pub");
+                            var privateKeyPath         = Path.Combine(PackageHelper.KeysFolder, connectionInfo.Name);
 
                             File.WriteAllBytes(publicKeyPath, DownloadBytes(tempPublicKeyPath));
                             File.WriteAllBytes(privateKeyPath, DownloadBytes(tempPrivateKeyPath));

@@ -27,7 +27,7 @@ using Newtonsoft.Json;
 namespace RaspberryDebugger
 {
     /// <summary>
-    /// Describes a Raspberry Pi host connection.
+    /// Describes a Raspberry Pi connection's network details and credentials.
     /// </summary>
     internal class ConnectionInfo
     {

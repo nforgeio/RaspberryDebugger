@@ -174,7 +174,7 @@ namespace RaspberryDebugger
 
             // Identify the current startup project (if any).
 
-            if (Solution == null)
+            if (dte.Solution == null)
             {
                 MessageBox.Show(
                     "Please open a Visual Studio solution.",
@@ -185,7 +185,7 @@ namespace RaspberryDebugger
                 return;
             }
 
-            var project = PackageHelper.GetStartupProject(Solution);
+            var project = PackageHelper.GetStartupProject(dte.Solution);
 
             if (project == null)
             {
@@ -201,7 +201,7 @@ namespace RaspberryDebugger
             // We need to capture the relevant project properties while we're still
             // on the UI thread so we'll have them on background threads.
 
-            var projectProperties = ProjectProperties.CopyFrom(project);
+            var projectProperties = ProjectProperties.CopyFrom(dte.Solution, project);
 
             if (!projectProperties.IsNetCore)
             {
@@ -263,7 +263,7 @@ namespace RaspberryDebugger
             // Publish the project locally.  We're publishing, not building so all
             // required binaries and files will be generated.
 
-            if (!await PublishProjectAsync(Solution, project, projectProperties))
+            if (!await PublishProjectAsync(dte.Solution, project, projectProperties))
             {
                 MessageBox.Show(
                     "[dotnet publish] failed for the project.\r\n\r\nLook at the Debug Output for more details.",
@@ -274,15 +274,15 @@ namespace RaspberryDebugger
                 return;
             }
 
-            // Map the debug host we got from the project properties (if any) to
-            // one of our Raspberry connections.  If no host is specified, we'll
+            // Map the debug connection name we got from the project properties (if any) to
+            // one of our Raspberry connections.  If no name is specified, we'll
             // use the default connection or prompt the user to create a connection.
-            // We'll display an error if a host is specified and but doesn't exist.
+            // We'll display an error if a connection is specified and but doesn't exist.
 
             var existingConnections = PackageHelper.ReadConnections();
             var connectionInfo      = (ConnectionInfo)null;
 
-            if (string.IsNullOrEmpty(projectProperties.DebugHost))
+            if (string.IsNullOrEmpty(projectProperties.DebugConnectionName))
             {
                 connectionInfo = existingConnections.SingleOrDefault(info => info.IsDefault);
 
@@ -315,13 +315,13 @@ namespace RaspberryDebugger
             }
             else
             {
-                connectionInfo = existingConnections.SingleOrDefault(info => info.Host.Equals(projectProperties.DebugHost, StringComparison.InvariantCultureIgnoreCase));
+                connectionInfo = existingConnections.SingleOrDefault(info => info.Name.Equals(projectProperties.DebugConnectionName, StringComparison.InvariantCultureIgnoreCase));
 
                 if (connectionInfo == null)
                 {
                     MessageBoxEx.Show(
-                        $"The [{projectProperties.DebugHost}] Raspberry connection does not exist.\r\n\r\nPlease add the connection via: Tools/Options/Raspberry Debugger/Connections",
-                        "Cannot Locate Raspberry Connection",
+                        $"The [{projectProperties.DebugConnectionName}] Raspberry connection does not exist.\r\n\r\nPlease add the connection via:\r\n\r\nTools/Options/Raspberry Debugger",
+                        "Cannot Find Raspberry Connection",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
 
@@ -482,11 +482,6 @@ namespace RaspberryDebugger
 
             return false;
         }
-
-        /// <summary>
-        /// Returns the current root solution or <c>null</c>.
-        /// </summary>
-        private Solution Solution => dte.Solution;
 
         /// <summary>
         /// Creates a temporary launch settings file for the application that allows

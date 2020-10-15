@@ -220,7 +220,7 @@ namespace RaspberryDebugger
 
                 if (connections.Count > 0 && !connections.Any(connection => connection.IsDefault))
                 {
-                    connections.OrderBy(connection => connection.Host.ToLowerInvariant()).Single().IsDefault = true;
+                    connections.OrderBy(connection => connection.Name.ToLowerInvariant()).Single().IsDefault = true;
                 }
                 
                 return connections;
@@ -257,7 +257,7 @@ namespace RaspberryDebugger
 
                 if (connections.Count > 0 && !connections.Any(connection => connection.IsDefault))
                 {
-                    connections.OrderBy(connection => connection.Host.ToLowerInvariant()).First().IsDefault = true;
+                    connections.OrderBy(connection => connection.Name.ToLowerInvariant()).First().IsDefault = true;
                 }
 
                 File.WriteAllText(ConnectionsPath, NeonHelper.JsonSerialize(connections, Formatting.Indented));

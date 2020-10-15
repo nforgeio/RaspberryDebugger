@@ -58,10 +58,12 @@ namespace RaspberryDebugger
         /// necessary properties from a <see cref="Project"/>.  This must
         /// be called on a UI thread.
         /// </summary>
+        /// <param name="solution">The current solution.</param>
         /// <param name="project">The source project.</param>
         /// <returns>The cloned <see cref="ProjectProperties"/>.</returns>
-        public static ProjectProperties CopyFrom(Project project)
+        public static ProjectProperties CopyFrom(Solution solution, Project project)
         {
+            Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
             Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -85,7 +87,6 @@ namespace RaspberryDebugger
             // that we're going to use the profile named for the project and ignore any others.
 
             var launchSettingsPath   = Path.Combine(projectFolder, "Properties", "launchSettings.json");
-            var debugHost            = (string)null;
             var commandLineArgs      = new List<string>();
             var environmentVariables = new Dictionary<string, string>();
 
@@ -107,19 +108,9 @@ namespace RaspberryDebugger
 
                             if (environmentVariablesObject != null)
                             {
-                                // NOTE: The [@RASPBERRY] variable (case insensitive) is reserved and specifies
-                                // the connection host when present.  It is never passed to the target program.
-
                                 foreach (var variable in environmentVariablesObject.Properties())
                                 {
-                                    if (variable.Name.Equals("@RASPBERRY", StringComparison.InvariantCultureIgnoreCase))
-                                    {
-                                        debugHost = (string)variable.Value;
-                                    }
-                                    else
-                                    {
-                                        environmentVariables[variable.Name] = (string)variable.Value;
-                                    }
+                                    environmentVariables[variable.Name] = (string)variable.Value;
                                 }
                             }
 
@@ -128,6 +119,13 @@ namespace RaspberryDebugger
                     }
                 }
             }
+
+            // Get the target Raspberry from the debug settings.
+
+            var projects            = PackageHelper.ReadRaspberryProjects(solution);
+            var projectSettings     = projects[project.UniqueName];
+            var debugEnabled        = projectSettings.EnableRemoteDebugging;
+            var debugConnectionName = projectSettings.RemoteDebugTarget;
 
             // Return the properties.
 
@@ -142,7 +140,8 @@ namespace RaspberryDebugger
                 OutputFileName       = (string)project.Properties.Item("OutputFileName").Value,
                 IsExecutable         = outputType == 1,     // 1=EXE
                 AssemblyName         = project.Properties.Item("AssemblyName").Value.ToString(),
-                DebugHost            = debugHost,
+                DebugEnabled         = debugEnabled,
+                DebugConnectionName  = debugConnectionName,
                 CommandLineArgs      = commandLineArgs,
                 EnvironmentVariables = environmentVariables
             };
@@ -330,10 +329,15 @@ namespace RaspberryDebugger
         public string OutputFileName { get; private set; }
 
         /// <summary>
-        /// Returns the host identifying the target Raspberry or <c>null</c> when
-        /// the default Raspberry connection should be used.
+        /// Indicates whether Raspberry debugging is enabled for this project.
         /// </summary>
-        public string DebugHost { get; private set; }
+        public bool DebugEnabled { get; private set; }
+
+        /// <summary>
+        /// Returns the connection name identifying the target Raspberry or <c>null</c> 
+        /// when the default Raspberry connection should be used.
+        /// </summary>
+        public string DebugConnectionName { get; private set; }
 
         /// <summary>
         /// Returns the command line arguments to be passed to the debugged program.

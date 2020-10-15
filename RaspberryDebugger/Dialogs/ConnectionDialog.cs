@@ -104,14 +104,6 @@ namespace RaspberryDebugger
                 return;
             }
 
-            if (existingConnections.Any(connection => connection != this.ConnectionInfo && connection.Host == hostText))
-            {
-                portTextBox.Focus();
-                portTextBox.SelectAll();
-                MessageBoxEx.Show(this, $"[{hostText}] is already referenced by another connection.", "Error", MessageBoxButtons.OK);
-                return;
-            }
-
             //-----------------------------------------------------------------
             // Validate the SSH port.
 
@@ -222,6 +214,19 @@ namespace RaspberryDebugger
                 passwordTextBox.Focus();
                 passwordTextBox.SelectAll();
                 MessageBoxEx.Show(this, "Password may not include single or double quotes.", "Error", MessageBoxButtons.OK);
+                return;
+            }
+
+            //-----------------------------------------------------------------
+            // Connection name needs to be unique.
+
+            var connectionName = $"{userText}@{hostText}";
+
+            if (existingConnections.Any(connection => connection != this.ConnectionInfo && connection.Name == connectionName))
+            {
+                portTextBox.Focus();
+                portTextBox.SelectAll();
+                MessageBoxEx.Show(this, $"Another coinnection already exists for [{connectionName}].", "Error", MessageBoxButtons.OK);
                 return;
             }
 

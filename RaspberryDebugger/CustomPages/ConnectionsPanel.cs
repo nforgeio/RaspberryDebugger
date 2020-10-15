@@ -123,7 +123,7 @@ namespace RaspberryDebugger
                 {
                     Name            = "Host",
                     Text            = "Host",
-                    AspectName      = nameof(ConnectionInfo.Host),
+                    AspectName      = nameof(ConnectionInfo.Name),
                     DisplayIndex    = hostColumn,
                     Width           = 200,
                     HeaderTextAlign = HorizontalAlignment.Left,
@@ -217,12 +217,12 @@ namespace RaspberryDebugger
         /// </summary>
         private void ReloadConnections()
         {
-            var orgHost = ((ConnectionInfo)connectionsView.SelectedObject)?.Host;
+            var orgName = ((ConnectionInfo)connectionsView.SelectedObject)?.Name;
 
             connections = PackageHelper.ReadConnections(disableLogging: true);
 
             connectionsView.SetObjects(connections);
-            connectionsView.SelectedObject = connections.SingleOrDefault(connection => connection.Host == orgHost);
+            connectionsView.SelectedObject = connections.SingleOrDefault(connection => connection.Name == orgName);
         }
 
         /// <summary>
@@ -381,7 +381,7 @@ namespace RaspberryDebugger
                 return;
             }
 
-            Log.Info($"[{SelectedConnection.Host}]: Verify Connection");
+            Log.Info($"[{SelectedConnection.Name}]: Verify Connection");
 
             var currentConnection = SelectedConnection;
             var exception         = (Exception)null;
@@ -410,7 +410,7 @@ namespace RaspberryDebugger
                 ReloadConnections();
 
                 MessageBox.Show(this,
-                                $"[{SelectedConnection.Host}] Connection is OK!",
+                                $"[{SelectedConnection.Name}] Connection is OK!",
                                 $"Success",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Information);
@@ -438,7 +438,7 @@ namespace RaspberryDebugger
             }
 
             if (MessageBoxEx.Show(this,
-                                  $"Delete the debug connection for [{SelectedConnection.Host}]?",
+                                  $"Delete the debug connection for [{SelectedConnection.Name}]?",
                                   $"Delete Connection",
                                   MessageBoxButtons.YesNo,
                                   MessageBoxIcon.Question,

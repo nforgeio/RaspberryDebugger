@@ -54,9 +54,9 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Converts a connection (host) name and error message into an exception message.
+        /// Converts a connection name and error message into an exception message.
         /// </summary>
-        /// <param name="name">The offending connection (host) name.</param>
+        /// <param name="name">The offending connection name.</param>
         /// <param name="error">The error message.</param>
         /// <returns>The exception message.</returns>
         private static string GetMessage(string name, string error)
@@ -82,10 +82,10 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Constructs an instance based on a connection (host) name and
+        /// Constructs an instance based on a connection name and
         /// error message.
         /// </summary>
-        /// <param name="name">The offending connection (host) name.</param>
+        /// <param name="name">The offending connection name.</param>
         /// <param name="error">The error message.</param>
         public ConnectionException(string name, string error)
             : base(GetMessage(name,error))
