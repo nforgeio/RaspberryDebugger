@@ -496,6 +496,8 @@ namespace RaspberryDebugger
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(description), nameof(description));
             Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
 
+            const string progressCaption = "Raspberry Debugger";
+
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (progressDialog == null)
@@ -510,9 +512,9 @@ namespace RaspberryDebugger
                 dialogFactory.CreateInstance(out progressDialog);
 
                 progressDialog.StartWaitDialog(
-                    szWaitCaption:          description, 
+                    szWaitCaption:          progressCaption, 
                     szWaitMessage:          " ",    // We need this otherwise "Visual Studio" gets displayed
-                    szProgressText:         null, 
+                    szProgressText:         description, 
                     varStatusBmpAnim:       null, 
                     szStatusBarText:        description, 
                     iDelayToShowDialog:     0,
@@ -526,8 +528,8 @@ namespace RaspberryDebugger
                 operationStack.Push(description);
 
                 progressDialog.UpdateProgress(
-                    szUpdatedWaitMessage:   description,
-                    szProgressText:         null,
+                    szUpdatedWaitMessage:   progressCaption,
+                    szProgressText:         description,
                     szStatusBarText:        null,
                     iCurrentStep:           0,
                     iTotalSteps:            0,
@@ -561,8 +563,8 @@ namespace RaspberryDebugger
                 else
                 {
                     progressDialog.UpdateProgress(
-                        szUpdatedWaitMessage:   currentDescription,
-                        szProgressText:         null,
+                        szUpdatedWaitMessage:   progressCaption,
+                        szProgressText:         rootDescription,
                         szStatusBarText:        rootDescription,
                         iCurrentStep:           0,
                         iTotalSteps:            0,
