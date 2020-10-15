@@ -185,7 +185,7 @@ namespace RaspberryDebugger
                 return;
             }
 
-            var project = GetStartupProject(Solution);
+            var project = PackageHelper.GetStartupProject(Solution);
 
             if (project == null)
             {
@@ -305,7 +305,7 @@ namespace RaspberryDebugger
                     if (connectionDialog.ShowDialog() == DialogResult.OK)
                     {
                         existingConnections.Add(connectionInfo);
-                        PackageHelper.WriteConnections(existingConnections);
+                        PackageHelper.WriteConnections(existingConnections, disableLogging: true);
                     }
                     else
                     {
@@ -487,85 +487,6 @@ namespace RaspberryDebugger
         /// Returns the current root solution or <c>null</c>.
         /// </summary>
         private Solution Solution => dte.Solution;
-
-        /// <summary>
-        /// Returns the current Visual Studio startup project.
-        /// </summary>
-        /// <param name="solution">The solution.</param>
-        /// <returns>The current project or <c>null</c>.</returns>
-        private Project GetStartupProject(Solution solution)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (solution?.SolutionBuild?.StartupProjects == null)
-            {
-                return null;
-            }
-
-            var projectName = (string)((object[])solution.SolutionBuild.StartupProjects).FirstOrDefault();
-
-            var startupProject = (Project)null;
-
-            foreach (Project project in solution.Projects)
-            {
-                if (project.UniqueName == projectName)
-                {
-                    startupProject = project;
-                }
-                else if (project.Kind == EnvDTE.Constants.vsProjectItemKindSolutionItems)
-                {
-                    startupProject = FindInSubprojects(project, projectName);
-                }
-
-                if (startupProject != null)
-                {
-                    break;
-                }
-            }
-
-            return startupProject;
-        }
-
-        /// <summary>
-        /// Searches a project's subprojects for a project matching a path.
-        /// </summary>
-        /// <param name="parentProject">The parent project.</param>
-        /// <param name="projectName">The desired project name.</param>
-        /// <returns>The <see cref="Project"/> or <c>null</c>.</returns>
-        private Project FindInSubprojects(Project parentProject, string projectName)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (parentProject == null)
-            {
-                return null;
-            }
-
-            if (parentProject.UniqueName == projectName)
-            {
-                return parentProject;
-            }
-
-            var project = (Project)null;
-
-            if (project.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
-            {
-                // The project is actually a solution folder so recursively
-                // search any subprojects.
-
-                foreach (ProjectItem projectItem in project.ProjectItems)
-                {
-                    project = FindInSubprojects(projectItem.SubProject, projectName);
-
-                    if (project != null)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            return project;
-        }
 
         /// <summary>
         /// Creates a temporary launch settings file for the application that allows

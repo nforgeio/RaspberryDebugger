@@ -36,7 +36,13 @@ namespace RaspberryDebugger
         /// Returns the value to be used for sorting the connection.
         /// </summary>
         [JsonIgnore]
-        public string SortKey => Host.ToLowerInvariant();
+        public string SortKey => Name.ToLowerInvariant();
+
+        /// <summary>
+        /// Returns the connection name like: user@host
+        /// </summary>
+        [JsonIgnore]
+        public string Name => $"{User}@{Host}";
 
         /// <summary>
         /// Indicates that this is the default connection.

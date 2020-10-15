@@ -195,7 +195,7 @@ namespace RaspberryDebugger
         /// </summary>
         private void LoadConnections()
         {
-            connections = PackageHelper.ReadConnections();
+            connections = PackageHelper.ReadConnections(disableLogging: true);
 
             // All connections must reference this panel so they can notify
             // when their [IsDefault] check state changes.
@@ -219,7 +219,7 @@ namespace RaspberryDebugger
         {
             var orgHost = ((ConnectionInfo)connectionsView.SelectedObject)?.Host;
 
-            connections = PackageHelper.ReadConnections();
+            connections = PackageHelper.ReadConnections(disableLogging: true);
 
             connectionsView.SetObjects(connections);
             connectionsView.SelectedObject = connections.SingleOrDefault(connection => connection.Host == orgHost);
@@ -230,7 +230,7 @@ namespace RaspberryDebugger
         /// </summary>
         private void SaveConnections()
         {
-            PackageHelper.WriteConnections(connections);
+            PackageHelper.WriteConnections(connections, disableLogging: true);
         }
 
         /// <summary>

@@ -182,7 +182,7 @@ namespace RaspberryDebugger
         }
 
         //---------------------------------------------------------------------
-        // Command interceptors
+        // DEBUG Command interceptors
 
         /// <summary>
         /// Executes a command by command set GUID and command ID.
@@ -202,28 +202,111 @@ namespace RaspberryDebugger
             return result;
         }
 
+        /// <summary>
+        /// Determines whether the current project has Raspberry project settings and returns 
+        /// the name of the target connection when it does.
+        /// </summary>
+        /// <returns>
+        /// <c>null</c> if the project does not have Raspberry settings or is not an eligible
+        /// .NET Core project, <b>"[default]"</b> when the project targets the default Raspberry 
+        /// connection, otherwise the name of  the specific target connection will be returned.
+        /// </returns>
+        private string GetConnectionName()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (dte.Solution == null)
+            {
+                return null;
+            }
+
+            var project = PackageHelper.GetStartupProject(dte.Solution);
+
+            if (project == null)
+            {
+                return null;
+            }
+
+            var projectSettings = PackageHelper.GetProjectSettings(dte.Solution, project);
+
+            if (projectSettings == null || !projectSettings.EnableRemoteDebugging)
+            {
+                return null;
+            }
+
+            return projectSettings.RemoteDebugTarget ?? "[default]";
+        }
+
+        /// <summary>
+        /// Debug.Start
+        /// </summary>
         private void DebugStartCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            CancelDefault = true;
+            var connectionName = GetConnectionName();
 
+            if (connectionName == null)
+            {
+                return;
+            }
+
+            CancelDefault = true;
             ExecuteCommand(DebugCommand.CommandSet, DebugCommand.CommandId); 
         }
 
+        /// <summary>
+        /// Debug.StartWithoutDebugging
+        /// </summary>
         private void DebugStartWithoutDebuggingCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            var connectionName = GetConnectionName();
+
+            if (connectionName == null)
+            {
+                return;
+            }
+
+            CancelDefault = true;
+            ExecuteCommand(DebugCommand.CommandSet, DebugCommand.CommandId);
         }
 
+        /// <summary>
+        /// Debug.Attach
+        /// </summary>
         private void DebugStartDebugTargetCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            var connectionName = GetConnectionName();
+
+            if (connectionName == null)
+            {
+                return;
+            }
+
+            CancelDefault = true;
+            ExecuteCommand(DebugCommand.CommandSet, DebugCommand.CommandId);
         }
 
+        /// <summary>
+        /// Debug.Restart
+        /// </summary>
         private void DebugRestartCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            var connectionName = GetConnectionName();
+
+            if (connectionName == null)
+            {
+                return;
+            }
+
+            CancelDefault = true;
+            ExecuteCommand(DebugCommand.CommandSet, DebugCommand.CommandId);
         }
     }
 }

@@ -27,7 +27,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Neon.Common;
-using BrightIdeasSoftware;
 using Neon.Net;
 
 namespace RaspberryDebugger

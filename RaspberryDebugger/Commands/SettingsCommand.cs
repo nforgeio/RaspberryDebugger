@@ -63,6 +63,8 @@ namespace RaspberryDebugger
         /// </summary>
         private readonly AsyncPackage package;
 
+        private DTE2    dte;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SettingsCommand"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
@@ -77,6 +79,7 @@ namespace RaspberryDebugger
             ThreadHelper.ThrowIfNotOnUIThread();
 
             this.package = package;
+            this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
             var menuCommandID = new CommandID(CommandSet, CommandId);
             var menuItem      = new MenuCommand(this.Execute, menuCommandID);
@@ -119,6 +122,47 @@ namespace RaspberryDebugger
 #pragma warning restore VSTHRD100 
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (dte.Solution == null)
+            {
+                return;
+            }
+
+            var project = PackageHelper.GetStartupProject(dte.Solution);
+
+            if (project == null)
+            {
+                return;
+            }
+
+            var targetFrameworkMonikers = (string)project.Properties.Item("TargetFrameworkMoniker").Value;
+            var outputType              = (int)project.Properties.Item("OutputType").Value;
+            var monikers                = targetFrameworkMonikers.Split(',');
+            var isNetCore               = monikers[0] == ".NETCoreApp";
+            var sdkVersion              = monikers[1].StartsWith("Version=v") ? monikers[1].Substring("Version=v".Length) : null;
+
+            if (!isNetCore ||
+                outputType != 1 /* EXE */ ||
+                sdkVersion == null ||
+                SemanticVersion.Parse(sdkVersion) < SemanticVersion.Parse("3.1"))
+            {
+                MessageBoxEx.Show(
+                    "Raspberry debugging is not supported by this project type.  Only .NET Core applications targeting .NET Core 3.1 or greater are supported.",
+                    "Unsupported Project Type",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+
+                return;
+            }
+
+            var raspberryProjects = PackageHelper.ReadRaspberryProjects(dte.Solution);
+            var projectSettings   = raspberryProjects[project.UniqueName];
+            var settingsDialog    = new SettingsDialog(projectSettings);
+
+            if (settingsDialog.ShowDialog() == DialogResult.OK)
+            {
+                PackageHelper.WriteRaspberryProjects(dte.Solution, raspberryProjects);
+            }
         }
     }
 }

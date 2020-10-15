@@ -31,17 +31,16 @@ using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 
-using Neon.Common;
+using EnvDTE;
 using Newtonsoft.Json;
 
-using Task = System.Threading.Tasks.Task;
-using Neon.Time;
-using Microsoft.VisualStudio.Threading;
-using System.Threading;
-using Microsoft.VisualStudio.PlatformUI;
+using Neon.Common;
 using Neon.IO;
+
+using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger
 {
@@ -193,10 +192,14 @@ namespace RaspberryDebugger
         /// <summary>
         /// Reads the persisted connection settings.
         /// </summary>
+        /// <param name="disableLogging">Optionally disable logging.</param>
         /// <returns>The connections.</returns>
-        public static List<ConnectionInfo> ReadConnections()
+        public static List<ConnectionInfo> ReadConnections(bool disableLogging = false)
         {
-            Log.Info("Reading connections");
+            if (!disableLogging)
+            {
+                Log.Info("Reading connections");
+            }
 
             try
             {
@@ -224,7 +227,11 @@ namespace RaspberryDebugger
             }
             catch (Exception e)
             {
-                Log.Exception(e);
+                if (!disableLogging)
+                {
+                    Log.Exception(e);
+                }
+
                 throw;
             }
         }
@@ -233,9 +240,13 @@ namespace RaspberryDebugger
         /// Persists the connections passed.
         /// </summary>
         /// <param name="connections">The connections.</param>
-        public static void WriteConnections(List<ConnectionInfo> connections)
+        /// <param name="disableLogging">Optionally disable logging.</param>
+        public static void WriteConnections(List<ConnectionInfo> connections, bool disableLogging = false)
         {
-            Log.Info("Writing connections");
+            if (!disableLogging)
+            {
+                Log.Info("Writing connections");
+            }
 
             try
             {
@@ -253,7 +264,11 @@ namespace RaspberryDebugger
             }
             catch (Exception e)
             {
-                Log.Exception(e);
+                if (!disableLogging)
+                {
+                    Log.Exception(e);
+                }
+
                 throw;
             }
         }
@@ -278,6 +293,187 @@ namespace RaspberryDebugger
 
                 Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
             }
+        }
+
+        /// <summary>
+        /// Returns the current Visual Studio startup project.
+        /// </summary>
+        /// <param name="solution">The solution.</param>
+        /// <returns>The current project or <c>null</c>.</returns>
+        public static Project GetStartupProject(Solution solution)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (solution?.SolutionBuild?.StartupProjects == null)
+            {
+                return null;
+            }
+
+            var projectName = (string)((object[])solution.SolutionBuild.StartupProjects).FirstOrDefault();
+
+            var startupProject = (Project)null;
+
+            foreach (Project project in solution.Projects)
+            {
+                if (project.UniqueName == projectName)
+                {
+                    startupProject = project;
+                }
+                else if (project.Kind == EnvDTE.Constants.vsProjectItemKindSolutionItems)
+                {
+                    startupProject = FindInSubprojects(project, projectName);
+                }
+
+                if (startupProject != null)
+                {
+                    break;
+                }
+            }
+
+            return startupProject;
+        }
+
+        /// <summary>
+        /// Searches a project's subprojects for a project matching a path.
+        /// </summary>
+        /// <param name="parentProject">The parent project.</param>
+        /// <param name="projectName">The desired project name.</param>
+        /// <returns>The <see cref="Project"/> or <c>null</c>.</returns>
+        public static Project FindInSubprojects(Project parentProject, string projectName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (parentProject == null)
+            {
+                return null;
+            }
+
+            if (parentProject.UniqueName == projectName)
+            {
+                return parentProject;
+            }
+
+            var project = (Project)null;
+
+            if (project.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
+            {
+                // The project is actually a solution folder so recursively
+                // search any subprojects.
+
+                foreach (ProjectItem projectItem in project.ProjectItems)
+                {
+                    project = FindInSubprojects(projectItem.SubProject, projectName);
+
+                    if (project != null)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return project;
+        }
+
+        /// <summary>
+        /// Returns the path to the <b>$/.vs/raspberry-projects.json</b> file for
+        /// the current solution.
+        /// </summary>
+        /// <param name="solution">The current solution.</param>
+        /// <returns>The file path.</returns>
+        private static string GetRaspberryProjectsPath(Solution solution)
+        {
+            Covenant.Requires<ArgumentNullException>(solution != null);
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            return Path.Combine(solution.FullName, ".vs", "raspberry-projects.json");
+        }
+
+        /// <summary>
+        /// Reads the <b>$/.vs/raspberry-projects.json</b> file from the current
+        /// solution's directory.
+        /// </summary>
+        /// <param name="solution">The current solution.</param>
+        /// <returns>The projects read or an empty object if the file doesn't exist.</returns>
+        public static RaspberryProjects ReadRaspberryProjects(Solution solution)
+        {
+            Covenant.Requires<ArgumentNullException>(solution != null);
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var path = GetRaspberryProjectsPath(solution);
+
+            if (File.Exists(path))
+            {
+                return NeonHelper.JsonDeserialize<RaspberryProjects>(File.ReadAllText(path));
+            }
+            else
+            {
+                return new RaspberryProjects();
+            }
+        }
+
+        /// <summary>
+        /// Persists the project information passed to the <b>$/.vs/raspberry-projects.json</b> file.
+        /// </summary>
+        /// <param name="solution">The current solution.</param>
+        /// <param name="projects">The projects.</param>
+        public static void WriteRaspberryProjects(Solution solution, RaspberryProjects projects)
+        {
+            Covenant.Requires<ArgumentNullException>(solution != null);
+            Covenant.Requires<ArgumentNullException>(projects != null);
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Prune any projects with GUIDs that are no longer present in
+            // the solution so these don't accumulate.
+
+            var solutionProjectIds = new HashSet<string>();
+
+            foreach (Project project in solution.Projects)
+            {
+                solutionProjectIds.Add(project.UniqueName);
+            }
+
+            var delList = new List<string>();
+
+            foreach (var projectid in projects.Keys)
+            {
+                if (!solutionProjectIds.Contains(projectid))
+                {
+                    delList.Add(projectid);
+                }
+            }
+
+            foreach (var projectId in delList)
+            {
+                projects.Remove(projectId);
+            }
+
+            // Write the file, ensuring that the parent directories exist.
+
+            var path = GetRaspberryProjectsPath(solution);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllText(path, NeonHelper.JsonSerialize(projects));
+        }
+
+        /// <summary>
+        /// Returns the project settings for a specific project.
+        /// </summary>
+        /// <param name="solution">The current solution.</param>
+        /// <param name="project">The target project.</param>
+        /// <returns>The project settings.</returns>
+        public static ProjectSettings GetProjectSettings(Solution solution, Project project)
+        {
+            Covenant.Requires<ArgumentNullException>(solution != null);
+            Covenant.Requires<ArgumentNullException>(project != null);
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var raspberryProjects = ReadRaspberryProjects(solution);
+
+            return raspberryProjects[project.UniqueName];
         }
 
         //---------------------------------------------------------------------

@@ -473,7 +473,7 @@ exit 0
                                 existingConnectionInfo.PrivateKeyPath = privateKeyPath;
                                 existingConnectionInfo.PublicKeyPath  = publicKeyPath;
 
-                                PackageHelper.WriteConnections(connections);
+                                PackageHelper.WriteConnections(connections, disableLogging: true);
                             }
                         }
                         finally
