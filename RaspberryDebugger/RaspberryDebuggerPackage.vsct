@@ -54,14 +54,6 @@
               <CommandFlag>DefaultInvisible</CommandFlag>
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
-      <Button guid="guidRaspberryDebugPackageCmdSet" id="RaspberryDebugCommandId" priority="0x0300" type="Button">
-        <Parent guid="guidRaspberryDebugPackageCmdSet" id="RaspberryDebugMenuGroup" />
-        <CommandFlag>DefaultInvisible</CommandFlag>
-        <Strings>
-          <ButtonText>Start Debugging on Raspberry</ButtonText>
-          <ToolTipText>Debug .NET Core Raspberry application</ToolTipText>
-        </Strings>
-      </Button>
       
       <Button guid="guidRaspberryDebugPackageCmdSet" id="RaspberrySettingsCommandId" priority="0x1000" type="Button">
         <Parent guid="guidRaspberryDebugPackageCmdSet" id="RaspberryDebugMenuGroup" />
@@ -69,6 +61,33 @@
         <Strings>
           <ButtonText>Raspberry Debug Settings...</ButtonText>
           <ToolTipText>Enable remote Raspberry debugging</ToolTipText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidRaspberryDebugPackageCmdSet" id="DebugStartCommandId" priority="0x0300" type="Button">
+        <Parent guid="guidRaspberryDebugPackageCmdSet" id="RaspberryDebugMenuGroup" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Start Debugging</ButtonText>
+          <ToolTipText></ToolTipText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidRaspberryDebugPackageCmdSet" id="DebugStartWithoutDebuggingCommandId" priority="0x0300" type="Button">
+        <Parent guid="guidRaspberryDebugPackageCmdSet" id="RaspberryDebugMenuGroup" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Start Without Debugging</ButtonText>
+          <ToolTipText></ToolTipText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidRaspberryDebugPackageCmdSet" id="DebugAttachToProcessCommandId" priority="0x0300" type="Button">
+        <Parent guid="guidRaspberryDebugPackageCmdSet" id="RaspberryDebugMenuGroup" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Attach to Process...</ButtonText>
+          <ToolTipText></ToolTipText>
         </Strings>
       </Button>
     </Buttons>
@@ -81,8 +100,10 @@
     <!-- This is the guid used to group menu commands together -->
     <GuidSymbol name="guidRaspberryDebugPackageCmdSet" value="{3e88353d-7372-44fb-a34f-502ec7453200}">
       <IDSymbol name="RaspberryDebugMenuGroup" value="0x1020" />
-      <IDSymbol name="RaspberryDebugCommandId" value="0x0100" />
-      <IDSymbol name="RaspberrySettingsCommandId" value="0x0101" />
+      <IDSymbol name="RaspberrySettingsCommandId" value="0x0100" />
+      <IDSymbol name="DebugStartCommandId" value="0x0200" />
+      <IDSymbol name="DebugStartWithoutDebuggingCommandId" value="0x0201" />
+      <IDSymbol name="DebugAttachToProcessCommandId" value="0x0202" />
     </GuidSymbol>
 
     <GuidSymbol name="guidImages" value="{492b4cea-fba2-4900-b59e-4333546df67b}" >

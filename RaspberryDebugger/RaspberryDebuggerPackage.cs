@@ -63,6 +63,12 @@ namespace RaspberryDebugger
         /// </summary>
         public static readonly Guid CommandSet = new Guid("3e88353d-7372-44fb-a34f-502ec7453200");
 
+        // Command IDs:
+        public const int SettingsCommandId                   = 0x0100;
+        public const int DebugStartCommandId                 = 0x0200;
+        public const int DebugStartWithoutDebuggingCommandId = 0x0201;
+        public const int DebugAttachToProcessCommandId      = 0x0202;
+
         private static object               debugSyncLock = new object();
         private static IVsOutputWindowPane  debugPane     = null;
         private static Queue<string>        debugLogQueue = new Queue<string>();
@@ -135,7 +141,7 @@ namespace RaspberryDebugger
         private DTE2            dte;
         private CommandEvents   debugStartCommandEvent;
         private CommandEvents   debugStartWithoutDebuggingCommandEvent;
-        private CommandEvents   debugStartDebugTargetCommandEvent;
+        private CommandEvents   debugAttachToProcessCommandEvent;
         private CommandEvents   debugRestartCommandEvent;
         private bool            debugMode = false;
 
@@ -167,20 +173,22 @@ namespace RaspberryDebugger
             // let the default command implementations do their thing when we're not doing Raspberry
             // debugging.
 
-            debugStartCommandEvent                 = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x127];
-            debugStartWithoutDebuggingCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x170];
-            debugStartDebugTargetCommandEvent      = dte.Events.CommandEvents["{6E87CFAD-6C05-4ADF-9CD7-3B7943875B7C}", 0x101];
-            debugRestartCommandEvent               = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x128];
+            debugStartCommandEvent                 = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0127];
+            debugStartWithoutDebuggingCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0170];
+            debugAttachToProcessCommandEvent       = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x00d5];
+            debugRestartCommandEvent               = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0128];
 
             debugStartCommandEvent.BeforeExecute                 += DebugStartCommandEvent_BeforeExecute;
             debugStartWithoutDebuggingCommandEvent.BeforeExecute += DebugStartWithoutDebuggingCommandEvent_BeforeExecute;
-            debugStartDebugTargetCommandEvent.BeforeExecute      += DebugStartDebugTargetCommandEvent_BeforeExecute;
+            debugAttachToProcessCommandEvent.BeforeExecute       += AttachToProcessCommandEvent_BeforeExecute;
             debugRestartCommandEvent.BeforeExecute               += DebugRestartCommandEvent_BeforeExecute;
 
             // Initialize the new commands.
 
-            await DebugCommand.InitializeAsync(this);
             await SettingsCommand.InitializeAsync(this);
+            await DebugStartCommand.InitializeAsync(this);
+            await DebugStartWithoutDebuggingCommand.InitializeAsync(this);
+            await DebugAttachToProcessCommand.InitializeAsync(this);
         }
 
         //---------------------------------------------------------------------
@@ -273,7 +281,7 @@ namespace RaspberryDebugger
             }
 
             CancelDefault = true;
-            ExecuteCommand(DebugCommand.CommandSet, DebugCommand.CommandId); 
+            ExecuteCommand(DebugStartCommand.CommandSet, DebugStartCommand.CommandId); 
         }
 
         /// <summary>
@@ -291,13 +299,13 @@ namespace RaspberryDebugger
             }
 
             CancelDefault = true;
-            ExecuteCommand(DebugCommand.CommandSet, DebugCommand.CommandId);
+            ExecuteCommand(DebugStartWithoutDebuggingCommand.CommandSet, DebugStartWithoutDebuggingCommand.CommandId);
         }
 
         /// <summary>
-        /// Debug.StartDebugTarget (aka "attach")
+        /// Debug.AttachToProcess
         /// </summary>
-        private void DebugStartDebugTargetCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        private void AttachToProcessCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -309,7 +317,7 @@ namespace RaspberryDebugger
             }
 
             CancelDefault = true;
-            ExecuteCommand(DebugCommand.CommandSet, DebugCommand.CommandId);
+            ExecuteCommand(DebugAttachToProcessCommand.CommandSet, DebugAttachToProcessCommand.CommandId);
         }
 
         /// <summary>
@@ -327,7 +335,7 @@ namespace RaspberryDebugger
             }
 
             CancelDefault = true;
-            ExecuteCommand(DebugCommand.CommandSet, DebugCommand.CommandId);
+            ExecuteCommand(DebugAttachToProcessCommand.CommandSet, DebugAttachToProcessCommand.CommandId);
         }
     }
 }

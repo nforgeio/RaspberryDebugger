@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    SettingsCommand.cs
+// FILE:	    DebugAttachToProcessCommand.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Copyright (c) 2020 by neonFORGE, LLC.  All rights reserved.
 //
@@ -37,19 +37,23 @@ using Neon.Common;
 using Neon.IO;
 using Neon.Windows;
 
+using Newtonsoft.Json.Linq;
+
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger
 {
     /// <summary>
-    /// Handles the <b>Project/Raspberry Debug Settings...</b> command.
+    /// Handles the <b>Attach to Process...</b> command for Raspberry enabled projects.
     /// </summary>
-    internal sealed class SettingsCommand
+    internal sealed class DebugAttachToProcessCommand
     {
+        private DTE2    dte;
+
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandId = RaspberryDebugPackage.SettingsCommandId;
+        public const int CommandId = RaspberryDebugPackage.DebugAttachToProcessCommandId;
 
         /// <summary>
         /// Package command set ID.
@@ -61,42 +65,32 @@ namespace RaspberryDebugger
         /// </summary>
         private readonly AsyncPackage package;
 
-        private DTE2    dte;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="SettingsCommand"/> class.
+        /// Initializes a new instance of the <see cref="DebugStartCommand"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
         /// <param name="commandService">Command service to add command to, not null.</param>
-        private SettingsCommand(AsyncPackage package, OleMenuCommandService commandService)
+        private DebugAttachToProcessCommand(AsyncPackage package, OleMenuCommandService commandService)
         {
             Covenant.Requires<ArgumentNullException>(package != null, nameof(package));
             Covenant.Requires<ArgumentNullException>(commandService != null, nameof(commandService));
-            
+
             ThreadHelper.ThrowIfNotOnUIThread();
 
             this.package = package;
             this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
             var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem      = new OleMenuCommand(this.Execute, menuCommandID);
-
-            menuItem.BeforeQueryStatus +=
-                (s, a) =>
-                {
-                    var command = (OleMenuCommand)s;
-                        
-                    command.Visible = PackageHelper.IsActiveProjectRaspberryCompatible(dte);
-                };
+            var menuItem      = new MenuCommand(this.Execute, menuCommandID);
              
             commandService.AddCommand(menuItem);
         }
 
         /// <summary>
-        /// Gets the instance of the command.
+        /// Returns the command instance.
         /// </summary>
-        public static SettingsCommand Instance { get; private set; }
+        public static DebugAttachToProcessCommand Instance { get; private set; }
 
         /// <summary>
         /// Gets the service provider from the owner package.
@@ -113,7 +107,7 @@ namespace RaspberryDebugger
 
             var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
 
-            SettingsCommand.Instance = new SettingsCommand(package, commandService);
+            DebugAttachToProcessCommand.Instance = new DebugAttachToProcessCommand(package, commandService);
         }
 
         /// <summary>
@@ -129,46 +123,11 @@ namespace RaspberryDebugger
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (dte.Solution == null)
-            {
-                return;
-            }
-
-            var project = PackageHelper.GetStartupProject(dte.Solution);
-
-            if (project == null)
-            {
-                return;
-            }
-
-            var targetFrameworkMonikers = (string)project.Properties.Item("TargetFrameworkMoniker").Value;
-            var outputType              = (int)project.Properties.Item("OutputType").Value;
-            var monikers                = targetFrameworkMonikers.Split(',');
-            var isNetCore               = monikers[0] == ".NETCoreApp";
-            var sdkVersion              = monikers[1].StartsWith("Version=v") ? monikers[1].Substring("Version=v".Length) : null;
-
-            if (!isNetCore ||
-                outputType != 1 /* EXE */ ||
-                sdkVersion == null ||
-                SemanticVersion.Parse(sdkVersion) < SemanticVersion.Parse("3.1"))
-            {
-                MessageBoxEx.Show(
-                    "Raspberry debugging is not supported by this project type.  Only .NET Core applications targeting .NET Core 3.1 or greater are supported.",
-                    "Unsupported Project Type",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-
-                return;
-            }
-
-            var raspberryProjects = PackageHelper.ReadRaspberryProjects(dte.Solution);
-            var projectSettings   = raspberryProjects[project.UniqueName];
-            var settingsDialog    = new SettingsDialog(projectSettings);
-
-            if (settingsDialog.ShowDialog() == DialogResult.OK)
-            {
-                PackageHelper.WriteRaspberryProjects(dte.Solution, raspberryProjects);
-            }
+            MessageBoxEx.Show(
+                "The [Attach to Process...] command is not currently implemented for remote Raspberries.",
+                "Unsupported Command",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
     }
 }
