@@ -28,7 +28,7 @@ namespace RaspberryDebugger
     /// <summary>
     /// Holds the Raspberry related settings for a project.
     /// </summary>
-    public class ProjectSettings
+    internal class ProjectSettings
     {
         /// <summary>
         /// Connection combo box item indicating that Raspberry debugging is disabled.

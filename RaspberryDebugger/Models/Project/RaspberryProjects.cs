@@ -34,7 +34,7 @@ namespace RaspberryDebugger
     /// This is simply a dictionary mapping a project's unique name to the settings 
     /// for the project.
     /// </remarks>
-    public class RaspberryProjects : Dictionary<string, ProjectSettings>
+    internal class RaspberryProjects : Dictionary<string, ProjectSettings>
     {
         /// <summary>
         /// Accesses the project settings for a project based on its GUID.
