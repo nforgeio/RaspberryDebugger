@@ -560,6 +560,8 @@ namespace RaspberryDebugger
         //---------------------------------------------------------------------
         // Progress related code
 
+        const string progressCaption = "Raspberry Debugger";
+
         private static IVsThreadedWaitDialog2   progressDialog = null;
         private static Stack<string>            operationStack = new Stack<string>();
         private static string                   rootDescription;
@@ -577,8 +579,6 @@ namespace RaspberryDebugger
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(description), nameof(description));
             Covenant.Requires<ArgumentNullException>(action != null, nameof(action));
 
-            const string progressCaption = "Raspberry Debugger";
-
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (progressDialog == null)
@@ -594,10 +594,10 @@ namespace RaspberryDebugger
 
                 progressDialog.StartWaitDialog(
                     szWaitCaption:          progressCaption, 
-                    szWaitMessage:          " ",    // We need this otherwise "Visual Studio" gets displayed
-                    szProgressText:         description, 
+                    szWaitMessage:          description,
+                    szProgressText:         null, 
                     varStatusBmpAnim:       null, 
-                    szStatusBarText:        description, 
+                    szStatusBarText:        null, 
                     iDelayToShowDialog:     0,
                     fIsCancelable:          false, 
                     fShowMarqueeProgress:   true);
@@ -645,8 +645,8 @@ namespace RaspberryDebugger
                 {
                     progressDialog.UpdateProgress(
                         szUpdatedWaitMessage:   progressCaption,
-                        szProgressText:         rootDescription,
-                        szStatusBarText:        rootDescription,
+                        szProgressText:         description,
+                        szStatusBarText:        null,
                         iCurrentStep:           0,
                         iTotalSteps:            0,
                         fDisableCancel:         true,
@@ -683,8 +683,8 @@ namespace RaspberryDebugger
                 dialogFactory.CreateInstance(out progressDialog);
 
                 progressDialog.StartWaitDialog(
-                    szWaitCaption:          description, 
-                    szWaitMessage:          " ",    // We need this otherwise "Visual Studio" gets displayed
+                    szWaitCaption:          progressCaption, 
+                    szWaitMessage:          description,
                     szProgressText:         null, 
                     varStatusBmpAnim:       null, 
                     szStatusBarText:        $"[{LogName}]{description}", 
@@ -699,8 +699,8 @@ namespace RaspberryDebugger
                 operationStack.Push(description);
 
                 progressDialog.UpdateProgress(
-                    szUpdatedWaitMessage:   description,
-                    szProgressText:         null,
+                    szUpdatedWaitMessage:   progressCaption,
+                    szProgressText:         description,
                     szStatusBarText:        null,
                     iCurrentStep:           0,
                     iTotalSteps:            0,
