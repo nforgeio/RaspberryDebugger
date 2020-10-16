@@ -204,8 +204,9 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Determines whether the current project has Raspberry project settings and returns 
-        /// the name of the target connection when it does.
+        /// Determines whether the current project is Raspberry compatible, has Raspberry project 
+        /// settings and is enabled for debugging and returns the name of the target connection when
+        /// these conditions are met.
         /// </summary>
         /// <returns>
         /// <c>null</c> if the project does not have Raspberry settings or is not an eligible
@@ -225,6 +226,13 @@ namespace RaspberryDebugger
             var project = PackageHelper.GetStartupProject(dte.Solution);
 
             if (project == null)
+            {
+                return null;
+            }
+
+            var projectProperties = ProjectProperties.CopyFrom(dte.Solution, project);
+
+            if (!projectProperties.IsRaspberryCompatible)
             {
                 return null;
             }
