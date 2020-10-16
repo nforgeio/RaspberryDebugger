@@ -368,7 +368,7 @@ namespace RaspberryDebugger
                 if (!await connection.InstallSdkAsync(targetSdk.Version))
                 {
                     MessageBoxEx.Show(
-                        $"Cannot install the .NET SDK [v{targetSdk.Version}] on the Raspberry.  Check the Debug Output for more details.",
+                        $"Cannot install the .NET SDK [v{targetSdk.Version}] on the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
                         "SDK Installation Failed",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
@@ -381,7 +381,7 @@ namespace RaspberryDebugger
                 if (!await connection.InstallDebuggerAsync())
                 {
                     MessageBoxEx.Show(
-                        $"Cannot install the VSDBG debugger on the Raspberry.  Check the Debug Output for more details.",
+                        $"Cannot install the VSDBG debugger on the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
                         "Debugger Installation Failed",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
@@ -394,7 +394,7 @@ namespace RaspberryDebugger
                 if (!await connection.UploadProgramAsync(projectProperties.Name, projectProperties.AssemblyName, projectProperties.PublishFolder))
                 {
                     MessageBoxEx.Show(
-                        $"Cannot upload the program binaries to the Raspberry.  Check the Debug Output for more details.",
+                        $"Cannot upload the program binaries to the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
                         "Debugger Installation Failed",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);

@@ -551,23 +551,41 @@ rm -f {tempPublicKeyPath}
 $@"
 export DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
 
-if ! rm -f $TMP/dotnet-sdk.tar.gz ; then
+# Remove any existing SDK download.  This might be present if a
+# previous installation attempt failed.
+
+if ! rm -f /tmp/dotnet-sdk.tar.gz ; then
     exit 1
 fi
 
-if ! wget --quiet -O $TMP/dotnet-sdk.tar.gz {targetSdk.Link} ; then
+# Download the SDK installation file to a temporary file.
+
+if ! wget --quiet -O /tmp/dotnet-sdk.tar.gz {targetSdk.Link} ; then
     exit 1
 fi
+
+# Verify the SHA512.
+
+cd /tmp
+if ! echo '{targetSdk.SHA512}  dotnet-sdk.tar.gz' | sha512sum --check - ; then
+    exit 1
+fi
+
+# Make sure the installation directory exists.
 
 if ! mkdir -p $DOTNET_ROOT ; then
     exit 1
 fi
 
-if ! tar -zxf $TMP/dotnet-sdk.tar.gz -C $DOTNET_ROOT ; then
+# Unpack the SDK to the installation directory.
+
+if ! tar -zxf /tmp/dotnet-sdk.tar.gz -C $DOTNET_ROOT ; then
     exit 1
 fi
 
-if ! rm $TMP/dotnet-sdk.tar.gz ; then
+# Remove the temporary installation file.
+
+if ! rm /tmp/dotnet-sdk.tar.gz ; then
     exit 1
 fi
 
