@@ -135,7 +135,6 @@ namespace RaspberryDebugger
 
             var isRaspberryCompatible = isNetCore &&
                                         outputType == 1 && // 1=EXE
-                                        !string.IsNullOrEmpty(sdkVersion) &&
                                         isSupportedSdkVersion;
 
             // Return the properties.
