@@ -37,7 +37,7 @@ namespace RaspberryDebugger
     /// <summary>
     /// Allows the user to edit the Rasparry related settings for a project.
     /// </summary>
-    public partial class SettingsDialog : Form
+    internal partial class SettingsDialog : Form
     {
         private ProjectSettings             projectSettings;
         private Dictionary<string, int>     connectionNameToIndex;

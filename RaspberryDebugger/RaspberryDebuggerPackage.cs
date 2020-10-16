@@ -42,6 +42,7 @@ namespace RaspberryDebugger
     /// </summary>
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+    [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(RaspberryDebugPackage.PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
