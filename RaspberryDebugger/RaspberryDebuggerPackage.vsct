@@ -57,6 +57,7 @@
       
       <Button guid="guidRaspberryDebugPackageCmdSet" id="RaspberrySettingsCommandId" priority="0x1000" type="Button">
         <Parent guid="guidRaspberryDebugPackageCmdSet" id="RaspberryDebugMenuGroup" />
+        <Icon guid="RaspberryImagesGuid" id="RaspberryImageId" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Raspberry Debug Settings...</ButtonText>
@@ -91,6 +92,10 @@
         </Strings>
       </Button>
     </Buttons>
+
+    <Bitmaps>
+      <Bitmap guid="RaspberryImagesGuid" href="raspberry.16x16.png" usedList="RaspberryImageId"/>
+    </Bitmaps>
   </Commands>
 
   <Symbols>
@@ -106,13 +111,8 @@
       <IDSymbol name="DebugAttachToProcessCommandId" value="0x0202" />
     </GuidSymbol>
 
-    <GuidSymbol name="guidImages" value="{492b4cea-fba2-4900-b59e-4333546df67b}" >
-      <IDSymbol name="bmpPic1" value="1" />
-      <IDSymbol name="bmpPic2" value="2" />
-      <IDSymbol name="bmpPicSearch" value="3" />
-      <IDSymbol name="bmpPicX" value="4" />
-      <IDSymbol name="bmpPicArrows" value="5" />
-      <IDSymbol name="bmpPicStrikethrough" value="6" />
+    <GuidSymbol name="RaspberryImagesGuid" value="{6D6A228C-B30A-40DE-B8C5-AA8A5EC590DA}" >
+      <IDSymbol name="RaspberryImageId" value="1" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>

@@ -58,6 +58,7 @@ namespace RaspberryDebugger
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConnectionDialog));
             this.hostLabel = new System.Windows.Forms.Label();
             this.hostTextBox = new System.Windows.Forms.TextBox();
             this.portLabel = new System.Windows.Forms.Label();
@@ -200,6 +201,7 @@ namespace RaspberryDebugger
             this.Controls.Add(this.hostTextBox);
             this.Controls.Add(this.hostLabel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ConnectionDialog";

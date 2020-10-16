@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(KeysDialog));
             this.publicKeyLabel = new System.Windows.Forms.Label();
             this.publicKeyTextBox = new System.Windows.Forms.TextBox();
             this.privateKeyLabel = new System.Windows.Forms.Label();
@@ -107,6 +108,7 @@
             this.Controls.Add(this.publicKeyTextBox);
             this.Controls.Add(this.publicKeyLabel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "KeysDialog";

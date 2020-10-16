@@ -1,4 +1,7 @@
-# RaspberryDebugger
-Visual Studio Extension to Debug C# on Raspberry Pi POS
+# Raspberry Debugger
+Visual Studio Extension for debugging .NET Core applications remotely on a Raspberry Pi.
 
-This project was inspired by https://github.com/radutomy/VSRemoteDebugger with the idea of making debugging .NET Core apps on Raspberry Pi OS easier.
+
+
+_ The Raspberry Debugger extension is compatible with Raspberry Pi_
+_ Raspberry Pi is a trademark of the Raspberry Pi Foundation_
