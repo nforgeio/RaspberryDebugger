@@ -238,10 +238,10 @@ namespace RaspberryDebugger
 
             var sdkVersion = Version.Parse(projectProperties.SdkVersion);
 
-            if (sdkVersion < Version.Parse("3.1") || Version.Parse("4.0") < sdkVersion)
+            if (sdkVersion < Version.Parse("3.1"))
             {
                 MessageBox.Show(
-                    $"The .NET Core SDK [{sdkVersion}] is not supported.  Only .NET Core [3.1.x] is supported at this time.",
+                    $"The .NET Core SDK [{sdkVersion}] is not supported.  Only .NET Core versions [v3.1] or later are supported.",
                     "SDK Not Supported",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -253,7 +253,7 @@ namespace RaspberryDebugger
             {
                 MessageBox.Show(
                     $"Your assembly name [{projectProperties.AssemblyName}] includes a space.  This isn't supported.",
-                    "SDK Not Supported",
+                    "Unsupported Assembly Name",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 

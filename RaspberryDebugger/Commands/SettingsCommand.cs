@@ -82,7 +82,15 @@ namespace RaspberryDebugger
             this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
             var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem      = new MenuCommand(this.Execute, menuCommandID);
+            var menuItem      = new OleMenuCommand(this.Execute, menuCommandID);
+
+            menuItem.BeforeQueryStatus +=
+                (s, a) =>
+                {
+                    var command = (OleMenuCommand)s;
+                        
+                    command.Visible = PackageHelper.IsActiveProjectRaspberryCompatible(dte);
+                };
              
             commandService.AddCommand(menuItem);
         }

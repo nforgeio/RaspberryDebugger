@@ -35,7 +35,7 @@ using EnvDTE80;
 
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-
+using Neon.Common;
 using Newtonsoft.Json.Linq;
 
 using Task = System.Threading.Tasks.Task;
@@ -127,23 +127,31 @@ namespace RaspberryDebugger
             var debugEnabled        = projectSettings.EnableRemoteDebugging;
             var debugConnectionName = projectSettings.RemoteDebugTarget;
 
+            // Determine whether the project is Raspberry compatible.
+
+            var isRaspberryCompatible = isNetCore &&
+                                        outputType == 1 && // 1=EXE
+                                        !string.IsNullOrEmpty(sdkVersion) &&
+                                        SemanticVersion.Parse(sdkVersion) >= SemanticVersion.Parse("3.1");
+
             // Return the properties.
 
             return new ProjectProperties()
             {
-                Name                 = project.Name,
-                FullPath             = project.FullName,
-                Configuration        = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
-                IsNetCore            = isNetCore,
-                SdkVersion           = sdkVersion,
-                OutputFolder         = Path.Combine(projectFolder, project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString()),
-                OutputFileName       = (string)project.Properties.Item("OutputFileName").Value,
-                IsExecutable         = outputType == 1,     // 1=EXE
-                AssemblyName         = project.Properties.Item("AssemblyName").Value.ToString(),
-                DebugEnabled         = debugEnabled,
-                DebugConnectionName  = debugConnectionName,
-                CommandLineArgs      = commandLineArgs,
-                EnvironmentVariables = environmentVariables
+                Name                  = project.Name,
+                FullPath              = project.FullName,
+                Configuration         = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
+                IsNetCore             = isNetCore,
+                SdkVersion            = sdkVersion,
+                OutputFolder          = Path.Combine(projectFolder, project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString()),
+                OutputFileName        = (string)project.Properties.Item("OutputFileName").Value,
+                IsExecutable          = outputType == 1,     // 1=EXE
+                AssemblyName          = project.Properties.Item("AssemblyName").Value.ToString(),
+                DebugEnabled          = debugEnabled,
+                DebugConnectionName   = debugConnectionName,
+                CommandLineArgs       = commandLineArgs,
+                EnvironmentVariables  = environmentVariables,
+                IsRaspberryCompatible = isRaspberryCompatible
             };
         }
 
@@ -348,5 +356,11 @@ namespace RaspberryDebugger
         /// Returns the environment variables to be passed to the debugged program.
         /// </summary>
         public Dictionary<string, string> EnvironmentVariables { get; private set; }
+
+        /// <summary>
+        /// Indicates whether the project is capable of being deployed and debugged
+        /// on a Raspberry.
+        /// </summary>
+        public bool IsRaspberryCompatible { get; private set; }
     }
 }

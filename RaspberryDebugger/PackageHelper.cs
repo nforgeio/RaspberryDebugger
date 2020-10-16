@@ -41,6 +41,7 @@ using Neon.Common;
 using Neon.IO;
 
 using Task = System.Threading.Tasks.Task;
+using EnvDTE80;
 
 namespace RaspberryDebugger
 {
@@ -296,10 +297,18 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Returns the current Visual Studio startup project.
+        /// Returns the current Visual Studio startup project for a solution.
         /// </summary>
-        /// <param name="solution">The solution.</param>
-        /// <returns>The current project or <c>null</c>.</returns>
+        /// <param name="solution">The current solution (or <c>null</c>).</param>
+        /// <returns>The startup project or <c>null</c>.</returns>
+        /// <remarks>
+        /// <note>
+        /// The active project may be different from the startup project.  Users select
+        /// the startup project explicitly and that project will remain selected until
+        /// the user selects another.  The active project is determined by the current
+        /// document.
+        /// </note>
+        /// </remarks>
         public static Project GetStartupProject(Solution solution)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -309,8 +318,7 @@ namespace RaspberryDebugger
                 return null;
             }
 
-            var projectName = (string)((object[])solution.SolutionBuild.StartupProjects).FirstOrDefault();
-
+            var projectName    = (string)((object[])solution.SolutionBuild.StartupProjects).FirstOrDefault();
             var startupProject = (Project)null;
 
             foreach (Project project in solution.Projects)
@@ -331,6 +339,79 @@ namespace RaspberryDebugger
             }
 
             return startupProject;
+        }
+
+        /// <summary>
+        /// Returns a solution's active project.
+        /// </summary>
+        /// <param name="solution">The Visual Studio DTE.</param>
+        /// <returns>The active <see cref="Project"/> or <c>null</c> for none.</returns>
+        /// <remarks>
+        /// <note>
+        /// The active project may be different from the startup project.  Users select
+        /// the startup project explicitly and that project will remain selected until
+        /// the user selects another.  The active project is determined by the current
+        /// document.
+        /// </note>
+        /// </remarks>
+        public static Project GetActiveProject(DTE2 dte)
+        {
+            Covenant.Requires<ArgumentNullException>(dte != null, nameof(dte));
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var activeSolutionProjects = (Array)dte.ActiveSolutionProjects;
+
+            if (activeSolutionProjects != null && activeSolutionProjects.Length > 0)
+            {
+                return (Project)activeSolutionProjects.GetValue(0);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether a project is capable of being debugged on a Raspberry.
+        /// </summary>
+        /// <param name="solution">The solution.</param>
+        /// <param name="project">The project being tested.</param>
+        /// <returns><c>true</c> when the project may be debugged on a Raspberry.</returns>
+        public static bool IsProjectRaspberryCompatible(Solution solution, Project project)
+        {
+            Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
+            Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var projectProperties = ProjectProperties.CopyFrom(solution, project);
+
+            return projectProperties.IsRaspberryCompatible;
+        }
+
+        /// <summary>
+        /// Determines whether the active project is a candidate for debugging on
+        /// a Raspberry.  Currently, the project must target .NET Core 3.1 or
+        /// greater and be an executable.
+        /// </summary>
+        /// <param name="solution">The Visual Studio DTE.</param>
+        /// <returns>
+        /// <c>true</c> if there's an active project and it satisfies the criterion.
+        /// </returns>
+        public static bool IsActiveProjectRaspberryCompatible(DTE2 dte)
+        {
+            Covenant.Requires<ArgumentNullException>(dte != null, nameof(dte));
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var activeProject = GetActiveProject(dte);
+
+            if (activeProject == null)
+            {
+                return false;
+            }
+
+            var projectProperties = ProjectProperties.CopyFrom(dte.Solution, activeProject);
+
+            return projectProperties.IsRaspberryCompatible;
         }
 
         /// <summary>

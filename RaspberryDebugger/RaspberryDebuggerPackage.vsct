@@ -65,6 +65,7 @@
       
       <Button guid="guidRaspberryDebugPackageCmdSet" id="RaspberrySettingsCommandId" priority="0x1000" type="Button">
         <Parent guid="guidRaspberryDebugPackageCmdSet" id="RaspberryDebugMenuGroup" />
+        <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>Raspberry Debug Settings...</ButtonText>
           <ToolTipText>Enable remote Raspberry debugging</ToolTipText>
