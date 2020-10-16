@@ -137,6 +137,7 @@ namespace RaspberryDebugger
         private CommandEvents   debugStartWithoutDebuggingCommandEvent;
         private CommandEvents   debugStartDebugTargetCommandEvent;
         private CommandEvents   debugRestartCommandEvent;
+        private bool            debugMode = false;
 
         /// <summary>
         /// Initializes the package.
@@ -184,6 +185,11 @@ namespace RaspberryDebugger
 
         //---------------------------------------------------------------------
         // DEBUG Command interceptors
+
+        /// <summary>
+        /// Returns <c>true</c> if the IDE in debug mode.
+        /// </summary>
+        private bool IsDebugging => dte.Mode == vsIDEMode.vsIDEModeDebug;
 
         /// <summary>
         /// Executes a command by command set GUID and command ID.
@@ -254,6 +260,11 @@ namespace RaspberryDebugger
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (IsDebugging)
+            {
+                return;
+            }
+
             var connectionName = GetConnectionName();
 
             if (connectionName == null)
@@ -284,7 +295,7 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Debug.Attach
+        /// Debug.StartDebugTarget (aka "attach")
         /// </summary>
         private void DebugStartDebugTargetCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
         {
