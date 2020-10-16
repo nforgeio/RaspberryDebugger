@@ -238,10 +238,10 @@ namespace RaspberryDebugger
 
             var sdkVersion = Version.Parse(projectProperties.SdkVersion);
 
-            if (sdkVersion < Version.Parse("3.1"))
+            if (!projectProperties.IsSupportedSdkVersion)
             {
                 MessageBox.Show(
-                    $"The .NET Core SDK [{sdkVersion}] is not supported.  Only .NET Core versions [v3.1] or later are supported.",
+                    $"The .NET Core SDK [{sdkVersion}] is not currently supported.  Only .NET Core versions [v3.1] or later will ever be supported\r\n\r\nNote that we currently support only offical SDKs (not previews or release candidates) and we check for new .NET Core SDKs every week or two.  Submit an issue if you really need support for a new SDK ASAP:\r\n\t\nhttps://github.com/nforgeio/RaspberryDebugger/issues",
                     "SDK Not Supported",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);

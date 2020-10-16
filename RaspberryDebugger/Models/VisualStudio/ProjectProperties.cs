@@ -127,12 +127,16 @@ namespace RaspberryDebugger
             var debugEnabled        = projectSettings.EnableRemoteDebugging;
             var debugConnectionName = projectSettings.RemoteDebugTarget;
 
+            // Determine whether the referenced .NET Core SDK version is currently supported.
+
+            var isSupportedSdkVersion = PackageHelper.SdkCatalog.Items.Any(item => SemanticVersion.Parse(item.Version) == SemanticVersion.Parse(sdkVersion) && item.Architecture == SdkArchitecture.ARM32);
+
             // Determine whether the project is Raspberry compatible.
 
             var isRaspberryCompatible = isNetCore &&
                                         outputType == 1 && // 1=EXE
                                         !string.IsNullOrEmpty(sdkVersion) &&
-                                        SemanticVersion.Parse(sdkVersion) >= SemanticVersion.Parse("3.1");
+                                        isSupportedSdkVersion;
 
             // Return the properties.
 
@@ -151,6 +155,7 @@ namespace RaspberryDebugger
                 DebugConnectionName   = debugConnectionName,
                 CommandLineArgs       = commandLineArgs,
                 EnvironmentVariables  = environmentVariables,
+                IsSupportedSdkVersion = isSupportedSdkVersion,
                 IsRaspberryCompatible = isRaspberryCompatible
             };
         }
@@ -299,6 +304,11 @@ namespace RaspberryDebugger
         /// if the SSK version could not be identified.
         /// </summary>
         public string SdkVersion { get; private set; }
+
+        /// <summary>
+        /// Returns <c>true</c> if the project references a supported .NET Core SDK version.
+        /// </summary>
+        public bool IsSupportedSdkVersion { get; private set; }
 
         /// <summary>
         /// Returns the project's build configuration.
