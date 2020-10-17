@@ -17,6 +17,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{5A14B2C0-0606-433A-AE9C-9E33C7B2BA27}"
 	ProjectSection(SolutionItems) = preProject
 		Doc\DEVELOPER.md = Doc\DEVELOPER.md
+		Doc\RELEASE.md = Doc\RELEASE.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Images", "Images", "{642CFDE5-32E6-46EB-B79E-8E380CCE0237}"
+	ProjectSection(SolutionItems) = preProject
+		Doc\Images\RaspberryDebugSettings.png = Doc\Images\RaspberryDebugSettings.png
 	EndProjectSection
 EndProject
 Global
@@ -36,6 +42,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{642CFDE5-32E6-46EB-B79E-8E380CCE0237} = {5A14B2C0-0606-433A-AE9C-9E33C7B2BA27}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {52E13CDA-74D0-400C-83D8-417CC3C113D6}
