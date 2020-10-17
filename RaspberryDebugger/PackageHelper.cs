@@ -53,7 +53,7 @@ namespace RaspberryDebugger
         private static List<Sdk> cachedSdks = null;
 
         /// <summary>
-        /// The path to the <b>%USERPROFILE%\.pi-debug</b> folder where the package
+        /// The path to the <b>%USERPROFILE%\.raspberry</b> folder where the package
         /// will persist its settings and other files.
         /// </summary>
         public static readonly string SettingsFolder;
@@ -71,7 +71,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// The name used to prefix logged output and status bar text.
         /// </summary>
-        public const string LogName = "pi-debug";
+        public const string LogName = "raspberry";
 
         /// <summary>
         /// Directory on the Raspberry Pi where .NET Core SDKs will be installed along with the
@@ -113,7 +113,7 @@ namespace RaspberryDebugger
         {
             // Initialize the settings path and folders.
 
-            SettingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".pi-debug");
+            SettingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".raspberry");
 
             if (!Directory.Exists(SettingsFolder))
             {
