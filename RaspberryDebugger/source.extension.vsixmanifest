@@ -15,7 +15,7 @@
 
 Raspberry Debugger extension is compatible with Raspberry Pi
 Raspberry Pi is a trademark of the Raspberry Pi FoundationThis </Description>
-        <License>LICENSE</License>
+        <License>license.txt</License>
         <GettingStartedGuide>https://github.com/nforgeio/RaspberryDebugger</GettingStartedGuide>
         <ReleaseNotes>ReleaseNotes.rtf</ReleaseNotes>
         <Icon>packageicon.png</Icon>

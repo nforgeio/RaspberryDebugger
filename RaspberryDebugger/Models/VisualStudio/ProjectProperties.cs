@@ -36,6 +36,7 @@ using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Neon.Common;
+using Neon.Net;
 using Newtonsoft.Json.Linq;
 
 using Task = System.Threading.Tasks.Task;
@@ -85,10 +86,27 @@ namespace RaspberryDebugger
             // Load [Properties/launchSettings.json] if present to obtain the command line
             // arguments and environment variables as well as the target connection.  Note
             // that we're going to use the profile named for the project and ignore any others.
+            //
+            // The launch settings for Console vs. WebApps are a bit different.  WebApps include
+            // a top-level "iisSettings"" property and two profiles: "IIS Express" and the
+            // profile with the project name.  We're going to use the presence of the "iisSettings"
+            // property to determine that we're dealing with a WebApp and we'll do some additional
+            // processing based off of the project profile:
+            //
+            //      1. Launch the browser if [launchBrowser=true]
+            //      2. Extract the site port number from [applicationUrl]
+            //      3. Have the app listen on all IP addresses by adding this environment
+            //         variable when we :
+            //
+            //              ASPNETCORE_SERVER.URLS=http://0.0.0.0:<port>
 
-            var launchSettingsPath   = Path.Combine(projectFolder, "Properties", "launchSettings.json");
-            var commandLineArgs      = new List<string>();
-            var environmentVariables = new Dictionary<string, string>();
+            var launchSettingsPath    = Path.Combine(projectFolder, "Properties", "launchSettings.json");
+            var commandLineArgs       = new List<string>();
+            var environmentVariables  = new Dictionary<string, string>();
+            var isAspNet              = false;
+            var aspPort               = 0;
+            var aspLaunchBrowser      = false;
+            var aspRelativeBrowserUri = "/";
 
             if (File.Exists(launchSettingsPath))
             {
@@ -114,7 +132,89 @@ namespace RaspberryDebugger
                                 }
                             }
 
-                            break;
+                            // Extract additional settings for ASPNET projects.
+
+                            if (settings.Property("iisSettings") != null)
+                            {
+                                isAspNet = true;
+
+                                // Note that we're going to fall back to port 5000 if there are any
+                                // issues parsing the application URL.
+
+                                const int fallbackPort = 5000;
+
+                                var jProperty = profileObject.Property("applicationUrl");
+
+                                if (jProperty != null && jProperty.Value.Type == JTokenType.String)
+                                {
+                                    try
+                                    {
+                                        var uri = new Uri((string)jProperty.Value);
+
+                                        aspPort = uri.Port;
+
+                                        if (!NetHelper.IsValidPort(aspPort))
+                                        {
+                                            aspPort = fallbackPort;
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        aspPort = fallbackPort;
+                                    }
+                                }
+                                else
+                                {
+                                    aspPort = fallbackPort;
+                                }
+
+                                jProperty = profileObject.Property("launchBrowser");
+
+                                if (jProperty != null && jProperty.Value.Type == JTokenType.Boolean)
+                                {
+                                    aspLaunchBrowser = (bool)jProperty.Value;
+                                }
+                            }
+                        }
+                        else if (profile.Name == "IIS Express")
+                        {
+                            // For ASPNET apps, this profile may include a "launchUrl" which
+                            // specifies the absolute or relative URI to display in a debug
+                            // browser launched during debugging.
+                            //
+                            // We're going to normalize this as a relative URI and save it
+                            // so we'll be able to launch the browser on the correct page.
+
+                            var profileObject = (JObject)profile.Value;
+                            var jProperty     = profileObject.Property("launchUrl");
+
+                            if (jProperty != null && jProperty.Value.Type == JTokenType.String)
+                            {
+                                var launchUri = (string)jProperty.Value;
+
+                                if (!string.IsNullOrEmpty(launchUri))
+                                {
+                                    try
+                                    {
+                                        var uri = new Uri(launchUri, UriKind.RelativeOrAbsolute);
+
+                                        if (uri.IsAbsoluteUri)
+                                        {
+                                            aspRelativeBrowserUri = uri.PathAndQuery;
+                                        }
+                                        else
+                                        {
+                                            aspRelativeBrowserUri = launchUri;
+                                        }
+                                    }
+                                    catch 
+                                    {
+                                        // We'll fall back to "/" for any URI parsing errors.
+
+                                        aspRelativeBrowserUri = "/";
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -155,7 +255,11 @@ namespace RaspberryDebugger
                 CommandLineArgs       = commandLineArgs,
                 EnvironmentVariables  = environmentVariables,
                 IsSupportedSdkVersion = isSupportedSdkVersion,
-                IsRaspberryCompatible = isRaspberryCompatible
+                IsRaspberryCompatible = isRaspberryCompatible,
+                IsAspNet              = isAspNet,
+                AspPort               = aspPort,
+                AspLaunchBrowser      = aspLaunchBrowser,
+                AspRelativeBrowserUri = aspRelativeBrowserUri
             };
         }
 
@@ -371,5 +475,26 @@ namespace RaspberryDebugger
         /// on a Raspberry.
         /// </summary>
         public bool IsRaspberryCompatible { get; private set; }
+
+        /// <summary>
+        /// Indicates that this is an ASPNET project.
+        /// </summary>
+        public bool IsAspNet { get; private set; }
+
+        /// <summary>
+        /// Returns the port number to expose for the ASPNET apps.
+        /// </summary>
+        public int AspPort { get; private set; }
+
+        /// <summary>
+        /// Indicates whether a browser should be launched for ASPNET apps.
+        /// </summary>
+        public bool AspLaunchBrowser { get; private set; }
+
+        /// <summary>
+        /// Returns the relative URI to be displayed in the browser when
+        /// <see cref="AspLaunchBrowser"/> is <c>true</c>.
+        /// </summary>
+        public string AspRelativeBrowserUri { get; private set; }
     }
 }

@@ -21,6 +21,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -40,6 +41,9 @@ using Neon.Windows;
 using Newtonsoft.Json.Linq;
 
 using Task = System.Threading.Tasks.Task;
+using System.Net.Http;
+using Microsoft.VisualStudio.Debugger.Interop;
+using Neon.SSH;
 
 namespace RaspberryDebugger
 {
@@ -177,6 +181,65 @@ namespace RaspberryDebugger
                 {
                     dte.ExecuteCommand("DebugAdapterHost.Launch", $"/LaunchJson:\"{tempFile.Path}\"");
                 }
+
+                // Launch the browser for ASPNET apps if requested.  Note that we're going to do this
+                // on a background task and poll the Raspberry, waiting for to the see the port open
+                // on a LISTENING socket.
+
+                if (projectProperties.IsAspNet && projectProperties.AspLaunchBrowser)
+                {
+                    var baseUri     = $"http://{connectionInfo.Host}:{projectProperties.AspPort}";
+                    var launchReady = false;
+
+                    await NeonHelper.WaitForAsync(
+                        async () =>
+                        {
+                            if (dte.Mode != vsIDEMode.vsIDEModeDebug)
+                            {
+                                // The developer must have stopped debugging before the ASPNET
+                                // application was able to begin servicing requests.
+
+                                return true;
+                            }
+
+                            try
+                            {
+                                var appListeningScript =
+$@"
+if lsof -i -P -n | grep --quiet 'TCP \*:{projectProperties.AspPort} (LISTEN)' ; then
+    exit 0
+else
+    exit 1
+fi
+";
+                                var response = connection.SudoCommand(CommandBundle.FromScript(appListeningScript));
+
+                                if (response.ExitCode != 0)
+                                {
+                                    return false;
+                                }
+
+                            // Wait just a bit longer to give the application a chance to
+                            // perform any additional initialization.
+
+                            await Task.Delay(TimeSpan.FromSeconds(1));
+
+                                launchReady = true;
+                                return true;
+                            }
+                            catch
+                            {
+                                return false;
+                            }
+                        },
+                        timeout: TimeSpan.FromSeconds(30),
+                        pollInterval: TimeSpan.FromSeconds(0.5));
+
+                    if (launchReady)
+                    {
+                        NeonHelper.OpenBrowser($"{baseUri}{projectProperties.AspRelativeBrowserUri}");
+                    }
+                }
             }
         }
 
@@ -225,6 +288,18 @@ namespace RaspberryDebugger
             {
                 environmentVariables.Add(variable.Key, variable.Value);
             }
+
+            // For ASPNET apps, set the [ASPNETCORE_URLS] environment variable
+            // to [http://0.0.0.0:PORT] so that the app running on the Raspberry will
+            // be reachable from the development workstation.  Note that we don't
+            // support HTTPS at this time.
+
+            if (projectProperties.IsAspNet)
+            {
+                environmentVariables["ASPNETCORE_URLS"] = $"http://0.0.0.0:{projectProperties.AspPort}";
+            }
+
+            // Construct the debug launch JSON file.
 
             var settings = 
                 new JObject
