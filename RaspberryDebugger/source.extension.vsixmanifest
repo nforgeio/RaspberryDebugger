@@ -22,8 +22,10 @@ Raspberry Pi is a trademark of the Raspberry Pi Foundation</Description>
         <Tags>raspberry pi debugger</Tags>
         <Preview>true</Preview>
     </Metadata>
-    <Installation>
+    <Installation InstalledByMsi="true">
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
+        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
+        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
     </Installation>
     <Dependencies>
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />

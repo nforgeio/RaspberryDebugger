@@ -176,11 +176,11 @@ namespace RaspberryDebugger
 
             var passwordText = passwordTextBox.Text.Trim();
 
-            if (passwordText == string.Empty && string.IsNullOrEmpty(ConnectionInfo.PrivateKeyPath))
+            if (passwordText == string.Empty)
             {
                 passwordTextBox.Focus();
                 passwordTextBox.SelectAll();
-                MessageBoxEx.Show(this, "You must specify a password so we'll be able to configure an SSH key.\r\n\r\nYou may remove the password later if you wish, but we recommend that retain it so it'll be easier to reconnect after you reimage your Raspberry.", "Connection Error", MessageBoxButtons.OK);
+                MessageBoxEx.Show(this, "You must specify a password.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
 
