@@ -10,11 +10,11 @@
 * Installs the target .NET SDK on your Raspberry
 * Installs the remote VSDBG debugger
 * F5 and go, we handle transferring app binaries and starting the debugger
-* Compatible with .NET Core 3.1 (we'll support ,NET 5 when it's officially release)
+* Compatible with .NET Core 3.1 (we'll support ,NET 5 when it's officially released)
 * Manage connections to multiple Raspberries
 
 Raspberry Debugger extension is compatible with Raspberry Pi
-Raspberry Pi is a trademark of the Raspberry Pi FoundationThis </Description>
+Raspberry Pi is a trademark of the Raspberry Pi Foundation</Description>
         <License>license.txt</License>
         <GettingStartedGuide>https://github.com/nforgeio/RaspberryDebugger</GettingStartedGuide>
         <ReleaseNotes>ReleaseNotes.rtf</ReleaseNotes>
