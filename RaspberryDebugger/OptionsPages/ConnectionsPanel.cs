@@ -223,6 +223,8 @@ namespace RaspberryDebugger
 
             connectionsView.SetObjects(connections);
             connectionsView.SelectedObject = connections.SingleOrDefault(connection => connection.Name == orgName);
+
+            EnableButtons();
         }
 
         /// <summary>
