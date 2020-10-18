@@ -13,6 +13,20 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 * Raspberry Pi running Raspberry Pi OS 32-bit
 * Raspberry user allowed to sudo
 
+### Features
+
+* Supports Raspberry Pi 3+ devices
+* Supports Raspberry Pi OS 32-bit (we haven't tested other operating systems)
+* Supports Console and ASPNET .NET Core 3.1 applications
+* .NET 5 will be supported when it's formally released
+* Automatically generates and configures a SSH key pair
+* Transparent **F5/Run** debugging
+   * SDK and VSDBG installation is handled automatically
+   * We also publish and transfer the program file
+* Raspberry debugging can be enabled/disabled for specific projects
+* Multiple Raspberry connections are supported
+* Tested for C# and Visual Basic.  Other .NET languages should also work
+
 ### Configure your Raspberry
 
 After getting your Raspberry setup based on the instructions you received with it, you'll need to perform a couple additional steps to make it ready for remote debugging:
@@ -60,7 +74,7 @@ On your Windows workstation:
       <br/>
       ![Screenshot](/Doc/Images/ToolsOptions2.png?raw=true)
       <br/>
-   c. When you click **OK**, we'll connect to the Raspberry to validate your credentials and if that's successful, we'll configure the Raspberry by installing any required packages and also create and configure the SSH keypair that will be used for subsequent connections.  You connections should look something like this:
+   c. When you click **OK**, we'll connect to the Raspberry to validate your credentials and if that's successful, we'll configure the Raspberry by installing any required packages and also create and configure the SSH key pair that will be used for subsequent connections.  You connections should look something like this:
       <br/>
       ![Screenshot](/Doc/Images/ToolsOptions3.png?raw=true)
       <br/>
@@ -78,11 +92,11 @@ On your Windows workstation:
       <br/>
       ![Screenshot](/Doc/Images/RaspberryProjectSettings.png?raw=true)
       <br/>
-   c. Click the **Target Raspberry** combo box and choose the Raspberry connection you created easlier or **[DEFAULT]** to select the connection with its **Default** box checked and click **OK** to close the dialog.
+   c. Click the **Target Raspberry** combo box and choose the Raspberry connection you created earlier or **[DEFAULT]** to select the connection with its **Default** box checked and click **OK** to close the dialog.
 
 That's all there is to it: Just **press F5 to build and debug** your program remotely on the Raspberry.  Add a `Debugger.Break()` call in your program to verify that this works:
 
-![Screenshot](/Doc/Images/RaspberryProjectSettings.png?raw=true)
+![Screenshot](/Doc/Images/DebuggerBreak.png?raw=true)
 
 
 
