@@ -30,9 +30,9 @@ After getting your Raspberry setup based on the instructions you received with i
     ip -h address
     ```
     You'll see something like this:
-    ![Screenshot](/Images/ip-address.png)
+    ![Screenshot](Images/ip-address.png)
 
 
 
-_The Raspberry Debugger extension is compatible with Raspberry Pi_
-_Raspberry Pi is a trademark of the Raspberry Pi Foundation_
+* _The Raspberry Debugger extension is compatible with Raspberry Pi_
+* _Raspberry Pi is a trademark of the Raspberry Pi Foundation_
