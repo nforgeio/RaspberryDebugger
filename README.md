@@ -32,7 +32,7 @@ After getting your Raspberry setup based on the instructions you received with i
     You'll see something like this:
     ![Screenshot](Images/ip-address.png)
 
-
+### Disclosures
 
 * _The Raspberry Debugger extension is compatible with Raspberry Pi_
 * _Raspberry Pi is a trademark of the Raspberry Pi Foundation_
