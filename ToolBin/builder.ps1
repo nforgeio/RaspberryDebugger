@@ -20,6 +20,25 @@
 #
 # USAGE: powershell -file ./builder.ps1
 
+#------------------------------------------------------------------------------
+# Deletes a folder if it exists.
+
+function DeleteFolder
+{
+    [CmdletBinding()]
+    param (
+        [Parameter(Position=0, Mandatory=1)]
+        [string]$Path
+    )
+
+	if (Test-Path $Path) 
+	{ 
+		Remove-Item -Recurse $Path 
+	} 
+}
+
+#------------------------------------------------------------------------------
+
 $rdbgRoot  = "$env:RDBG_ROOT"
 $rdbgBuild = "$env:RDBG_BUILD"
 $rdbgTools = "$rdbgRoot\Tools"
@@ -32,8 +51,10 @@ $rdbgTools = "$rdbgRoot\Tools"
 #
 # So the VSIX will need to be built manually first.
 
-$originalDir = $pwd
-cd $rdbgRoot
+# Delete and recreate the [$\Build] folder.
+
+DeleteFolder $rdbgBuild
+mkdir $rdbgBuild
 
 # Copy the VSIX package to the build folder.
 
@@ -54,5 +75,3 @@ if (-not $?)
 	""
 	exit 1
 }
-
-cd $originalDir

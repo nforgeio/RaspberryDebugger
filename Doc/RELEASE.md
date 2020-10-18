@@ -17,7 +17,7 @@
 
 6. Create a new GitHub release named the same as the new version and set the releast branch to the newly created branch.
 
-7. Copy `RELEASE-TEMPLATE.md` into the release notes and describe the update including any related issues.
+7. Copy `RELEASE-TEMPLATE.md` into the release notes and describe the changes including any related issues.
 
 8. Attach `$/Build/RaspberryDebugger.vsix** to the the release.
 
@@ -25,7 +25,7 @@
 
 10. Publish the GitHub release.
 
-11. Commit any changes and push them to GitHub.
+11. Commit any changes and push them to GitHub using a comment like: **RELEASE v1.0**
 
 12. Switch back to the **main** branch, merge the changes from the release branch and push **main** to GitHub.
 
