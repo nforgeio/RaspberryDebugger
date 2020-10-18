@@ -1,19 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="RaspberryDebugger.79c7fc56-a78c-4e6b-b73d-f202de491d34" Version="0.1" Language="en-US" Publisher="neonFORGE, LLC" />
+        <Identity Id="Raspberry Debugger.79c7fc56-a78c-4e6b-b73d-f202de491d34" Version="0.2" Language="en-US" Publisher="neonFORGE, LLC" />
         <DisplayName>Raspberry Debugger</DisplayName>
-        <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug your Raspberry .NET Core applications on a real Raspberry Pie using Visual Studio:
+        <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug your Raspberry .NET Core applications on a real Raspberry Pi using Visual Studio:
 
-* Creates and manages your SSH keys transparently
-* Handles installation of Windows OpenSSH
-* Installs the target .NET SDK on your Raspberry
-* Installs the remote VSDBG debugger
-* F5 and go, we handle transferring app binaries and starting the debugger
-* Compatible with .NET Core 3.1 (we'll support ,NET 5 when it's officially released)
-* Manage connections to multiple Raspberries
-
-Raspberry Debugger extension is compatible with Raspberry Pi
+Raspberry Debugger is compatible with Raspberry Pi
 Raspberry Pi is a trademark of the Raspberry Pi Foundation</Description>
         <License>license.txt</License>
         <GettingStartedGuide>https://github.com/nforgeio/RaspberryDebugger</GettingStartedGuide>
