@@ -53,22 +53,36 @@ On your Windows workstation:
 
 3. Create a connection for your Raspberry:
    a. Choose the **Tools/Options...** menu and select the **Raspberry Debugger/Connections** panel.  You'll see this:
+      <br/>
       ![Screenshot](/Doc/Images/ToolsOptions1.png?raw=true)
+      <br/>
    b. Click **Add** to create a connection.  The connection dialog will be prepopulated with the default **pi** username and the default **raspberry** password.  You'll need to update these as required and also enter your Raspberry's IP address (or hostname).
+      <br/>
       ![Screenshot](/Doc/Images/ToolsOptions2.png?raw=true)
+      <br/>
    c. When you click **OK**, we'll connect to the Raspberry to validate your credentials and if that's successful, we'll configure the Raspberry by installing any required packages and also create and configure the SSH keypair that will be used for subsequent connections.  You connections should look something like this:
+      <br/>
       ![Screenshot](/Doc/Images/ToolsOptions3.png?raw=true)
+      <br/>
    d. Your new connection will look something like this on success:
+      <br/>
       ![Screenshot](/Doc/Images/ToolsOptions4.png?raw=true)
+      <br/>
 
 4: Configure your .NET Core project for debugging.  Raspberry Debugger supports Console and ASPNET applications targeting .NET Core 3.1.x (we'll support .NET 5 when it's released).
    a. Open one of your project source files and choose the new **Project/Raspberry Debug** menu:
+      <br/>
       ![Screenshot](/Doc/Images/RaspberryDebugMenu.png?raw=true)
+      <br/>
    b. The settings dialog will look like this:
+      <br/>
       ![Screenshot](/Doc/Images/RaspberryProjectSettings.png?raw=true)
+      <br/>
    c. Click the **Target Raspberry** combo box and choose the Raspberry connection you created easlier or **[DEFAULT]** to select the connection with its **Default** box checked and click **OK** to close the dialog.
 
-That's all there is to it: Just **press F5 to build and debug** your program remotely on the Raspberry.  We'll handle installing the correct SDK as well as the VSDBG debugger on your Raspberry.
+That's all there is to it: Just **press F5 to build and debug** your program remotely on the Raspberry.  Add a `Debugger.Break()` call in your program to verify that this works:
+
+![Screenshot](/Doc/Images/RaspberryProjectSettings.png?raw=true)
 
 
 
