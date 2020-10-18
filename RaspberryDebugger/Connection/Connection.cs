@@ -102,7 +102,7 @@ namespace RaspberryDebugger
                 if (string.IsNullOrEmpty(connectionInfo.PrivateKeyPath) ||
                     string.IsNullOrEmpty(connectionInfo.Password))
                 {
-                    RaspberryDebugger.Log.Exception(e, $"[{connectionInfo.Host}]");
+                    RaspberryDebugger.Log.Exception(e, $"[{connectionInfo.Host}]: The connection must specify a password or SSH key.");
                     throw;
                 }
 
