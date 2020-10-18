@@ -102,7 +102,7 @@ namespace RaspberryDebugger
                 if (string.IsNullOrEmpty(connectionInfo.PrivateKeyPath) ||
                     string.IsNullOrEmpty(connectionInfo.Password))
                 {
-                    RaspberryDebugger.Log.Exception(e, $"[{connectionInfo.Host}]: The connection must specify a password or SSH key.");
+                    RaspberryDebugger.Log.Exception(e, $"[{connectionInfo.Host}]: The connection must have a password or SSH private key.");
                     throw;
                 }
 
@@ -127,6 +127,7 @@ namespace RaspberryDebugger
                     var publicKey  = File.ReadAllText(connectionInfo.PublicKeyPath).Trim();
                     var keyScript  =
 $@"
+mkdir -p {homeFolder}/.ssh
 touch {homeFolder}/.ssh/authorized_keys
 
 if ! grep --quiet '{publicKey}' {homeFolder}/.ssh/authorized_keys ; then
@@ -447,6 +448,7 @@ fi
 
 # Append the public key to the user's [authorized_keys] file to enable it.
 
+mkdir -p {homeFolder}/.ssh
 touch {homeFolder}/.ssh/authorized_keys
 cat {tempPublicKeyPath} >> {homeFolder}/.ssh/authorized_keys
 
@@ -685,31 +687,31 @@ exit 0
             // We're going to ZIP the program files locally and then transfer the zipped
             // files to the Raspberry to be expanded there.
 
-            var binaryFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
+            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
             var uploadScript =
 $@"
 
 # Ensure that the debug folder exists.
 
-if ! touch {binaryFolder} ; then
+if ! mkdir -p {debugFolder} ; then
     exit 1
 fi
 
 # Clear all existing program files.
 
-if ! rm -rf {binaryFolder} ; then
+if ! rm -rf {debugFolder}/* ; then
     exit 1
 fi
 
 # Unzip the binary and other files to the debug folder.
 
-if ! unzip program.zip -d {binaryFolder} ; then
+if ! unzip program.zip -d {debugFolder} ; then
     exit 1
 fi
 
 # The wrapper program needs execute permissions.
 
-if ! chmod 770 {binaryFolder}/{assemblyName} ; then
+if ! chmod 770 {debugFolder}/{assemblyName} ; then
     exit 1
 fi
 
@@ -719,7 +721,7 @@ exit 0
 
             try
             {
-                LogInfo($"Uploading program to: [{binaryFolder}]");
+                LogInfo($"Uploading program to: [{debugFolder}]");
 
                 var bundle = new CommandBundle(uploadScript);
 

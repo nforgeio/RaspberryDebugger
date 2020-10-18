@@ -87,22 +87,16 @@ namespace RaspberryDebugger
                         using (var powershell = new PowerShell())
                         {
                             Log.Info("Installing OpenSSH");
-
-                            for (int i = 0; i < 50; i++)
-                            {
-                                System.Threading.Thread.Sleep(1000);
-                            }
-
                             Log.Info(powershell.Execute("Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0"));
                         }
 
-                        MessageBox.Show(
-                            "Restart Windows to complete the OpenSSH Client installation.",
-                            "Restart Required",
-                            MessageBoxButtons.OK);
-
                         await Task.CompletedTask;
                     });
+
+                MessageBox.Show(
+                    "Restart Windows to complete the OpenSSH Client installation.",
+                    "Restart Required",
+                    MessageBoxButtons.OK);
 
                 return false;
             }

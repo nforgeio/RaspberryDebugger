@@ -9,9 +9,11 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 
 ### Requirements
 
-* Visual Studio (Community Edition or better)
+* Windows 10
+* Visual Studio 2019 v16.7+ (Community Edition or better)
 * Raspberry Pi running Raspberry Pi OS 32-bit
 * Raspberry user allowed to sudo
+* [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed automatically if required)
 
 ### Features
 
@@ -25,7 +27,8 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
    * We also publish and transfer the program file
 * Raspberry debugging can be enabled/disabled for specific projects
 * Multiple Raspberry connections are supported
-* Tested for C# and Visual Basic.  Other .NET languages should also work
+* Tested for C# and Visual Basic: other .NET languages should also work
+* Detailed debug activity logs
 
 ### Configure your Raspberry
 
@@ -88,19 +91,19 @@ On your Windows workstation:
       <br/>
       ![Screenshot](/Doc/Images/RaspberryDebugMenu.png?raw=true)
       <br/>
-   b. The settings dialog will look like this:
+   b. The project Raspberry settings dialog will look like this:
       <br/>
       ![Screenshot](/Doc/Images/RaspberryProjectSettings.png?raw=true)
       <br/>
    c. Click the **Target Raspberry** combo box and choose the Raspberry connection you created earlier or **[DEFAULT]** to select the connection with its **Default** box checked and click **OK** to close the dialog.
 
-That's all there is to it: Just **press F5 to build and debug** your program remotely on the Raspberry.  Add a `Debugger.Break()` call in your program to verify that this works:
+That's all there is to it: just **press F5 to build and debug** your program remotely on the Raspberry.  Add a `Debugger.Break()` call in your program to verify that this works:
 
 ![Screenshot](/Doc/Images/DebuggerBreak.png?raw=true)
 
+**NOTE:** The Raspberry Debugger relies on the [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) which is installed by default for recent Windows 10 updates.  If this is not installed for some reason, you'll see the following dialog when you start debugging.  This requires a reboot.  Click **Yes** (this takes a few minutes so be patient) and then restart your workstation.
 
-
-
+![Screenshot](/Doc/Images/WindowsOpenSSH.png?raw=true)
 
 ### Disclosures
 
