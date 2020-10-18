@@ -2,7 +2,7 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
         <Identity Id="RaspberryDebugger.79c7fc56-a78c-4e6b-b73d-f202de491d34" Version="0.1" Language="en-US" Publisher="neonFORGE, LLC" />
-        <DisplayName>RaspberryDebugger</DisplayName>
+        <DisplayName>Raspberry Debugger</DisplayName>
         <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug your Raspberry .NET Core applications on a real Raspberry Pie using Visual Studio:
 
 * Creates and manages your SSH keys transparently
