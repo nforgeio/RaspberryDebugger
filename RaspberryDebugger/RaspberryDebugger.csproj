@@ -87,13 +87,13 @@
     <Compile Include="Models\Sdk\SdkCatalogItem.cs" />
     <Compile Include="Models\Connection\AuthenticationType.cs" />
     <Compile Include="Models\VisualStudio\ProjectProperties.cs" />
-    <Compile Include="CustomPages\ConnectionsPanel.cs">
+    <Compile Include="OptionsPages\ConnectionsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="CustomPages\ConnectionsPanel.Designer.cs">
+    <Compile Include="OptionsPages\ConnectionsPanel.Designer.cs">
       <DependentUpon>ConnectionsPanel.cs</DependentUpon>
     </Compile>
-    <Compile Include="CustomPages\ConnectionsPage.cs">
+    <Compile Include="OptionsPages\ConnectionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PackageHelper.cs" />
@@ -171,7 +171,7 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CustomPages\ConnectionsPanel.resx">
+    <EmbeddedResource Include="OptionsPages\ConnectionsPanel.resx">
       <DependentUpon>ConnectionsPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\ConnectionDialog.resx">

@@ -94,95 +94,95 @@ namespace RaspberryDebugger
 
             if (!isInitialized)
             {
-                // $hack(jefflill):
-                //
                 // This crashes is called when the options panel is displayed for a second
-                // time in Visual Studio.  VS mush cache the instance or something and then
-                // reload it.  We'll use a state variable to avoid this.
+                // time in Visual Studio.  VS must cache the instance or something and then
+                // reload it.  We'll use a static variable to avoid this.
+                //
+                //      https://github.com/nforgeio/RaspberryDebugger/issues/4
 
                 connectionsView.CheckBoxes = true;
                 isInitialized              = true;
+
+                connectionsView.CheckedAspectName = nameof(ConnectionInfo.IsDefault);
+
+                connectionsView.Columns.Add(
+                    new OLVColumn()
+                    {
+                        Name            = "Default",
+                        Text            = "Default",
+                        DisplayIndex    = defaultColumn,
+                        Width           = 60,
+                        HeaderTextAlign = HorizontalAlignment.Center,
+                        TextAlign       = HorizontalAlignment.Center,
+                        Sortable        = false
+                    });
+
+                connectionsView.Columns.Add(
+                    new OLVColumn()
+                    {
+                        Name            = "Host",
+                        Text            = "Host",
+                        AspectName      = nameof(ConnectionInfo.Name),
+                        DisplayIndex    = hostColumn,
+                        Width           = 200,
+                        HeaderTextAlign = HorizontalAlignment.Left,
+                        TextAlign       = HorizontalAlignment.Left,
+                        Sortable        = false
+                    });
+
+                connectionsView.Columns.Add(
+                    new OLVColumn()
+                    {
+                        Name            = "Port",
+                        Text            = "Port",
+                        AspectName      = nameof(ConnectionInfo.Port),
+                        DisplayIndex    = portColumn,
+                        Width           = 60,
+                        HeaderTextAlign = HorizontalAlignment.Center,
+                        TextAlign       = HorizontalAlignment.Center,
+                        Sortable        = false
+                    });
+
+                connectionsView.Columns.Add(
+                    new OLVColumn()
+                    {
+                        Name            = "User",
+                        Text            = "User",
+                        AspectName      = nameof(ConnectionInfo.User),
+                        DisplayIndex    = userColumn,
+                        FillsFreeSpace  = true,
+                        MaximumWidth    = 500,
+                        HeaderTextAlign = HorizontalAlignment.Left,
+                        TextAlign       = HorizontalAlignment.Left,
+                        Sortable        = false
+                    });
+
+                connectionsView.Columns.Add(
+                    new OLVColumn()
+                    {
+                        Name            = "Authentication",
+                        Text            = "Authentication",
+                        AspectName      = nameof(ConnectionInfo.Authentication),
+                        DisplayIndex    = authColumn,
+                        Width           = 100,
+                        HeaderTextAlign = HorizontalAlignment.Center,
+                        TextAlign       = HorizontalAlignment.Center,
+                        Sortable        = false
+                    });
+
+                connectionsView.Columns.Add(
+                    new OLVColumn()
+                    {
+                        Name            = "",
+                        Text            = "",
+                        DisplayIndex    = blankColumn,
+                        Width           = 0,
+                        IsVisible       = false,
+                        HeaderTextAlign = HorizontalAlignment.Left,
+                        TextAlign       = HorizontalAlignment.Left,
+                        Sortable        = false
+                    });
             }
-
-            connectionsView.CheckedAspectName = nameof(ConnectionInfo.IsDefault);
-
-            connectionsView.Columns.Add(
-                new OLVColumn()
-                {
-                    Name            = "Default",
-                    Text            = "Default",
-                    DisplayIndex    = defaultColumn,
-                    Width           = 60,
-                    HeaderTextAlign = HorizontalAlignment.Center,
-                    TextAlign       = HorizontalAlignment.Center,
-                    Sortable        = false
-                });
-
-            connectionsView.Columns.Add(
-                new OLVColumn()
-                {
-                    Name            = "Host",
-                    Text            = "Host",
-                    AspectName      = nameof(ConnectionInfo.Name),
-                    DisplayIndex    = hostColumn,
-                    Width           = 200,
-                    HeaderTextAlign = HorizontalAlignment.Left,
-                    TextAlign       = HorizontalAlignment.Left,
-                    Sortable        = false
-                });
-
-            connectionsView.Columns.Add(
-                new OLVColumn()
-                {
-                    Name            = "Port",
-                    Text            = "Port",
-                    AspectName      = nameof(ConnectionInfo.Port),
-                    DisplayIndex    = portColumn,
-                    Width           = 60,
-                    HeaderTextAlign = HorizontalAlignment.Center,
-                    TextAlign       = HorizontalAlignment.Center,
-                    Sortable        = false
-                });
-
-            connectionsView.Columns.Add(
-                new OLVColumn()
-                {
-                    Name            = "User",
-                    Text            = "User",
-                    AspectName      = nameof(ConnectionInfo.User),
-                    DisplayIndex    = userColumn,
-                    FillsFreeSpace  = true,
-                    MaximumWidth    = 500,
-                    HeaderTextAlign = HorizontalAlignment.Left,
-                    TextAlign       = HorizontalAlignment.Left,
-                    Sortable        = false
-                });
-
-            connectionsView.Columns.Add(
-                new OLVColumn()
-                {
-                    Name            = "Authentication",
-                    Text            = "Authentication",
-                    AspectName      = nameof(ConnectionInfo.Authentication),
-                    DisplayIndex    = authColumn,
-                    Width           = 100,
-                    HeaderTextAlign = HorizontalAlignment.Center,
-                    TextAlign       = HorizontalAlignment.Center,
-                    Sortable        = false
-                });
-
-            connectionsView.Columns.Add(
-                new OLVColumn()
-                {
-                    Name            = "",
-                    Text            = "",
-                    DisplayIndex    = blankColumn,
-                    Width           = 0,
-                    IsVisible       = false,
-                    HeaderTextAlign = HorizontalAlignment.Left,
-                    TextAlign       = HorizontalAlignment.Left,
-                    Sortable        = false
-                });
 
             // Load the connections from the state persisted by Visual Studio.
 
