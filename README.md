@@ -30,7 +30,20 @@ After getting your Raspberry setup based on the instructions you received with i
     ip -h address
     ```
     You'll see something like this:
+    &nbsp;
     ![Screenshot](/Doc/Images/ip-address.png?raw=true)
+    &nbsp;
+    You're looking for an **inet** address.  In my case here, my Raspberry is connected to WiFi and so the connection information will be located under the **wlan0** network interface.  I've highlighted the interface and the internet address here.
+
+    When your Raspberry is connected to a wired network, you'll see the IP address beneath the **eth0** network interface which I've also highlighted but there is no IP address listed because my Raspberry is not connected to a wired network.
+
+    Make a note of your Raspberry's IP address, you'll need it to configure a connection in Visual Studio.
+
+4. **Advanced:** Your Raspeberry's IP address may change from time-to-time, depending on your network settings.  I've configured my home router to assign reserve an IP address for my Raspberry so it won't change.  You may need to [configure a static IP address](https://www.raspberrypi.org/documentation/configuration/tcpip/) on the Raspberry itself.
+
+That's all the configuration required on the Raspberry.
+
+
 
 ### Disclosures
 
