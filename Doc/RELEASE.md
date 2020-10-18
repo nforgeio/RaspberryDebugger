@@ -7,8 +7,31 @@
 
 2. Update the release notes in: `ReleaseNotes.rtf` and `source.extension.vsixmanifest`
 
-3. Build and sign the extension??
+3. Open the solution, set the build configuration to **RELEASE** and then manually clean and build the solution.
 
-4. Release to GitHub??
+4. Run this command to complete the release process, copying the build artifcats to the [$/Build] folder:
 
-5. Release to Visual Studio Marketplace??
+   `%RDBG_TOOLBIN%\builder.cmd`
+
+5. Create a release branch from **main** named for the release like **release-v1.0** and push it to GitHub.
+
+6. Create a new GitHub release named the same as the new version and set the releast branch to the newly created branch.
+
+7. Copy `RELEASE-TEMPLATE.md` into the release notes and describe the update including any related issues.
+
+8. Attach `$/Build/RaspberryDebugger.vsix** to the the release.
+
+9. Copy/paste the SHA512 from `$/Build/RaspberryDebugger.vsix.sha512.txt** into the release notes.
+
+10. Publish the GitHub release.
+
+11. Commit any changes and push them to GitHub.
+
+12. Switch back to the **main** branch, merge the changes from the release branch and push **main** to GitHub.
+
+------------------------------------------------
+$todo(jefflill): Flesh these out:
+
+13. Build and sign the extension??
+
+14. Release to Visual Studio Marketplace??

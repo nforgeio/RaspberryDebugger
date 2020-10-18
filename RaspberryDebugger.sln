@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{177F60A0-B1B9-45D1-9CB1-8F06A6ED2AB5}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		buildenv.cmd = buildenv.cmd
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
@@ -17,12 +18,21 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{5A14B2C0-0606-433A-AE9C-9E33C7B2BA27}"
 	ProjectSection(SolutionItems) = preProject
 		Doc\DEVELOPER.md = Doc\DEVELOPER.md
+		Doc\RELEASE-TEMPLATE.md = Doc\RELEASE-TEMPLATE.md
 		Doc\RELEASE.md = Doc\RELEASE.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Images", "Images", "{642CFDE5-32E6-46EB-B79E-8E380CCE0237}"
 	ProjectSection(SolutionItems) = preProject
 		Doc\Images\RaspberryDebugSettings.png = Doc\Images\RaspberryDebugSettings.png
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToolBin", "ToolBin", "{15A5F928-90D4-421A-850D-8A09842DA012}"
+	ProjectSection(SolutionItems) = preProject
+		ToolBin\builder.cmd = ToolBin\builder.cmd
+		ToolBin\builder.ps1 = ToolBin\builder.ps1
+		ToolBin\openssl.exe = ToolBin\openssl.exe
+		ToolBin\PathTool.exe = ToolBin\PathTool.exe
 	EndProjectSection
 EndProject
 Global
