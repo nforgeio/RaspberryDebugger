@@ -302,12 +302,12 @@ fi
             // Construct the debug launch JSON file.
 
             var engineLogging = string.Empty;
-#if TESTING
+#if !DISABLED
             // Uncomment this to have the remote debugger log the traffic it
             // sees from Visual Studio for debugging purposes.  The log file
             // is persisted to the program folder on the Raspberry.
 
-            engingLogging = $"--engineLogging={debugFolder}/__vsdb-log.txt";
+            engineLogging = $"--engineLogging={debugFolder}/__vsdbg-log.txt";
 #endif
             var settings = 
                 new JObject
