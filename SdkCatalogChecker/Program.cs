@@ -85,7 +85,7 @@ namespace NetCoreCatalogChecker
                 if (sdkLinkToItem.TryGetValue(item.Link, out var existingItem))
                 {
                     ok = false;
-                    Console.WriteLine($"SDK [{existingItem.Name}] and [{item.Name}] have the same link: [{item.Link}] ");
+                    Console.WriteLine($"SDK [{existingItem.Name}/{existingItem.Architecture}] and [{item.Name}/{item.Architecture}] have the same link: [{item.Link}] ");
                     continue;
                 }
 
