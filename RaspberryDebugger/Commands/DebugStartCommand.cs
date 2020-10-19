@@ -255,8 +255,8 @@ fi
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
             Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
 
-            var systemRoot   = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            var binaryFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(connectionInfo.User), projectProperties.Name);
+            var systemRoot  = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            var debugFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(connectionInfo.User), projectProperties.Name);
 
             // NOTE:
             //
@@ -275,7 +275,7 @@ fi
 
             var args = new JArray();
 
-            args.Add(LinuxPath.Combine(binaryFolder, projectProperties.AssemblyName + ".dll"));
+            args.Add(LinuxPath.Combine(debugFolder, projectProperties.AssemblyName + ".dll"));
 
             foreach (var arg in projectProperties.CommandLineArgs)
             {
@@ -301,12 +301,20 @@ fi
 
             // Construct the debug launch JSON file.
 
+            var engineLogging = string.Empty;
+#if TESTING
+            // Uncomment this to have the remote debugger log the traffic it
+            // sees from Visual Studio for debugging purposes.  The log file
+            // is persisted to the program folder on the Raspberry.
+
+            engingLogging = $"--engineLogging={debugFolder}/__vsdb-log.txt";
+#endif
             var settings = 
                 new JObject
                 (
-                    new JProperty("version", "0.2.0"),
-                    new JProperty("adapter", Path.Combine(systemRoot, "sysnative", "openssh", "ssh.exe")),
-                    new JProperty("adapterArgs", $"-i \"{connectionInfo.PrivateKeyPath}\" {connectionInfo.User}@{connectionInfo.Host} {PackageHelper.RemoteDebuggerPath} --interpreter=vscode --engineLogging={binaryFolder}/log.txt"),
+                    new JProperty("version", "0.2.1"),
+                    new JProperty("adapter", Path.Combine(systemRoot, "Sysnative", "OpenSSH", "ssh.exe")),
+                    new JProperty("adapterArgs", $"-i \"{connectionInfo.PrivateKeyPath}\" {connectionInfo.User}@{connectionInfo.Host} {PackageHelper.RemoteDebuggerPath} --interpreter=vscode {engineLogging}"),
                     new JProperty("configurations",
                         new JArray
                         (
@@ -315,9 +323,9 @@ fi
                                 new JProperty("name", "Debug on Raspberry"),
                                 new JProperty("type", "coreclr"),
                                 new JProperty("request", "launch"),
-                                new JProperty("program", LinuxPath.Combine(PackageHelper.RemoteDotnetFolder, "dotnet")),
+                                new JProperty("program", PackageHelper.RemoteDotnetCommand),
                                 new JProperty("args", args),
-                                new JProperty("cwd", binaryFolder),
+                                new JProperty("cwd", debugFolder),
                                 new JProperty("stopAtEntry", "false"),
                                 new JProperty("console", "internalConsole"),
                                 new JProperty("env", environmentVariables)

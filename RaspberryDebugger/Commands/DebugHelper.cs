@@ -60,7 +60,7 @@ namespace RaspberryDebugger
 
             Log.Info("Checking for native OpenSSH client");
 
-            var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "sysnative", "openssh", "ssh.exe");
+            var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative", "OpenSSH", "ssh.exe");
 
             if (!File.Exists(openSshPath))
             {
@@ -134,7 +134,7 @@ namespace RaspberryDebugger
             if (project == null)
             {
                 MessageBox.Show(
-                    "Please select a startup project.",
+                    "Please select a startup project for your solution.",
                     "Startup Project Required",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -382,7 +382,7 @@ namespace RaspberryDebugger
 
             var targetSdk = (Sdk)null;
 
-            foreach (var workstationSdk in PackageHelper.InstalledSdks
+            foreach (var workstationSdk in PackageHelper.InstalledWorkstationSdks
                 .Where(sdk => sdk.Version != null && sdk.Version.StartsWith(projectProperties.SdkVersion + ".")))
             {
                 if (targetSdk == null)
