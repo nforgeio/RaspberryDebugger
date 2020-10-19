@@ -24,7 +24,7 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 * Automatically generates and configures a SSH key pair
 * Transparent **F5/Run** debugging
    * SDK and VSDBG installation is handled automatically
-   * We also publish and transfer the program file
+   * Program files are transferred to the Raspberry
 * Raspberry debugging can be enabled/disabled for specific projects
 * Multiple Raspberry connections are supported
 * Tested for C# and Visual Basic: other .NET languages should also work
@@ -101,7 +101,7 @@ That's all there is to it: just **press F5 to build and debug** your program rem
 
 ![Screenshot](/Doc/Images/DebuggerBreak.png?raw=true)
 
-**NOTE:** The Raspberry Debugger relies on the [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) which is installed by default for recent Windows 10 updates.  If this is not installed for some reason, you'll see the following dialog when you start debugging.  This requires a reboot.  Click **Yes** (this takes a few minutes so be patient) and then restart your workstation.
+**NOTE:** The Raspberry Debugger relies on the [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) which is installed by default for recent Windows 10 updates.  If this is not installed for some reason, you'll see the following dialog when you start debugging.  This requires a reboot.  Click **Yes** to install (this takes a few minutes so be patient) and then save any work and restart your workstation.
 
 ![Screenshot](/Doc/Images/WindowsOpenSSH.png?raw=true)
 
