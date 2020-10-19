@@ -293,7 +293,7 @@ exit 0
 
                     Log($"[{Name}]: Retrieving status");
 
-                    var script =
+                    var statusScript =
 $@"
 # This script will return the status information via STDOUT line-by-line
 # in this order:
@@ -365,13 +365,16 @@ export PATH=$PATH:$DOTNET_ROOT
 if ! grep --quiet DOTNET_ROOT /etc/profile ; then
 
     echo """"                                >> /etc/profile
+    echo ""#------------------------------"" >> /etc/profile
+    echo ""# Raspberry Debugger:""           >> /etc/profile
     echo ""export DOTNET_ROOT=$DOTNET_ROOT"" >> /etc/profile
-    echo ""export PATH=$PATH:$DOTNET_ROOT""  >> /etc/profile
+    echo ""export PATH=$PATH""               >> /etc/profile
+    echo ""#------------------------------"" >> /etc/profile
 fi
 ";
                     Log($"[{Name}]: Fetching status");
 
-                    response = ThrowOnError(SudoCommand(CommandBundle.FromScript(script)));
+                    response = ThrowOnError(SudoCommand(CommandBundle.FromScript(statusScript)));
 
                     using (var reader = new StringReader(response.OutputText))
                     {
@@ -552,6 +555,18 @@ rm -f {tempPublicKeyPath}
                     var installScript =
 $@"
 export DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
+
+# Ensure that the packages required by .NET Core are installed:
+#
+#       https://docs.microsoft.com/en-us/dotnet/core/install/linux-debian#dependencies
+
+if ! apt-get update ; then
+    exit 1
+fi
+
+if ! apt-get install -yq libc6 libgcc1 libgssapi-krb5-2 libicu-dev libssl1.1 libstdc++6 zlib1g libgdiplus ; then
+    exit 1
+fi
 
 # Remove any existing SDK download.  This might be present if a
 # previous installation attempt failed.
