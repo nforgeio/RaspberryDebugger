@@ -175,7 +175,7 @@ namespace RaspberryDebugger
 
             using (connection)
             {
-                // Generate a temporary [launchSettings.json] file and launch the debugger.
+                // Generate a temporary [launch.json] file and launch the debugger.
 
                 using (var tempFile = await CreateLaunchSettingsAsync(connectionInfo, projectProperties))
                 {
@@ -183,8 +183,8 @@ namespace RaspberryDebugger
                 }
 
                 // Launch the browser for ASPNET apps if requested.  Note that we're going to do this
-                // on a background task and poll the Raspberry, waiting for to the see the port open
-                // on a LISTENING socket.
+                // on a background task to poll the Raspberry, waiting for the app to create the create
+                // the LISTENING socket.
 
                 if (projectProperties.IsAspNet && projectProperties.AspLaunchBrowser)
                 {
@@ -302,7 +302,7 @@ fi
             // Construct the debug launch JSON file.
 
             var engineLogging = string.Empty;
-#if !DISABLED
+#if DISABLED
             // Uncomment this to have the remote debugger log the traffic it
             // sees from Visual Studio for debugging purposes.  The log file
             // is persisted to the program folder on the Raspberry.
@@ -314,7 +314,7 @@ fi
                 (
                     new JProperty("version", "0.2.1"),
                     new JProperty("adapter", Path.Combine(systemRoot, "Sysnative", "OpenSSH", "ssh.exe")),
-                    new JProperty("adapterArgs", $"-i \"{connectionInfo.PrivateKeyPath}\" {connectionInfo.User}@{connectionInfo.Host} {PackageHelper.RemoteDebuggerPath} --interpreter=vscode {engineLogging}"),
+                    new JProperty("adapterArgs", $"-i \"{connectionInfo.PrivateKeyPath}\" -o \"StrictHostKeyChecking no\" {connectionInfo.User}@{connectionInfo.Host} {PackageHelper.RemoteDebuggerPath} --interpreter=vscode {engineLogging}"),
                     new JProperty("configurations",
                         new JArray
                         (
