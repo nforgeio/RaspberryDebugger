@@ -35,3 +35,10 @@ $todo(jefflill): Flesh these out:
 13. Build and sign the extension??
 
 14. Release to Visual Studio Marketplace??
+------------------------------------------------
+
+### Post Release Steps
+
+1. Create the next release branch from main named like: release-v1.0" and push it to GitHub.
+
+2. Create a new GitHub release with tag like v1.0 and named like v1.0 and select the next release branch.  Copy `RELEASE-TEMPLATE.md` as the initial release description.
