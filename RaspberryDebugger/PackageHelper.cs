@@ -80,6 +80,11 @@ namespace RaspberryDebugger
         public const string RemoteDotnetFolder = "/lib/dotnet";
 
         /// <summary>
+        /// Fully qualified path to the <b>dotnet</b> executable on the Raspberry.
+        /// </summary>
+        public const string RemoteDotnetCommand = "/lib/dotnet/dotnet";
+
+        /// <summary>
         /// Directory on the Raspberry Pi where the <b>vsdbg</b> remote debugger will be installed.
         /// </summary>
         public const string RemoteDebuggerFolder = RemoteDotnetFolder + "/vsdbg";
@@ -144,7 +149,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// Returns the .NET SDKs currently installed on the workstation.
         /// </summary>
-        public static List<Sdk> InstalledSdks
+        public static List<Sdk> InstalledWorkstationSdks
         {
             get
             {

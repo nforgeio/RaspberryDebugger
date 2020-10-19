@@ -79,7 +79,7 @@ namespace RaspberryDebugger
         public static RaspberryDebugPackage Instance { get; private set; }
 
         /// <summary>
-        /// Logs text to the Visual Studio debug panel.
+        /// Logs text to the Visual Studio Debug output panel.
         /// </summary>
         /// <param name="text">The output text.</param>
         public static void Log(string text)

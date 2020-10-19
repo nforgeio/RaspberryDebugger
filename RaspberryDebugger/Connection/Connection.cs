@@ -568,10 +568,15 @@ fi
 
 # Verify the SHA512.
 
+orgDir=$cwd
 cd /tmp
+
 if ! echo '{targetSdk.SHA512}  dotnet-sdk.tar.gz' | sha512sum --check - ; then
+    cd $orgDir
     exit 1
 fi
+
+cd $orgDir
 
 # Make sure the installation directory exists.
 
@@ -581,7 +586,7 @@ fi
 
 # Unpack the SDK to the installation directory.
 
-if ! tar -zxf /tmp/dotnet-sdk.tar.gz -C $DOTNET_ROOT ; then
+if ! tar -zxf /tmp/dotnet-sdk.tar.gz -C $DOTNET_ROOT --no-same-owner ; then
     exit 1
 fi
 
