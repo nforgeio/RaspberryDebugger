@@ -85,11 +85,27 @@ namespace NetCoreCatalogChecker
                 if (sdkLinkToItem.TryGetValue(item.Link, out var existingItem))
                 {
                     ok = false;
-                    Console.WriteLine($"SDK [{existingItem.Name}/{existingItem.Architecture}] and [{item.Name}/{item.Architecture}] have the same link: [{item.Link}] ");
+                    Console.WriteLine($"SDK [{existingItem.Name}/{existingItem.Architecture}] and [{item.Name}/{item.Architecture}] have the same link: [{item.Link}]");
                     continue;
                 }
 
                 sdkLinkToItem.Add(item.Link, item);
+            }
+
+            // Verify that all SDK names are unique for a given architecture.
+
+            var sdkNameArchectureToItem = new Dictionary<string, SdkCatalogItem>();
+
+            foreach (var item in catalog.Items)
+            {
+                if (sdkLinkToItem.TryGetValue($"{item.Name}/{item.Architecture}", out var existingItem))
+                {
+                    ok = false;
+                    Console.WriteLine($"SDK [{existingItem.Name}/{existingItem.Architecture}] is listed multiple times.");
+                    continue;
+                }
+
+                sdkLinkToItem.Add($"{item.Name}/{item.Architecture}", item);
             }
 
             // Verify the links and SHA256 hashes.
