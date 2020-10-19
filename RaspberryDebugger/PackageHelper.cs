@@ -173,7 +173,7 @@ namespace RaspberryDebugger
                 //      3.1.301 [C:\Program Files\dotnet\sdk]
                 //      3.1.402 [C:\Program Files\dotnet\sdk]
                 //
-                // We'll just extract the SDK name (up to the separatingspace) and lookup the 
+                // We'll just extract the SDK name (up to the separating space) and lookup the 
                 // version from our catalog.  SDKs that aren't in our catalog will have a NULL
                 // version.
 
