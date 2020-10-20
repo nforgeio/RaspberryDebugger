@@ -141,10 +141,10 @@ The **Project/Raspberry Debug Settings** menu persists the settings to the new `
 ### Limitations
 
 * .NET Core is not supported on Raspberry 1, 2, or Zero cards
-* Only 64-bit Raspberry Pi OS is not supported
-* Only .NET Core 3.1 is currently supported (we'll support .NET 5 when it's formally released)
-* **Start Without Debugging** or ""Attach to Process...** are not supported (yet)
-* Remote debugging uses the project default debugging profile
+* 64-bit Raspberry Pi OS is not supported
+* .NET Core 3.1 is supported (we'll add .NET 5 when it's formally released)
+* **Start Without Debugging** or **Attach to Process...** are not supported (yet)
+* Raspberry debugging uses the default project debugging profile
 * HTTPS is not currently supported for ASPNET debugging
 * Program assembly names can't include spaces
 
