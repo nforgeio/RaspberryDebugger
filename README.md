@@ -44,16 +44,16 @@ After setting up your Raspberry based on the instructions you received with it, 
 1. Ensure that your Raspberry is connected to the network via WiFi or a wired ethernet.
 
 1. You'll need to need to know the IP address for your Raspberry.  Go back to the **Terminal** and enter this command:
-    ```
-    ip -h address
-    ```
-    You'll see something like this:
-    <br/>![Screenshot](/Doc/Images/GettingStarted/ip-address.png?raw=true)<br/>
-    You're looking for an **inet** address.  In my case here, my Raspberry is connected to WiFi and so the connection information will be located under the **wlan0** network interface.  I've highlighted the interface and the internet address here.
+   ```
+   ip -h address
+   ```
+   You'll see something like this:
+   <br/>![Screenshot](/Doc/Images/GettingStarted/ip-address.png?raw=true)<br/>
+   You're looking for an **inet** address.  In my case here, my Raspberry is connected to WiFi and so the connection information will be located under the **wlan0** network interface.  I've highlighted the interface and the internet address here.
 
-    When your Raspberry is connected to a wired network, you'll see the IP address beneath the **eth0** network interface which I've also highlighted but there is no IP address listed because my Raspberry is not connected to a wired network.
+   When your Raspberry is connected to a wired network, you'll see the IP address beneath the **eth0** network interface which I've also highlighted but there is no IP address listed because my Raspberry is not connected to a wired network.
 
-    Make a note of your Raspberry's IP address; you'll need it to configure a connection in Visual Studio.
+   Make a note of your Raspberry's IP address; you'll need it to configure a connection in Visual Studio.
 
 1. **Advanced:** Your Raspeberry's IP address may change from time-to-time, depending on how your network is configured.  I've configured my home router to assign reserve an IP address for my Raspberry so it won't change.  You can do this too if you control your network or you may need to [configure a static IP address](https://www.raspberrypi.org/documentation/configuration/tcpip/) on the Raspberry itself.
 
