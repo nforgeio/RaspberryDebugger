@@ -106,13 +106,13 @@ That's all there is to it: just **press F5 to build and debug** your program rem
 
 **NOTE:** The first time you debug a program on your Raspberry it will take a minute or two to start because we'll be installing the .NET SDK and debugger.  Debugging will start much quicker the second time.
 
-![Screenshot](/Doc/Images/WindowsOpenSSH.png?raw=true)]
+![Screenshot](/Doc/Images/WindowsOpenSSH.png?raw=true)
 
 ### Console Project Debug Properties
 
 When debugging .NET Core Console projects, you can pass command line arguments and environment variables to the remote program.  We don't currently honor any other properties on this page.
 
-![Screenshot](/Doc/Images/ConsoleProperties.png?raw=true)]
+![Screenshot](/Doc/Images/ConsoleProperties.png?raw=true)
 
 ## ASPNET Project Debug Properties
 
@@ -120,13 +120,13 @@ When debugging ASPNETCORE projects, you can pass command line arguments and envi
 
 Your web application will be deployed on your Raspberry on all network interfaces, using the port specified by the **App URL**.
 
-![Screenshot](/Doc/Images/AspNetProperties.png?raw=true)]
+![Screenshot](/Doc/Images/AspNetProperties.png?raw=true)
 
 ## Debug Logs
 
 The Raspberry Debugger writes detail log information to the Visual Studio Debug Output Window.  This is intended to give you some idea of what happened then things go wrong.
 
-![Screenshot](/Doc/Images/Logging.png?raw=true)]
+![Screenshot](/Doc/Images/Logging.png?raw=true)
 
 ### Under the Covers
 
