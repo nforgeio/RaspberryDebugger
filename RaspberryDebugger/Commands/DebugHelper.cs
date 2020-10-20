@@ -376,30 +376,26 @@ namespace RaspberryDebugger
         {
             Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
 
-            // Identify the most recent SDK installed on the workstation that has the same 
-            // major and minor version numbers as the project.  We'll ensure that the same
-            // SDK is installed on the Raspberry (further below).
+            // We're just going to return a matching SDK from the catalog (if it exists).
+            // Note that there be maore than one match a standalone SDK or one that ships
+            // with Visual Studio.  We'll favor the standalone one if possible.
 
-            var targetSdk = (Sdk)null;
-
-            foreach (var workstationSdk in PackageHelper.InstalledWorkstationSdks
-                .Where(sdk => sdk.Version != null && sdk.Version.StartsWith(projectProperties.SdkVersion + ".")))
+            var sdkItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion && 
+                                                                                 item.IsStandalone &&
+                                                                                 item.Architecture == SdkArchitecture.ARM32);
+            if (sdkItem == null)
             {
-                if (targetSdk == null)
-                {
-                    targetSdk = workstationSdk;
-                }
-                else if (SemanticVersion.Parse(targetSdk.Version) < SemanticVersion.Parse(workstationSdk.Version))
-                {
-                    targetSdk = workstationSdk;
-                }
+                // Look for a Visual Studio SDK instead.
+
+                sdkItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion &&
+                                                                                 item.Architecture == SdkArchitecture.ARM32);
             }
 
-            if (targetSdk == null)
+            if (sdkItem == null)
             {
                 MessageBoxEx.Show(
-                    $"We cannot find a .NET SDK implementing v[{projectProperties.SdkVersion}] on this workstation.",
-                    "Cannot Find .NET SDK",
+                    $".NET Core SDK [v{projectProperties.SdkVersion}] is unknown to the Raspberry Debugger.  Please submit an issue at:\r\n\r\n{PackageHelper.GitHubIssuesUri}",
+                    "Unknown .NET Core SDK",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
@@ -407,7 +403,7 @@ namespace RaspberryDebugger
             }
             else
             {
-                return targetSdk;
+                return new Sdk(sdkItem.Name, sdkItem.Version);
             }
         }
 

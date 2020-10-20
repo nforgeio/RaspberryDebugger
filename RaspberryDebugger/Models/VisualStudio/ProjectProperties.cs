@@ -71,7 +71,7 @@ namespace RaspberryDebugger
             var projectFolder = Path.GetDirectoryName(project.FullName);
             var projectFile   = File.ReadAllText(project.FullName);
             var isNetCore     = true;
-            var sdkVersion    = (string)null;
+            var sdkName       = (string)null;
 
             // Read the properties we care about from the project.
 
@@ -80,8 +80,43 @@ namespace RaspberryDebugger
 
             var monikers = targetFrameworkMonikers.Split(',');
 
-            isNetCore  = monikers[0] == ".NETCoreApp";
-            sdkVersion = monikers[1].StartsWith("Version=v") ? monikers[1].Substring("Version=v".Length) : null;
+            isNetCore = monikers[0] == ".NETCoreApp";
+
+            // We're going to execute [dotnet --info] in the project directory, to obtain the 
+            // SDK version which will be on the second line which will look something like:
+            //
+            //      Version:   3.1.301
+            //
+            // The cool thing is that this will honor any [global.json] files in the solution.
+
+            var orgDirectory = Environment.CurrentDirectory;
+
+            Environment.CurrentDirectory = projectFolder;
+
+            try
+            {
+                var response = NeonHelper.ExecuteCapture("dotnet", new object[] { "--info" });
+
+                // Note that we'll stick with the version we extracted from the TargetFrameworkMoniker
+                // above on the off chance that this call fails.
+
+                if (response.ExitCode == 0)
+                {
+                    using (var reader = new StringReader(response.OutputText))
+                    {
+                        var versionLine = reader.Lines().Skip(1).Take(1).FirstOrDefault().Trim();
+
+                        Covenant.Assert(versionLine != null);
+                        Covenant.Assert(versionLine.StartsWith("Version:"));
+
+                        sdkName = versionLine.Split(':')[1];
+                    }
+                }
+            }
+            finally
+            {
+                Environment.CurrentDirectory = orgDirectory;
+            }
 
             // Load [Properties/launchSettings.json] if present to obtain the command line
             // arguments and environment variables as well as the target connection.  Note
@@ -227,9 +262,11 @@ namespace RaspberryDebugger
             var debugEnabled        = projectSettings.EnableRemoteDebugging;
             var debugConnectionName = projectSettings.RemoteDebugTarget;
 
-            // Determine whether the referenced .NET Core SDK version is currently supported.
+            // Determine whether the referenced .NET Core SDK is currently supported.
 
-            var isSupportedSdkVersion = PackageHelper.SdkCatalog.Items.Any(item => SemanticVersion.Parse(item.Version) == SemanticVersion.Parse(sdkVersion) && item.Architecture == SdkArchitecture.ARM32);
+            var sdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName) && item.Architecture == SdkArchitecture.ARM32);
+
+            var isSupportedSdkVersion = sdk != null;
 
             // Determine whether the project is Raspberry compatible.
 
@@ -245,7 +282,7 @@ namespace RaspberryDebugger
                 FullPath              = project.FullName,
                 Configuration         = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
                 IsNetCore             = isNetCore,
-                SdkVersion            = sdkVersion,
+                SdkVersion            = sdk?.Version,
                 OutputFolder          = Path.Combine(projectFolder, project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString()),
                 OutputFileName        = (string)project.Properties.Item("OutputFileName").Value,
                 IsExecutable          = outputType == 1,     // 1=EXE
@@ -404,7 +441,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// Returns the projects .NET Core SDK version.  Note that this will probably include
         /// just the major and minor versions of the SDK.  This may also return <c>null</c>
-        /// if the SSK version could not be identified.
+        /// if the SDK version could not be identified.
         /// </summary>
         public string SdkVersion { get; private set; }
 

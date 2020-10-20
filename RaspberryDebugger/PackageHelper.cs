@@ -42,6 +42,7 @@ using Neon.IO;
 
 using Task = System.Threading.Tasks.Task;
 using EnvDTE80;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace RaspberryDebugger
 {
@@ -96,6 +97,11 @@ namespace RaspberryDebugger
         /// Path to the <b>vsdbg</b> program on the remote machine.
         /// </summary>
         public const string RemoteDebuggerPath = RemoteDebuggerFolder + "/vsdbg";
+
+        /// <summary>
+        /// URI for the project's GitHub issues.
+        /// </summary>
+        public const string GitHubIssuesUri = "https://github.com/nforgeio/RaspberryDebugger/issues/";
 
         /// <summary>
         /// Returns the root directory on the Raspberry Pi where the folder where 
