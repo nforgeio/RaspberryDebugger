@@ -48,7 +48,7 @@ After setting up your Raspberry based on the instructions you received with it, 
     ip -h address
     ```
     You'll see something like this:
-    ![Screenshot](/Doc/Images/ip-address.png?raw=true)
+    ![Screenshot](/Doc/Images/GettingStarted/ip-address.png?raw=true)
     You're looking for an **inet** address.  In my case here, my Raspberry is connected to WiFi and so the connection information will be located under the **wlan0** network interface.  I've highlighted the interface and the internet address here.
 
     When your Raspberry is connected to a wired network, you'll see the IP address beneath the **eth0** network interface which I've also highlighted but there is no IP address listed because my Raspberry is not connected to a wired network.
@@ -70,47 +70,47 @@ On your Windows workstation:
 3. Create a connection for your Raspberry:
    a. Choose the **Tools/Options...** menu and select the **Raspberry Debugger/Connections** panel.  You'll see this:
       <br/>
-      ![Screenshot](/Doc/Images/ToolsOptions1.png?raw=true)
+      ![Screenshot](/Doc/Images/GettingStarted/ToolsOptions1.png?raw=true)
       <br/>
    b. Click **Add** to create a connection.  The connection dialog will be prepopulated with the default **pi** username and the default **raspberry** password.  You'll need to update these as required and also enter your Raspberry's IP address (or hostname).
       <br/>
-      ![Screenshot](/Doc/Images/ToolsOptions2.png?raw=true)
+      ![Screenshot](/Doc/Images/GettingStarted/ToolsOptions2.png?raw=true)
       <br/>
    c. When you click **OK**, we'll connect to the Raspberry to validate your credentials and if that's successful, we'll configure the Raspberry by installing any required packages and also create and configure the SSH key pair that will be used for subsequent connections.  You connections should look something like this:
       <br/>
-      ![Screenshot](/Doc/Images/ToolsOptions3.png?raw=true)
+      ![Screenshot](/Doc/Images/GettingStarted/ToolsOptions3.png?raw=true)
       <br/>
    d. Your new connection will look something like this on success:
       <br/>
-      ![Screenshot](/Doc/Images/ToolsOptions4.png?raw=true)
+      ![Screenshot](/Doc/Images/GettingStarted/ToolsOptions4.png?raw=true)
       <br/>
 
 4: Configure your .NET Core project for debugging.  Raspberry Debugger supports Console and ASPNET applications targeting .NET Core 3.1.x (we'll support .NET 5 when it's released).
    a. Open one of your project source files and choose the new **Project/Raspberry Debug** menu:
       <br/>
-      ![Screenshot](/Doc/Images/RaspberryDebugMenu.png?raw=true)
+      ![Screenshot](/Doc/Images/GettingStarted/RaspberryDebugMenu.png?raw=true)
       <br/>
    b. The project Raspberry settings dialog will look like this:
       <br/>
-      ![Screenshot](/Doc/Images/RaspberryProjectSettings.png?raw=true)
+      ![Screenshot](/Doc/Images/GettingStarted/RaspberryProjectSettings.png?raw=true)
       <br/>
    c. Click the **Target Raspberry** combo box and choose the Raspberry connection you created earlier or **[DEFAULT]** to select the connection with its **Default** box checked and click **OK** to close the dialog.
 
 That's all there is to it: just **press F5 to build and debug** your program remotely on the Raspberry.  Add a `Debugger.Break()` call in your program to verify that it actually works:
 
-![Screenshot](/Doc/Images/DebuggerBreak.png?raw=true)
+![Screenshot](/Doc/Images/GettingStarted/DebuggerBreak.png?raw=true)
 
 **NOTE:** The Raspberry Debugger relies on the [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) which is installed by default for recent Windows 10 updates.  If this is not installed for some reason, you'll see the following dialog when you start debugging.  This requires a reboot.  Click **Yes** to install (this takes a few minutes so be patient) and then save any work and restart your workstation.
 
 **NOTE:** The first time you debug a program on your Raspberry it will take a minute or two to start because we'll be installing the .NET SDK and debugger.  Debugging will start much quicker the second time.
 
-![Screenshot](/Doc/Images/WindowsOpenSSH.png?raw=true)
+![Screenshot](/Doc/Images/GettingStarted/WindowsOpenSSH.png?raw=true)
 
 ### Console Project Debug Properties
 
 When debugging .NET Core Console projects, you can pass command line arguments and environment variables to the remote program.  We don't currently honor any other properties on this page.
 
-![Screenshot](/Doc/Images/ConsoleProperties.png?raw=true)
+![Screenshot](/Doc/Images/GettingStarted/ConsoleProperties.png?raw=true)
 
 ## ASPNET Project Debug Properties
 
@@ -118,13 +118,13 @@ When debugging ASPNETCORE projects, you can pass command line arguments and envi
 
 Your web application will be deployed on your Raspberry on all network interfaces, using the port specified by the **App URL**.
 
-![Screenshot](/Doc/Images/AspNetProperties.png?raw=true)
+![Screenshot](/Doc/Images/GettingStarted/AspNetProperties.png?raw=true)
 
 ## Debug Logs
 
 The Raspberry Debugger writes detail log information to the Visual Studio Debug Output Window.  This is intended to give you some idea of what happened then things go wrong.
 
-![Screenshot](/Doc/Images/Logging.png?raw=true)
+![Screenshot](/Doc/Images/GettingStarted/Logging.png?raw=true)
 
 ### Under the Covers
 
