@@ -136,7 +136,21 @@ Here are some brief comments describing how the Raspberry Debugger works.
 
 The Raspberry Debugger automatically generates and configures a 2048-bit RSA key pair for SSH autentication.  This is actually generated on the Raspberry and the public key is added to the connection user's `~/.ssh/authorized_key` file on the Raspberry.
 
-The public and private keys are also persisted to on your development workstation in the `%USERPROFILE%\.raspbery` folder.  You'll find a `connections.json` file there with the connection information and the key file will be persisted within to `%USERPROFILE%\.raspbery\keys`
+The public and private keys are also persisted to on your development workstation in the `%USERPROFILE%\.raspbery` folder.  You'll find a `connections.json` file there with the connection information and the key file will be persisted to `%USERPROFILE%\.raspbery\keys`.
+
+You'll need to create connections with a username and password so we'll be able to create and configure the SSH keys and we'll use key authentication thereafter.  You may remove the connection password after creating a connection if you wish, but for most situations we recommend that you leave the password in place.
+
+If you reimage your Raspberry flash drive and configure the same Raspberry password, the Raspberry Debugger will be smart enough to realize the SSH key authentication failed and it will retry connecting with the password and reauthorizing the existing public key.  This makes reimaging a Raspbery nearly seamless.
+
+#### Raspbery Directories
+
+The Raspberry Debugger installs the .NET Core SDKs to `/lib/dotnet` and the **vsdbg** debugger to `/lib/dotnet/vsdbg`.  `/etc/.profile` is updated to set `DOTNET_ROOT=/lib/dotnet` and `DOTNET_ROOT` is also added to the `PATH`.
+
+The programs being debugged will uploaded to `~/vsdbg/NAME` where `NAME` is the name of the program output assembly file.
+
+#### Project Raspberry Debug Settings
+
+The **Project/Raspberry Debug Settings** menu persists the settings to the new `$(SolutionDir)\.vs\raspberry-project.json` file.  This keeps track of which Raspberry connection specific projects should use or whether Raspberry debugging is disabled for projects.  We put the file here because these are really developer specific settings and source control solutions will typically be configured to not track files in this folder.
 
 ### Limitations
 
@@ -146,6 +160,7 @@ The public and private keys are also persisted to on your development workstatio
 * **Start Without Debugging** or ""Attach to Process...** are not supported (yet)
 * Remote debugging uses the project default debugging profile
 * HTTPS is not currently supported for ASPNET debugging
+* Program assembly names can't include spaces
 
 ### Disclosures
 
