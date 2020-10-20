@@ -13,7 +13,7 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 * Visual Studio 2019 v16.7+ (Community Edition or better)
 * Raspberry Pi running Raspberry Pi OS 32-bit
 * Raspberry user allowed to sudo
-* [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed automatically if required)
+* [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed when required)
 
 ### Features
 
@@ -21,13 +21,13 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 * Supports Raspberry Pi OS 32-bit (we haven't tested other operating systems)
 * Supports Console and ASPNET .NET Core 3.1 applications
 * .NET 5 will be supported when it's formally released
-* Automatically generates and configures a 2048-bit RSA SSH key pair
-* Transparent **F5/Run** debugging
+* Configures a 2048-bit RSA SSH key pair automatically
+* **F5/Run** debugging
    * SDK and VSDBG installation is handled automatically
    * Program files are transferred to the Raspberry
 * Raspberry debugging can be enabled/disabled for specific projects
-* Multiple Raspberry connections are supported
-* Tested for C# and Visual Basic: other .NET languages should also work
+* Multiple Raspberry devices supported
+* Tested for C# and Visual Basic: other .NET languages should work too
 * Detailed debug activity logs
 
 ### Configure your Raspberry
@@ -39,8 +39,9 @@ After getting your Raspberry setup based on the instructions you received with i
    sudo systemctl enable ssh
    sudo systemctl start ssh
    ```
+   You'll probably want to change the **pi** user password from the default **raspberry** if you haven't already done so.
 
-2. Ensure that your Raspberry is connected to the network via WiFi or wired ethernet.  You probably already already did this during the initial Raspberry setup.
+2. Ensure that your Raspberry is connected to the network via WiFi or a wired ethernet.
 
 3. You'll need to need to know the IP address for your Raspberry.  Go back to the **Terminal** and enter this command:
     ```

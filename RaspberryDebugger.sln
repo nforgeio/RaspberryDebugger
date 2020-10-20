@@ -18,6 +18,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{5A14B2C0-0606-433A-AE9C-9E33C7B2BA27}"
 	ProjectSection(SolutionItems) = preProject
 		Doc\DEVELOPER.md = Doc\DEVELOPER.md
+		MAINTAIN.md = MAINTAIN.md
 		Doc\RELEASE-TEMPLATE.md = Doc\RELEASE-TEMPLATE.md
 		Doc\RELEASE.md = Doc\RELEASE.md
 	EndProjectSection

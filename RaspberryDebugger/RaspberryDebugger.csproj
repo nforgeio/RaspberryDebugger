@@ -82,6 +82,8 @@
     <Compile Include="Models\Connection\ConnectionInfo.cs" />
     <Compile Include="Models\Project\RaspberryProjects.cs" />
     <Compile Include="Models\Project\ProjectSettings.cs" />
+    <Compile Include="Models\Raspberry\RaspberryCatalog.cs" />
+    <Compile Include="Models\Raspberry\RaspberryModel.cs" />
     <Compile Include="Models\Sdk\SdkArchitecture.cs" />
     <Compile Include="Models\Sdk\SdkCatalog.cs" />
     <Compile Include="Models\Sdk\SdkCatalogItem.cs" />
@@ -116,6 +118,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <EmbeddedResource Include="raspberry-catalog.json" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>

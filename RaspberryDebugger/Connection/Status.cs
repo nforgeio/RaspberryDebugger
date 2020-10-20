@@ -40,20 +40,31 @@ namespace RaspberryDebugger
         /// </summary>
         /// <param name="architecture">The chip architecture.</param>
         /// <param name="hasUnzip">Indicates whether <b>unzip</b> is installed.</param>
-        /// <param name="hasDebuffer">Indicates whether the debugger is installed.</param>
+        /// <param name="hasDebugger">Indicates whether the debugger is installed.</param>
         /// <param name="installedSdks">The installed .NET Core SDKs.</param>
         /// <param name="path">The current value of the PATH environment variable.</param>
-        public Status(string architecture, string path, bool hasUnzip, bool hasDebugger, IEnumerable<Sdk> installedSdks)
+        /// <param name="model">The Raspberry board model.</param>
+        /// <param name="revision">The Raspberry board revision.</param>
+        public Status(
+            string              architecture, 
+            string              path, 
+            bool                hasUnzip, 
+            bool                hasDebugger, 
+            IEnumerable<Sdk>    installedSdks,
+            string              model,
+            string              revision)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(architecture), nameof(architecture));
             Covenant.Requires<ArgumentNullException>(path != null, nameof(path));
             Covenant.Requires<ArgumentNullException>(installedSdks != null, nameof(installedSdks));
 
-            this.Architecture  = architecture;
-            this.PATH          = path;
-            this.HasUnzip      = hasUnzip;
-            this.HasDebugger   = hasDebugger;
-            this.InstalledSdks = installedSdks.ToList();
+            this.Architecture      = architecture;
+            this.PATH              = path;
+            this.HasUnzip          = hasUnzip;
+            this.HasDebugger       = hasDebugger;
+            this.InstalledSdks     = installedSdks.ToList();
+            this.RaspberryModel    = model;
+            this.RaspberryRevision = revision;
         }
 
         /// <summary>
@@ -82,5 +93,15 @@ namespace RaspberryDebugger
         /// Returns information about the .NET Core SDKs installed.
         /// </summary>
         public List<Sdk> InstalledSdks { get; private set; }
+
+        /// <summary>
+        /// Returns the Raspberry board model.
+        /// </summary>
+        public string RaspberryModel { get; private set; }
+
+        /// <summary>
+        /// Returns the Raspberry board revision.
+        /// </summary>
+        public string RaspberryRevision { get; private set; }
     }
 }

@@ -50,7 +50,10 @@ namespace RaspberryDebugger
     /// </summary>
     internal static class PackageHelper
     {
-        private static List<Sdk> cachedSdks = null;
+        private static object               syncLock               = new object();
+        private static SdkCatalog           cachedSdkCatalog       = null;
+        private static RaspberryCatalog     cachedRaspberryCatalog = null;
+        private static List<Sdk>            cachedWorkstationSdks  = null;
 
         /// <summary>
         /// The path to the <b>%USERPROFILE%\.raspberry</b> folder where the package
@@ -109,7 +112,56 @@ namespace RaspberryDebugger
         /// <summary>
         /// Returns information about the known .NET Core SDKs,
         /// </summary>
-        public static SdkCatalog SdkCatalog { get; private set; }
+        public static SdkCatalog SdkCatalog
+        {
+            get
+            {
+                lock (syncLock)
+                {
+                    if (cachedSdkCatalog == null)
+                    {
+                        var assembly = Assembly.GetExecutingAssembly();
+
+                        using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json"))
+                        {
+                            var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
+
+                            cachedSdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
+                        }
+                    }
+
+                    return cachedSdkCatalog;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns information about the known Raspberry Pie models.
+        /// </summary>
+        public static RaspberryCatalog RaspberryCatalog
+        {
+            get
+            {
+                lock (syncLock)
+                {
+                    if (cachedRaspberryCatalog != null)
+                    {
+                        return cachedRaspberryCatalog;
+                    }
+
+                    var assembly = Assembly.GetExecutingAssembly();
+
+                    using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.raspberry-catalog.json"))
+                    {
+                        var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
+
+                        cachedRaspberryCatalog = NeonHelper.JsonDeserialize<RaspberryCatalog>(catalogJson);
+                    }
+                }
+
+                return cachedRaspberryCatalog;
+            }
+        }
 
         /// <summary>
         /// Static constructor.
@@ -133,17 +185,6 @@ namespace RaspberryDebugger
             }
 
             ConnectionsPath = Path.Combine(SettingsFolder, "connections.json");
-
-            // Parse the embedded SDK catalog JSON.
-
-            var assembly = Assembly.GetExecutingAssembly();
-
-            using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json"))
-            {
-                var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
-
-                SdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
-            }
         }
 
         /// <summary>
@@ -153,45 +194,48 @@ namespace RaspberryDebugger
         {
             get
             {
-                if (cachedSdks != null)
+                lock (syncLock)
                 {
-                    return cachedSdks;
-                }
-
-                var response = NeonHelper.ExecuteCapture("dotnet", new object[] { "--list-sdks" });
-
-                if (response.ExitCode != 0)
-                {
-                    throw new Exception($"[dotnet --list-sdks] failed with exitcode={response.ExitCode}]");
-                }
-
-                // The output will look something like this:
-                //
-                //      2.1.403 [C:\Program Files\dotnet\sdk]
-                //      3.0.100-preview9-014004 [C:\Program Files\dotnet\sdk]
-                //      3.1.100 [C:\Program Files\dotnet\sdk]
-                //      3.1.301 [C:\Program Files\dotnet\sdk]
-                //      3.1.402 [C:\Program Files\dotnet\sdk]
-                //
-                // We'll just extract the SDK name (up to the separating space) and lookup the 
-                // version from our catalog.  SDKs that aren't in our catalog will have a NULL
-                // version.
-
-                cachedSdks = new List<Sdk>();
-
-                using (var reader = new StringReader(response.OutputText))
-                {
-                    foreach (var line in reader.Lines())
+                    if (cachedWorkstationSdks != null)
                     {
-                        var name    = line.Split(' ').First().Trim();
-                        var sdkItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == name && item.Architecture == SdkArchitecture.ARM32);
-                        var version = sdkItem?.Version;
-
-                        cachedSdks.Add(new Sdk(name, version));
+                        return cachedWorkstationSdks;
                     }
-                }
 
-                return cachedSdks;
+                    var response = NeonHelper.ExecuteCapture("dotnet", new object[] { "--list-sdks" });
+
+                    if (response.ExitCode != 0)
+                    {
+                        throw new Exception($"[dotnet --list-sdks] failed with exitcode={response.ExitCode}]");
+                    }
+
+                    // The output will look something like this:
+                    //
+                    //      2.1.403 [C:\Program Files\dotnet\sdk]
+                    //      3.0.100-preview9-014004 [C:\Program Files\dotnet\sdk]
+                    //      3.1.100 [C:\Program Files\dotnet\sdk]
+                    //      3.1.301 [C:\Program Files\dotnet\sdk]
+                    //      3.1.402 [C:\Program Files\dotnet\sdk]
+                    //
+                    // We'll just extract the SDK name (up to the separating space) and lookup the 
+                    // version from our catalog.  SDKs that aren't in our catalog will have a NULL
+                    // version.
+
+                    cachedWorkstationSdks = new List<Sdk>();
+
+                    using (var reader = new StringReader(response.OutputText))
+                    {
+                        foreach (var line in reader.Lines())
+                        {
+                            var name    = line.Split(' ').First().Trim();
+                            var sdkItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == name && item.Architecture == SdkArchitecture.ARM32);
+                            var version = sdkItem?.Version;
+
+                            cachedWorkstationSdks.Add(new Sdk(name, version));
+                        }
+                    }
+
+                    return cachedWorkstationSdks;
+                }
             }
         }
 

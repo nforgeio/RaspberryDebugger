@@ -303,6 +303,8 @@ $@"
 # Unzip Installed (""unzip"" or ""unzip-missing"")
 # Debugger Installed (""debugger-installed"" or ""debugger-missing"")
 # List of installed SDKs names (e.g. 3.1.108) separated by commas
+# Raspberry Model like:     Raspberry Pi 4 Model B Rev 1.2
+# Raspberry Revision like:  c03112
 #
 # This script also ensures that the [/lib/dotnet] directory exists, that
 # it has reasonable permissions, and that the folder exists on the system
@@ -348,8 +350,16 @@ else
     echo ''
 fi
 
-# Ensure that the [/lib/dotnet] folder exists, that its on the 
-# PATH and that DOTNET_ROOT is defined.
+# Output the Raspberry board model.
+
+cat /proc/cpuinfo | grep '^Model\s' | grep -o 'Raspberry.*$'
+
+# Output the Raspberry board revision.
+
+cat /proc/cpuinfo | grep 'Revision\s' | grep -o '[0-9a-fA-F]*$'
+
+# Ensure that the [/lib/dotnet] folder exists, that it's on the 
+# PATH and that DOTNET_ROOT are defined.
 
 mkdir -p /lib/dotnet
 chown root:root /lib/dotnet
@@ -379,16 +389,22 @@ fi
                     using (var reader = new StringReader(response.OutputText))
                     {
                         var architecture = await reader.ReadLineAsync();
-                        var path = await reader.ReadLineAsync();
-                        var hasUnzip = await reader.ReadLineAsync() == "unzip";
-                        var hasDebugger = await reader.ReadLineAsync() == "debugger-installed";
-                        var sdkLine = await reader.ReadLineAsync();
+                        var path         = await reader.ReadLineAsync();
+                        var hasUnzip     = await reader.ReadLineAsync() == "unzip";
+                        var hasDebugger  = await reader.ReadLineAsync() == "debugger-installed";
+                        var sdkLine      = await reader.ReadLineAsync();
+                        var model        = await reader.ReadLineAsync();
+                        var revision     = await reader.ReadToEndAsync();
+
+                        revision = revision.Trim();     // Remove any whitespace at the end.
 
                         Log($"[{Name}]: architecture: {architecture}");
                         Log($"[{Name}]: path:         {path}");
                         Log($"[{Name}]: unzip:        {hasUnzip}");
                         Log($"[{Name}]: debugger:     {hasDebugger}");
                         Log($"[{Name}]: sdks:         {sdkLine}");
+                        Log($"[{Name}]: model:        {model}");
+                        Log($"[{Name}]: revision:     {revision}");
 
                         // Convert the comma separated SDK names into a [PiSdk] list.
 
@@ -411,11 +427,14 @@ fi
                         }
 
                         PiStatus = new Status(
-                            architecture: architecture,
-                            path: path,
-                            hasUnzip: hasUnzip,
-                            hasDebugger: hasDebugger,
-                            installedSdks: sdks);
+                            architecture:  architecture,
+                            path:          path,
+                            hasUnzip:      hasUnzip,
+                            hasDebugger:   hasDebugger,
+                            installedSdks: sdks,
+                            model:         model,
+                            revision:      revision
+                        );
                     }
                 });
 
