@@ -29,12 +29,16 @@
 
 12. Switch back to the **main** branch, merge the changes from the release branch and push **main** to GitHub.
 
+13. Create an .ZIP archive by executing:
+
+    `%RDBG_TOOLBIN%\archive.cmd`
+
 ------------------------------------------------
 $todo(jefflill): Flesh these out:
 
-13. Build and sign the extension??
+14. Sign the extension??
 
-14. Release to Visual Studio Marketplace??
+15. Release to Visual Studio Marketplace??
 ------------------------------------------------
 
 ### Post Release Steps

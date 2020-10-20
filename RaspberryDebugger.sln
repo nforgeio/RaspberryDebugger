@@ -30,6 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Images", "Images", "{642CFD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToolBin", "ToolBin", "{15A5F928-90D4-421A-850D-8A09842DA012}"
 	ProjectSection(SolutionItems) = preProject
+		ToolBin\archive.cmd = ToolBin\archive.cmd
+		ToolBin\archive.ps1 = ToolBin\archive.ps1
 		ToolBin\builder.cmd = ToolBin\builder.cmd
 		ToolBin\builder.ps1 = ToolBin\builder.ps1
 		ToolBin\openssl.exe = ToolBin\openssl.exe
