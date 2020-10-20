@@ -1,5 +1,5 @@
 # Raspberry Debugger
-Visual Studio Extension for debugging .NET Core applications remotely on a Raspberry Pi.
+_A Visual Studio Extension for debugging .NET Core applications remotely on a Raspberry Pi_
 
 The Microsoft .NET Core platform is a nice way to develop cross-platform applications for Windows, OS/X and Linux.  .NET Core is also compatible with Raspberry Pi and its Linux based operating system: **Raspberry Pi OS**.
 
@@ -10,31 +10,31 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 ### Requirements
 
 * Windows 10
-* Visual Studio 2019 v16.7+ (Community Edition or better)
-* Raspberry Pi running Raspberry Pi OS 32-bit
+* Visual Studio 2019 v16.4+ (Community Edition or better)
+* Raspberry Pi running 32-bit Raspberry Pi OS
 * Raspberry user allowed to sudo
-* [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed when required)
+* [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed automatically when required)
 
 ### Features
 
 * Supports Raspberry Pi 3+ devices
-* Supports Raspberry Pi OS 32-bit (we haven't tested other operating systems)
-* Supports Console and ASPNET .NET Core 3.1 applications
+* Raspberry Pi OS 32-bit (we haven't tested other operating systems)
+* Console and ASPNET .NET Core 3.1 applications
 * .NET 5 will be supported when it's formally released
-* Configures a 2048-bit RSA SSH key pair automatically
+* Configures 2048-bit RSA SSH key pairs automatically
 * **F5/Run** debugging
    * SDK and VSDBG installation is handled automatically
    * Program files are transferred to the Raspberry
 * Raspberry debugging can be enabled/disabled for specific projects
-* Multiple Raspberry devices supported
-* Tested for C# and Visual Basic: other .NET languages should work too
-* Detailed debug activity logs
+* Project specific Raspberry devices
+* C# and Visual Basic (other .NET languages should work too)
+* Debug activity logs
 
 ### Configure your Raspberry
 
-After getting your Raspberry setup based on the instructions you received with it, you'll need to perform a couple additional steps to make it ready for remote debugging:
+After setting up your Raspberry based on the instructions you received with it, you'll need to perform a couple additional steps to make it ready for remote debugging:
 
-1. Enable SSH so the Raspberry Debugger will be able to connect to your Raspberry remotely.  Start the **Terminal** on your Raspberry and enter these commands:
+1. Enable SSH so the Raspberry Debugger will be able to connect to your Raspberry over the network: Start the **Terminal** on your Raspberry and enter these commands:
    ```
    sudo systemctl enable ssh
    sudo systemctl start ssh
@@ -55,9 +55,9 @@ After getting your Raspberry setup based on the instructions you received with i
 
     When your Raspberry is connected to a wired network, you'll see the IP address beneath the **eth0** network interface which I've also highlighted but there is no IP address listed because my Raspberry is not connected to a wired network.
 
-    Make a note of your Raspberry's IP address, you'll need it to configure a connection in Visual Studio.
+    Make a note of your Raspberry's IP address; you'll need it to configure a connection in Visual Studio.
 
-4. **Advanced:** Your Raspeberry's IP address may change from time-to-time, depending on your network settings.  I've configured my home router to assign reserve an IP address for my Raspberry so it won't change.  You may need to [configure a static IP address](https://www.raspberrypi.org/documentation/configuration/tcpip/) on the Raspberry itself.
+4. **Advanced:** Your Raspeberry's IP address may change from time-to-time, depending on how your network is configured.  I've configured my home router to assign reserve an IP address for my Raspberry so it won't change.  You can do this too if you control your network or you may need to [configure a static IP address](https://www.raspberrypi.org/documentation/configuration/tcpip/) on the Raspberry itself.
 
 That's all the configuration required on the Raspberry.
 
