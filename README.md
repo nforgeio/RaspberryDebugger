@@ -98,13 +98,54 @@ On your Windows workstation:
       <br/>
    c. Click the **Target Raspberry** combo box and choose the Raspberry connection you created earlier or **[DEFAULT]** to select the connection with its **Default** box checked and click **OK** to close the dialog.
 
-That's all there is to it: just **press F5 to build and debug** your program remotely on the Raspberry.  Add a `Debugger.Break()` call in your program to verify that this works:
+That's all there is to it: just **press F5 to build and debug** your program remotely on the Raspberry.  Add a `Debugger.Break()` call in your program to verify that it actually works:
 
 ![Screenshot](/Doc/Images/DebuggerBreak.png?raw=true)
 
 **NOTE:** The Raspberry Debugger relies on the [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) which is installed by default for recent Windows 10 updates.  If this is not installed for some reason, you'll see the following dialog when you start debugging.  This requires a reboot.  Click **Yes** to install (this takes a few minutes so be patient) and then save any work and restart your workstation.
 
-![Screenshot](/Doc/Images/WindowsOpenSSH.png?raw=true)
+**NOTE:** The first time you debug a program on your Raspberry it will take a minute or two to start because we'll be installing the .NET SDK and debugger.  Debugging will start much quicker the second time.
+
+![Screenshot](/Doc/Images/WindowsOpenSSH.png?raw=true)]
+
+### Console Project Debug Properties
+
+When debugging .NET Core Console projects, you can pass command line arguments and environment variables to the remote program.  We don't currently honor any other properties on this page.
+
+![Screenshot](/Doc/Images/ConsoleProperties.png?raw=true)]
+
+## ASPNET Project Debug Properties
+
+When debugging ASPNETCORE projects, you can pass command line arguments and environment variables to the remote program and you also have the option to start a browser on your workstation and have it display a page from your application.
+
+Your web application will be deployed on your Raspberry on all network interfaces, using the port specified by the **App URL**.
+
+![Screenshot](/Doc/Images/AspNetProperties.png?raw=true)]
+
+## Debug Logs
+
+The Raspberry Debugger writes detail log information to the Visual Studio Debug Output Window.  This is intended to give you some idea of what happened then things go wrong.
+
+![Screenshot](/Doc/Images/Logging.png?raw=true)]
+
+### Under the Covers
+
+Here are some brief comments describing how the Raspberry Debugger works.
+
+#### SSH Keys
+
+The Raspberry Debugger automatically generates and configures a 2048-bit RSA key pair for SSH autentication.  This is actually generated on the Raspberry and the public key is added to the connection user's `~/.ssh/authorized_key` file on the Raspberry.
+
+The public and private keys are also persisted to on your development workstation in the `%USERPROFILE%\.raspbery` folder.  You'll find a `connections.json` file there with the connection information and the key file will be persisted within to `%USERPROFILE%\.raspbery\keys`
+
+### Limitations
+
+* .NET Core is not supported on Raspberry 1, 2, or Zero cards
+* Only 64-bit Raspberry Pi OS is not supported
+* Only .NET Core 3.1 is currently supported (we'll support .NET 5 when it's formally released)
+* **Start Without Debugging** or ""Attach to Process...** are not supported (yet)
+* Remote debugging uses the project default debugging profile
+* HTTPS is not currently supported for ASPNET debugging
 
 ### Disclosures
 
