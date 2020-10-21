@@ -32,7 +32,7 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 
 ### Installation
 
-Currently, the only way to obtain the Raspberry Debugger is from our [GitHub releases page](https://github.com/nforgeio/RaspberryDebugger/releases).  We'll submit this to he Visual Studio Market Place once we know it's stable.
+Currently, the only way to obtain the Raspberry Debugger is from our [GitHub releases page](https://github.com/nforgeio/RaspberryDebugger/releases).  We'll submit this to the Visual Studio Marketplace once we know it's stable.
 
 1. Go to [GitHub releases page](https://github.com/nforgeio/RaspberryDebugger/releases)
 2. Click the most recent release
@@ -60,7 +60,7 @@ After setting up your Raspberry based on the instructions you received with it, 
    ```
    You'll see something like this:
    <br/>![Screenshot](/Doc/Images/GettingStarted/ip-address.png?raw=true)<br/>
-   You're looking for an **inet** address.  In my case here, my Raspberry is connected to WiFi and so the connection information will be located under the **wlan0** network interface.  I've highlighted the interface and the internet address here.
+   You're looking for an **inet** address.  In this example, my Raspberry is connected to WiFi and so the connection information will be located under the **wlan0** network interface.  I've highlighted the interface and the internet address here.
 
    When your Raspberry is connected to a wired network, you'll see the IP address beneath the **eth0** network interface which I've also highlighted but there is no IP address listed because my Raspberry is not connected to a wired network.
 
