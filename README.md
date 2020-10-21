@@ -10,7 +10,7 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 ### Requirements
 
 * Windows 10
-* Visual Studio 2019 v16.4+ (Community Edition or better)
+* Visual Studio 2019 Community Edition (or better)
 * Raspberry Pi running 32-bit Raspberry Pi OS
 * Raspberry user allowed to sudo
 * [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed automatically when required)
@@ -29,6 +29,17 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 * Project specific Raspberry devices
 * C# and Visual Basic (other .NET languages should work too)
 * Debug activity logs
+
+### Installation
+
+Currently, the only way to obtain the Raspberry Debugger is from our [GitHub releases page](https://github.com/nforgeio/RaspberryDebugger/releases).  We'll submit this to he Visual Studio Market Place once we know it's stable.
+
+1. Go to [GitHub releases page](https://github.com/nforgeio/RaspberryDebugger/releases)
+2. Click the most recent release
+3. Scroll down to the **Assets** second and expand the list
+4. Click **RaspberryDebugger.vsix** to download it
+5. You should be prompted to open it with the **VisualStudio.Launcher.vsix**.  Click **OK** to install it
+6. Otherwise, save the file to your desktop and double-click to install it
 
 ### Configure your Raspberry
 
