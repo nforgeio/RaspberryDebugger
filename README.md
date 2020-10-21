@@ -83,7 +83,7 @@ On your Windows workstation:
    <br/>![Screenshot](/Doc/Images/GettingStarted/ToolsOptions1.png?raw=true)<br/>
    Click **Add** to create a connection.  The connection dialog will be prepopulated with the default **pi** username and the default **raspberry** password.  You'll need to update these as required and also enter your Raspberry's IP address (or hostname).
    <br/>![Screenshot](/Doc/Images/GettingStarted/ToolsOptions2.png?raw=true)<br/>
-   When you click **OK**, we'll connect to the Raspberry to validate your credentials and if that's successful, we'll configure the Raspberry by installing any required packages and also create and configure the SSH key pair that will be used for subsequent connections.  You connections should look something like this:
+   When you click **OK**, we'll connect to the Raspberry to validate your credentials and if that's successful, we'll configure the Raspberry by installing any required packages and also create and configure the SSH key pair that will be used for subsequent connections.  Your connections should look something like:
    <br/>![Screenshot](/Doc/Images/GettingStarted/ToolsOptions3.png?raw=true)<br/>
    Your new connection will look something like this on success:
    <br/>![Screenshot](/Doc/Images/GettingStarted/ToolsOptions4.png?raw=true)<br/>
