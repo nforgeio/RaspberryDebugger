@@ -28,6 +28,10 @@ Save as **global.json** file:
 }
 ```
 
+### Getting Started:
+
+Visit our GitHub project for instructions: https://github.com/nforgeio/RaspberryDebugger
+
 ### Build Artifacts and SHA512 signatures:
 
 This is is the Raspberry Debugger VSIX package:

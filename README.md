@@ -78,6 +78,17 @@ On your Windows workstation:
 
 1. Start or restart Visual Studio.
 
+1. If you have a .NET Core 5 SDK installed on your workstation, you'll need to add a **global.json** file (like the one below) to your project or solution directory to constrain your project to the latest 3.1 SDK on your workstation.  This is required because the debugger doesn't support .NET 5 yet.
+
+   ```
+   {
+     "sdk": {
+     "version": "3.1.100",
+     "rollForward": "latestMinor"
+   }
+}
+   ```
+
 1. Create a connection for your Raspberry:
    Choose the **Tools/Options...** menu and select the **Raspberry Debugger/Connections** panel.
    <br/>![Screenshot](/Doc/Images/GettingStarted/ToolsOptions1.png?raw=true)<br/>
