@@ -25,7 +25,7 @@
 
 10. Publish the GitHub release.
 
-11. Commit any changes and push them to GitHub using a comment like: **RELEASE v1.0**
+11. Commit any changes and push them to GitHub using a comment like: **RELEASE: v1.0**
 
 12. Switch back to the **main** branch, merge the changes from the release branch and push **main** to GitHub.
 
