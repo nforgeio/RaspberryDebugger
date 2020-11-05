@@ -86,7 +86,6 @@ On your Windows workstation:
      "version": "3.1.100",
      "rollForward": "latestMinor"
    }
-}
    ```
 
 1. Create a connection for your Raspberry:
