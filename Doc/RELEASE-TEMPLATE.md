@@ -2,7 +2,7 @@ Raspberry Debugger is a Visual Studio extension intended for debugging .NET Core
 
 ## Highlights:
 
-This is a minor release: we just updated some package dependencies.
+`WRITE SOMETHING HERE!`
 
 Please submit any issues you encounter to:
 
