@@ -20,7 +20,6 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 * Supports Raspberry Pi 3+ devices
 * Raspberry Pi OS 32-bit (we haven't tested other operating systems)
 * Console and ASPNET .NET Core 3.1 applications
-* .NET 5 will be supported when it's formally released
 * Configures 2048-bit RSA SSH key pairs automatically
 * **F5/Run** debugging
    * SDK and VSDBG installation is handled automatically
@@ -98,7 +97,7 @@ On your Windows workstation:
    Your new connection will look something like this on success:
    <br/>![Screenshot](/Doc/Images/GettingStarted/ToolsOptions4.png?raw=true)<br/>
 
-1. Configure your .NET Core project for debugging.  Raspberry Debugger supports Console and ASPNET applications targeting .NET Core 3.1.x (we'll support .NET 5 when it's released).
+1. Configure your .NET Core project for debugging.  Raspberry Debugger supports Console and ASPNET applications targeting .NET Core 3.1 and .NET 5
    Open one of your project source files and choose the new **Project/Raspberry Debug** menu:
    <br/>![Screenshot](/Doc/Images/GettingStarted/RaspberryDebugMenu.png?raw=true)<br/>
    The project Raspberry settings dialog will look like this:
@@ -163,7 +162,7 @@ The **Project/Raspberry Debug Settings** menu persists the settings to the new `
 
 * .NET Core is not supported on Raspberry 1, 2, or Zero cards
 * 64-bit Raspberry Pi OS is not supported
-* Only .NET Core 3.1+ SDKs are supported (we'll add .NET 5 when it's formally released)
+* Only .NET Core 3.1 and .NET 5 SDKs are supported
 * **Start Without Debugging** or **Attach to Process...** are not supported (yet)
 * Raspberry debugging uses the default project debugging profile
 * HTTPS is not currently supported for ASPNET debugging
