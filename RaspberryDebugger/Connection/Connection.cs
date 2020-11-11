@@ -568,7 +568,7 @@ rm -f {tempPublicKeyPath}
 
             LogInfo($"Installing SDK v{targetSdk.Version}");
 
-            return await PackageHelper.ExecuteWithProgressAsync<bool>($"Installing SDK v{targetSdk.Version}...",
+            return await PackageHelper.ExecuteWithProgressAsync<bool>($"Download and installing SDK v{targetSdk.Version} on Raspberry...",
                 async () =>
                 {
                     var installScript =
