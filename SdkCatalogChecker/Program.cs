@@ -105,6 +105,32 @@ namespace NetCoreCatalogChecker
                     continue;
                 }
 
+                if (!item.Link.Contains(item.Name))
+                {
+                    ok = false;
+                    Console.WriteLine($"*** ERROR: Link does not include the SDK name: {item.Name}");
+                    continue;
+                }
+
+                if (item.Architecture == SdkArchitecture.ARM32)
+                {
+                    if (item.Link.Contains("arm64"))
+                    {
+                        ok = false;
+                        Console.WriteLine($"*** ERROR: ARM32 SDK link references a 64-bit SDK.");
+                        continue;
+                    }
+                }
+                else
+                {
+                    if (!item.Link.Contains("arm64"))
+                    {
+                        ok = false;
+                        Console.WriteLine($"*** ERROR: ARM64 SDK link references a 32-bit SDK.");
+                        continue;
+                    }
+                }
+
                 sdkLinkToItem.Add($"{item.Name}/{item.Architecture}", item);
             }
 
@@ -121,32 +147,6 @@ namespace NetCoreCatalogChecker
                     Console.WriteLine();
                     Console.WriteLine($"SDK:    {item.Name}/{item.Architecture}");
                     Console.WriteLine($"Link:   {item.Link}");
-
-                    if (!item.Link.Contains(item.Name))
-                    {
-                        ok = false;
-                        Console.WriteLine($"*** ERROR: Link does not include the SDK name: {item.Name}");
-                        continue;
-                    }
-
-                    if (item.Architecture == SdkArchitecture.ARM32)
-                    {
-                        if (item.Link.Contains("arm64"))
-                        {
-                            ok = false;
-                            Console.WriteLine($"*** ERROR: ARM32 SDK link references a 64-bit SDK.");
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        if (!item.Link.Contains("arm64"))
-                        {
-                            ok = false;
-                            Console.WriteLine($"*** ERROR: ARM64 SDK link references a 32-bit SDK.");
-                            continue;
-                        }
-                    }
 
                     // I've seen some transient issues with downloading SDKs from Microsoft: 404 & 503
                     // We're going to retry up to 5 times.
