@@ -23,9 +23,9 @@
 
 9. Copy/paste the SHA512 from `$/Build/RaspberryDebugger.vsix.sha512.txt** into the release notes.
 
-10. Publish the GitHub release.
+10. Commit any changes and push them to GitHub using a comment like: **RELEASE: v1.0**
 
-11. Commit any changes and push them to GitHub using a comment like: **RELEASE: v1.0**
+11. Publish the GitHub release.
 
 12. Switch back to the **main** branch, merge the changes from the release branch and push **main** to GitHub.
 
