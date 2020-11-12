@@ -31,7 +31,14 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 
 ### Installation
 
-Currently, the only way to obtain the Raspberry Debugger is from our [GitHub releases page](https://github.com/nforgeio/RaspberryDebugger/releases).  We'll submit this to the Visual Studio Marketplace once we know it's stable.
+You can install the Raspberry Debugger from within Visual Studio:
+
+1. Start Visual Studio
+2. Select the **Extensions/Manage Extensions** menu
+3. Search for **Raspberry Debugger**
+4. Double-click it to install
+
+You can install this from our GitHub releases page:
 
 1. Go to [GitHub releases page](https://github.com/nforgeio/RaspberryDebugger/releases)
 2. Click the most recent release
