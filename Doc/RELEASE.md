@@ -11,7 +11,7 @@
    * `AssemblyInfo.cs:` both the assembly and file versions
    * `source.extension.vsixmanifest`
 
-5. Update the release notes in: `ReleaseNotes.rtf` and `source.extension.vsixmanifest`
+5. Update the release notes in: `ReleaseNotes.rtf`
 
 6. Open the solution, set the build configuration to **RELEASE** and then manually clean and build the solution.
 
@@ -23,15 +23,21 @@
 
 9. Copy/paste the SHA512 from `$/Build/RaspberryDebugger.vsix.sha512.txt** into the release notes.
 
-10. Commit any changes and push them to GitHub using a comment like: **RELEASE: v1.0**
+10. Update the release notes at: `$/RaspberryDebugger/ReleaseNotes.rtf`
 
-11. Publish the GitHub release.
+11. Commit any changes and push them to GitHub using a comment like: **RELEASE: v1.0**
 
-12. Switch back to the **main** branch, merge the changes from the release branch and push **main** to GitHub.
+12. Publish the GitHub release.
 
-13. Create an .ZIP archive by executing:
+13. Switch back to the **main** branch, merge the changes from the release branch and push **main** to GitHub.
 
-    `%RDBG_TOOLBIN%\archive.cmd`
+14. Publish to the Visual Studio Marketplace:
+
+    a. Goto [Visual Studio MarketPlace](https://marketplace.visualstudio.com/vs)
+    b. Sign via via jeff@lilltek.com (for now)
+    c. Click **Publish extensions** at the top-right
+    d. Click on **Raspberry Debugger**
+    e. 
 
 ------------------------------------------------
 $todo(jefflill): Flesh these out:
@@ -43,6 +49,10 @@ $todo(jefflill): Flesh these out:
 
 ### Post Release Steps
 
-1. Create the next release branch from main named like: release-v1.0" and push it to GitHub.
+1. Create an .ZIP archive by executing:
 
-2. Create a new GitHub release with tag like v1.0 and named like v1.0 and select the next release branch.  Copy `RELEASE-TEMPLATE.md` as the initial release description.
+    `%RDBG_TOOLBIN%\archive.cmd`
+
+2. Create the next release branch from main named like: release-v1.0" and push it to GitHub.
+
+3. Create a new GitHub release with tag like v1.0 and named like v1.0 and select the next release branch.  Copy `RELEASE-TEMPLATE.md` as the initial release description.

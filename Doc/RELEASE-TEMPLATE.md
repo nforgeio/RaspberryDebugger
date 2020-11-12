@@ -8,9 +8,9 @@ Please submit any issues you encounter to:
 
 https://github.com/nforgeio/RaspberryDebugger/issues
 
-## Changes:
+## Changes: 
 
-* Updated some package dependencies.
+`WRITE SOMETHING HERE!`
 
 ### Installation:
 
