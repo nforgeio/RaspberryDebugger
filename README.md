@@ -145,13 +145,13 @@ If you reimage your Raspberry flash drive and configure the same Raspberry passw
 
 #### Raspbery Directories
 
-The Raspberry Debugger installs the .NET Core SDKs to `/lib/dotnet` and the **vsdbg** debugger to `/lib/dotnet/vsdbg`.  `/etc/.profile` is updated to set `DOTNET_ROOT=/lib/dotnet` and `DOTNET_ROOT` is also added to the `PATH`.
+The Raspberry Debugger installs the .NET Core SDKs to `/lib/dotnet` and the **vsdbg** debugger to `/lib/dotnet/vsdbg`and `/etc/.profile` is updated to set `DOTNET_ROOT=/lib/dotnet` and `DOTNET_ROOT` is also added to the `PATH`.
 
 The programs being debugged will uploaded to `~/vsdbg/NAME` where `NAME` is the name of the program output assembly file.
 
 #### Project Raspberry Debug Settings
 
-The **Project/Raspberry Debug Settings** menu persists the settings to the new `$(SolutionDir)\.vs\raspberry-project.json` file.  This keeps track of which Raspberry connection specific projects should use or whether Raspberry debugging is disabled for projects.  We put the file here because these are really developer specific settings and source control solutions will typically be configured to not track files in this folder.
+The **Project/Raspberry Debug Settings** menu persists the settings to the new `$(SolutionDir)\.vs\raspberry-project.json` file.  This keeps track of which Raspberry connection specific projects should use or whether Raspberry debugging is disabled for a project.  We put the file here because these are really developer specific settings and source control solutions will typically be configured to not track files in this folder.
 
 ### Limitations
 
