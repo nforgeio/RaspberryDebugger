@@ -3,10 +3,7 @@
     <Metadata>
         <Identity Id="Raspberry Debugger.79c7fc56-a78c-4e6b-b73d-f202de491d34" Version="0.4" Language="en-US" Publisher="neonFORGE LLC" />
         <DisplayName>Raspberry Debugger</DisplayName>
-        <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug your Raspberry .NET Core applications on a real Raspberry Pi using Visual Studio.
-
-Raspberry Debugger is compatible with Raspberry Pi
-Raspberry Pi is a trademark of the Raspberry Pi Foundation</Description>
+        <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug your Raspberry .NET Core and .NET 5 applications on a real Raspberry Pi using Visual Studio.</Description>
         <License>license.txt</License>
         <GettingStartedGuide>https://github.com/nforgeio/RaspberryDebugger</GettingStartedGuide>
         <ReleaseNotes>ReleaseNotes.rtf</ReleaseNotes>

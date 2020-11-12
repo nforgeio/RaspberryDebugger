@@ -36,15 +36,16 @@
     a. Goto [Visual Studio MarketPlace](https://marketplace.visualstudio.com/vs)
     b. Sign via via jeff@lilltek.com (for now)
     c. Click **Publish extensions** at the top-right
-    d. Click on **Raspberry Debugger**
-    e. 
+    d. Click on the **...** next to **Raspberry Debugger** and select **Edit**
+    e. Click the **pencil** icon next to **RaspberryDebugger.vsix** and select the new VSIX file at `$/Build/RaspberryDebugger.vsix`
+    f. Review and edit the description and overview as required
+    g. Click **Save &amp; Upload** at the bottom of the page
 
 ------------------------------------------------
 $todo(jefflill): Flesh these out:
 
-14. Sign the extension??
+15. Sign the extension??
 
-15. Release to Visual Studio Marketplace??
 ------------------------------------------------
 
 ### Post Release Steps
