@@ -125,7 +125,7 @@ Your web application will be deployed on your Raspberry on all network interface
 
 ## Debug Logs
 
-The Raspberry Debugger writes detail log information to the Visual Studio Debug Output Window.  This is intended to give you some idea of what happened then things go wrong.
+The Raspberry Debugger writes detailed log information to the Visual Studio Debug Output Window.  This is intended to give you some idea of what happened then things go wrong.
 
 ![Screenshot](/Doc/Images/GettingStarted/Logging.png?raw=true)
 
