@@ -12,7 +12,7 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 * Windows 10
 * Visual Studio 2019 Community Edition (or better)
 * Raspberry Pi running 32-bit Raspberry Pi OS
-* Raspberry user allowed to sudo
+* Raspberry user allowed to `sudo`
 * [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed automatically when required)
 
 ### Features
@@ -20,9 +20,9 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 * Supports Raspberry Pi 3+ devices
 * Raspberry Pi OS 32-bit (we haven't tested other operating systems)
 * Console and ASPNET .NET Core 3.1 applications
-* Configures 2048-bit RSA SSH key pairs automatically
+* Configures 2048-bit SSH RSA key pair automatically
 * **F5/Run** debugging
-   * SDK and VSDBG installation is handled automatically
+   * .NET SDK and VSDBG installations are handled automatically
    * Program files are transferred to the Raspberry
 * Raspberry debugging can be enabled/disabled for specific projects
 * Project specific Raspberry devices
@@ -38,7 +38,7 @@ You can install the Raspberry Debugger from within Visual Studio:
 3. Search for **Raspberry Debugger**
 4. Double-click it to install
 
-You can install this from our GitHub releases page:
+You can install also this from our GitHub releases page:
 
 1. Go to [GitHub releases page](https://github.com/nforgeio/RaspberryDebugger/releases)
 2. Click the most recent release
@@ -72,15 +72,15 @@ After setting up your Raspberry based on the instructions you received with it, 
 
    Make a note of your Raspberry's IP address; you'll need it to configure a connection in Visual Studio.
 
-1. **Advanced:** Your Raspeberry's IP address may change from time-to-time, depending on how your network is configured.  I've configured my home router to assign reserve an IP address for my Raspberry so it won't change.  You can do this too if you control your network or you may need to [configure a static IP address](https://www.raspberrypi.org/documentation/configuration/tcpip/) on the Raspberry itself.
+1. **Advanced:** Your Raspeberry's IP address may change from time-to-time, depending on how your network is configured.  I've configured my home router to reserve an IP address for my Raspberry so it won't change.  You can do this too if you control your network or you may need to [configure a static IP address](https://www.raspberrypi.org/documentation/configuration/tcpip/) on the Raspberry itself.
 
-That's all the configuration required on the Raspberry.
+Your Raspberry is now ready!
 
 ### Configure Visual Studio
 
 On your Windows workstation:
 
-1. Download the **RaspberryDebugger.vsix** file from the latest release on this GitHub repository and double-click it to install it on Visual Studio.  Alternatively, you can install this from the **Visual Studio Marketplace** from within Visual Studio via **Extensions/Manage Extensions**.
+1. Download the **RaspberryDebugger.vsix** file from the latest release on this GitHub repository and double-click it to install it on Visual Studio.  Alternatively, you can install this from the **Visual Studio Marketplace** from within Visual Studio via **Extensions/Manage Extensions** (search for _Raspberry Debugger_).
 
 1. Start or restart Visual Studio.
 
@@ -89,9 +89,9 @@ On your Windows workstation:
    <br/>![Screenshot](/Doc/Images/GettingStarted/ToolsOptions1.png?raw=true)<br/>
    Click **Add** to create a connection.  The connection dialog will be prepopulated with the default **pi** username and the default **raspberry** password.  You'll need to update these as required and also enter your Raspberry's IP address (or hostname).
    <br/>![Screenshot](/Doc/Images/GettingStarted/ToolsOptions2.png?raw=true)<br/>
-   When you click **OK**, we'll connect to the Raspberry to validate your credentials and if that's successful, we'll configure the Raspberry by installing any required packages and also create and configure the SSH key pair that will be used for subsequent connections.  Your connections should look something like:
+   When you click **OK**, we'll connect to the Raspberry to validate your credentials and if that's successful, we'll configure the Raspberry by installing any required packages and also create and configure the SSH key pair that will be used for subsequent connections.
    <br/>![Screenshot](/Doc/Images/GettingStarted/ToolsOptions3.png?raw=true)<br/>
-   Your new connection will look something like this on success:
+   Your new connection will look something like this:
    <br/>![Screenshot](/Doc/Images/GettingStarted/ToolsOptions4.png?raw=true)<br/>
 
 1. Configure your .NET Core project for debugging.  Raspberry Debugger supports Console and ASPNET applications targeting .NET Core 3.1 and .NET 5
@@ -99,7 +99,7 @@ On your Windows workstation:
    <br/>![Screenshot](/Doc/Images/GettingStarted/RaspberryDebugMenu.png?raw=true)<br/>
    The project Raspberry settings dialog will look like this:
    <br/>![Screenshot](/Doc/Images/GettingStarted/RaspberryProjectSettings.png?raw=true)<br/>
-   Click the **Target Raspberry** combo box and choose the Raspberry connection you created earlier or **[DEFAULT]** to select the connection with its **Default** box checked and click **OK** to close the dialog.
+   Click the **Target Raspberry** combo box and choose the Raspberry connection you created earlier or **[DEFAULT]** to select the connection with its **Default** box checked and click **OK** to close the dialog.  You can use this dialog to assign specific Raspberry devices to your projects.
 
 That's all there is to it: just **press F5 to build and debug** your program remotely on the Raspberry.  Add a `Debugger.Break()` call in your program to verify that it actually works:
 
@@ -109,7 +109,7 @@ That's all there is to it: just **press F5 to build and debug** your program rem
 
 ![Screenshot](/Doc/Images/GettingStarted/WindowsOpenSSH.png?raw=true)
 
-**NOTE:** The first time you debug a program on your Raspberry it will take a minute or two to start because we'll be installing the .NET SDK and debugger.  Debugging will start much quicker the second time.
+**NOTE:** The first time you debug a program on your Raspberry it will take a minute or two to start because we'll be installing the .NET SDK and debugger.  Debugging will start much faster the second time.
 
 ### Console Project Debug Properties
 
@@ -119,7 +119,7 @@ When debugging .NET Core Console projects, you can pass command line arguments a
 
 ## ASPNET Project Debug Properties
 
-When debugging ASPNETCORE projects, you can pass command line arguments and environment variables to the remote program and you also have the option to start a browser on your workstation and have it display a page from your application.
+When debugging ASPNET projects, you can pass command line arguments and environment variables to the remote program and you also have the option to start a browser on your workstation and have it display a page from your application.
 
 Your web application will be deployed on your Raspberry on all network interfaces, using the port specified by the **App URL**.
 
@@ -127,7 +127,7 @@ Your web application will be deployed on your Raspberry on all network interface
 
 ## Debug Logs
 
-The Raspberry Debugger writes detail log information to the Visual Studio Debug Output Window.  This is intended to give you some idea of what happened then things go wrong.
+The Raspberry Debugger writes detail log information to the Visual Studio Debug Output Window.  This is designed to give you some idea of what happened then things go wrong.
 
 ![Screenshot](/Doc/Images/GettingStarted/Logging.png?raw=true)
 
@@ -147,13 +147,13 @@ If you reimage your Raspberry flash drive and configure the same Raspberry passw
 
 #### Raspbery Directories
 
-The Raspberry Debugger installs the .NET Core SDKs to `/lib/dotnet` and the **vsdbg** debugger to `/lib/dotnet/vsdbg`.  `/etc/.profile` is updated to set `DOTNET_ROOT=/lib/dotnet` and `DOTNET_ROOT` is also added to the `PATH`.
+The Raspberry Debugger installs the .NET SDKs to `/lib/dotnet` and the **vsdbg** debugger to `/lib/dotnet/vsdbg`.  `/etc/.profile` is updated to set `DOTNET_ROOT=/lib/dotnet` and `DOTNET_ROOT` is also added to the `PATH`.
 
 The programs being debugged will uploaded to `~/vsdbg/NAME` where `NAME` is the name of the program output assembly file.
 
 #### Project Raspberry Debug Settings
 
-The **Project/Raspberry Debug Settings** menu persists the settings to the new `$(SolutionDir)\.vs\raspberry-project.json` file.  This keeps track of which Raspberry connection specific projects should use or whether Raspberry debugging is disabled for projects.  We put the file here because these are really developer specific settings and source control solutions will typically be configured to not track files in this folder.
+The **Project/Raspberry Debug Settings** menu persists the settings to the new `$(SolutionDir)\.vs\raspberry-project.json` file.  This keeps track of which Raspberry connection your projects will use or whether Raspberry debugging is disabled for projects.  We put the file here because these are really developer specific settings and source control solutions are typically be configured to not track files in this folder.
 
 ### Limitations
 
