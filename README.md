@@ -1,8 +1,6 @@
 # Raspberry Debugger
 _A Visual Studio Extension for debugging .NET Core applications remotely on a Raspberry Pi_
 
-The Microsoft .NET Core platform is a nice way to develop cross-platform applications for Windows, OS/X and Linux.  .NET Core is also compatible with Raspberry Pi and its Linux based operating system: **Raspberry Pi OS**.
-
 You can use Visual Studio Code to develop and debug .NET Core applications either directly on your Raspberry or remotely from another computer but until today, there's been no easy way to use regular Visual Studio to develop and debug applications for Raspberry.
 
 The new **Raspberry Debugger** Visual Studio extension allows you to code your application on a Windows workstation and then build and debug it on a Raspberry by just pressing **F5 - Start Debugging**.
@@ -127,7 +125,7 @@ Your web application will be deployed on your Raspberry on all network interface
 
 ## Debug Logs
 
-The Raspberry Debugger writes detail log information to the Visual Studio Debug Output Window.  This is designed to give you some idea of what happened then things go wrong.
+The Raspberry Debugger writes detailed log information to the Visual Studio Debug Output Window.  This is designed to give you some idea of what happened then things go wrong.
 
 ![Screenshot](/Doc/Images/GettingStarted/Logging.png?raw=true)
 
@@ -147,7 +145,7 @@ If you reimage your Raspberry flash drive and configure the same Raspberry passw
 
 #### Raspbery Directories
 
-The Raspberry Debugger installs the .NET SDKs to `/lib/dotnet` and the **vsdbg** debugger to `/lib/dotnet/vsdbg`.  `/etc/.profile` is updated to set `DOTNET_ROOT=/lib/dotnet` and `DOTNET_ROOT` is also added to the `PATH`.
+The Raspberry Debugger installs the .NET SDKs to `/lib/dotnet` and the **vsdbg** debugger to `/lib/dotnet/vsdbg`and `/etc/.profile` is updated to set `DOTNET_ROOT=/lib/dotnet` and `DOTNET_ROOT` is also added to the `PATH`.
 
 The programs being debugged will uploaded to `~/vsdbg/NAME` where `NAME` is the name of the program output assembly file.
 
@@ -159,7 +157,7 @@ The **Project/Raspberry Debug Settings** menu persists the settings to the new `
 
 * .NET Core is not supported on Raspberry 1, 2, or Zero cards
 * 64-bit Raspberry Pi OS is not supported
-* Only .NET Core 3.1 and .NET 5 SDKs are supported
+* .NET Core SDKs older than 3.1 are not supported
 * **Start Without Debugging** or **Attach to Process...** are not supported (yet)
 * Raspberry debugging uses the default project debugging profile
 * HTTPS is not currently supported for ASPNET debugging
