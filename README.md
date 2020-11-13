@@ -17,11 +17,11 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 
 * Supports Raspberry Pi 3+ devices
 * Raspberry Pi OS 32-bit (we haven't tested other operating systems)
-* Console and ASPNET .NET Core 3.1 applications
-* Configures 2048-bit SSH RSA key pair automatically
+* Console and ASPNET .NET applications supported
+* Configures SSH 2048-bit RSA key pair automatically
 * **F5/Run** debugging
-   * .NET SDK and VSDBG installations are handled automatically
-   * Program files are transferred to the Raspberry
+   * .NET SDK and VSDBG installations handled automatically
+   * Program files transferred to the Raspberry
 * Raspberry debugging can be enabled/disabled for specific projects
 * Project specific Raspberry devices
 * C# and Visual Basic (other .NET languages should work too)
