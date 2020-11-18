@@ -148,18 +148,21 @@
     <PackageReference Include="Microsoft.VisualStudio.Utilities.Internal">
       <Version>16.3.23</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.7.3069" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.8.3038">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Neon.Common">
-      <Version>2.6.0</Version>
+      <Version>2.7.1</Version>
     </PackageReference>
     <PackageReference Include="Neon.Cryptography">
-      <Version>2.6.0</Version>
+      <Version>2.7.1</Version>
     </PackageReference>
     <PackageReference Include="Neon.SSH">
-      <Version>2.6.0</Version>
+      <Version>2.7.1</Version>
     </PackageReference>
     <PackageReference Include="Neon.SSH.NET">
-      <Version>2.6.0</Version>
+      <Version>2.7.1</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>
@@ -168,7 +171,7 @@
       <Version>2.9.1</Version>
     </PackageReference>
     <PackageReference Include="StreamJsonRpc">
-      <Version>2.5.46</Version>
+      <Version>2.6.121</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
