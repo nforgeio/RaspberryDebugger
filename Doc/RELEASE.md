@@ -11,7 +11,11 @@
    * `AssemblyInfo.cs:` both the assembly and file versions
    * `source.extension.vsixmanifest`
 
-5. Update the release notes in: `ReleaseNotes.rtf`
+5. Update `source.extension.vsixmanifest` **Release Notes** with the new release URI on GitHub.  This should look like:
+
+    https://github.com/nforgeio/RaspberryDebugger/releases/tag/v0.4
+
+    Note that we haven't published the release yet so be sure not to copy/paste the URL from the release draft.  Instead, copy/paste the link above and modify the version.
 
 6. Open the solution, set the build configuration to **RELEASE** and then manually clean and build the solution.
 
@@ -23,15 +27,13 @@
 
 9. Copy/paste the SHA512 from `$/Build/RaspberryDebugger.vsix.sha512.txt** into the release notes.
 
-10. Update the release notes at: `$/RaspberryDebugger/ReleaseNotes.rtf`
+10. Commit any changes and push them to GitHub using a comment like: **RELEASE: v1.0**
 
-11. Commit any changes and push them to GitHub using a comment like: **RELEASE: v1.0**
+11. Publish the GitHub release.
 
-12. Publish the GitHub release.
+12. Switch back to the **main** branch, merge the changes from the release branch and push **main** to GitHub.
 
-13. Switch back to the **main** branch, merge the changes from the release branch and push **main** to GitHub.
-
-14. Publish to the Visual Studio Marketplace:
+13. Publish to the Visual Studio Marketplace:
 
     a. Goto [Visual Studio MarketPlace](https://marketplace.visualstudio.com/vs)
     b. Sign via via jeff@lilltek.com (for now)
