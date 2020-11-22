@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Blinkie": {
+      "commandName": "Project",
+      "commandLineArgs": "myarg1 myarg2",
+      "environmentVariables": {
+        "TEST": "FOOBAR"
+      },
+      "remoteDebugEnabled": false,
+      "remoteDebugMachine": "",
+      "authenticationMode": "None"
+    }
+  }
+}

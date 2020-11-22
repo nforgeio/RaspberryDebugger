@@ -71,6 +71,7 @@ namespace RaspberryDebugger
             var projectFolder = Path.GetDirectoryName(project.FullName);
             var projectFile   = File.ReadAllText(project.FullName);
             var isNetCore     = true;
+            var netVersion    = (SemanticVersion)null;
             var sdkName       = (string)null;
 
             // Read the properties we care about from the project.
@@ -81,6 +82,18 @@ namespace RaspberryDebugger
             var monikers = targetFrameworkMonikers.Split(',');
 
             isNetCore = monikers[0] == ".NETCoreApp";
+
+            // Extract the version from the moniker.  This looks like: "Version=v5.0"
+
+            var versionRegex = new Regex(@"(?<version>[0-9\.]+)$");
+
+            netVersion = SemanticVersion.Parse(versionRegex.Match(monikers[1]).Groups["version"].Value);
+
+#if DOESNT_WORK
+            // The [dotnet --info] command doesn't work as I expected because it doesn't
+            // appear to examine the project file when determining the SDK version./
+            //
+            //      https://github.com/nforgeio/RaspberryDebugger/issues/16
 
             // We're going to execute [dotnet --info] in the project directory, to obtain the 
             // SDK version which will be on the second line which will look something like:
@@ -117,6 +130,41 @@ namespace RaspberryDebugger
             {
                 Environment.CurrentDirectory = orgDirectory;
             }
+#else
+            // So, we're just going to use the latest known SDK from our catalog instead.
+            // This isn't ideal but should work fine for the vast majority of people.
+
+            var targetSdk        = (Sdk)null;
+            var targetSdkVersion = (SemanticVersion)null;
+
+            foreach (var sdkItem in PackageHelper.SdkCatalog.Items
+                .Where(item => item.IsStandalone && item.Architecture == SdkArchitecture.ARM32))
+            {
+                var sdkVersion = SemanticVersion.Parse(sdkItem.Version);
+
+                if (sdkVersion.Major != netVersion.Major || sdkVersion.Minor != netVersion.Minor)
+                {
+                    continue;
+                }
+
+                if (targetSdkVersion == null || sdkVersion > targetSdkVersion)
+                {
+                    targetSdkVersion = sdkVersion;
+                    targetSdk        = new Sdk(sdkItem.Name, sdkItem.Version);;
+                }
+            }
+
+            if (targetSdk == null)
+            {
+                // I don't believe we'll ever see this because the project shouldn't build
+                // when the required SDK isn't present.
+
+                Log.Error($"Unable to locate an SDK for [{targetFrameworkMonikers}].");
+                Covenant.Assert(false, $"Unable to locate an SDK for [{targetFrameworkMonikers}].");
+            }
+
+            sdkName = targetSdk.Name;
+#endif
 
             // Load [Properties/launchSettings.json] if present to obtain the command line
             // arguments and environment variables as well as the target connection.  Note
