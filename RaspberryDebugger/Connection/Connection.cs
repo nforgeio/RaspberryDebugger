@@ -259,7 +259,7 @@ exit 0
         /// create and configure a SSH key pair on both the workstation and remote Raspberry if one
         /// doesn't already exist so that subsequent connections can use key based authentication.
         /// </summary>
-        /// <returns>Thr tracking <see cref="Task"/>.</returns>
+        /// <returns>The tracking <see cref="Task"/>.</returns>
         private async Task InitializeAsync()
         {
             await PackageHelper.ExecuteWithProgressAsync(

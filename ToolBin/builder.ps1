@@ -45,7 +45,7 @@ $rdbgTools = "$rdbgRoot\Tools"
 
 # NOTE: 
 #
-# MSBUILD.EXE and DEVENV.EXE don't appear to be capable of actually building thr VSIX.
+# MSBUILD.EXE and DEVENV.EXE don't appear to be capable of actually building the VSIX.
 # MSBUILD fails because an EXE appears to be referenced by the project and DEVENV
 # builds the [SdkCatalogChecker] but not the VSIX.
 #
