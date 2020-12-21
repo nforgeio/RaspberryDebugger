@@ -376,14 +376,13 @@ namespace RaspberryDebugger
             var projectName    = (string)((object[])solution.SolutionBuild.StartupProjects).FirstOrDefault();
             var startupProject = (Project)null;
 
-            // $todo(jefflill): when startup project is located solution folder following code will not find it.
             foreach (Project project in solution.Projects)
             {
                 if (project.UniqueName == projectName)
                 {
                     startupProject = project;
                 }
-                else if (project.Kind == EnvDTE.Constants.vsProjectItemKindSolutionItems)
+                else if (project.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
                 {
                     startupProject = FindInSubprojects(project, projectName);
                 }
@@ -492,12 +491,12 @@ namespace RaspberryDebugger
 
             var project = (Project)null;
 
-            if (project.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
+            if (parentProject.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
             {
                 // The project is actually a solution folder so recursively
                 // search any subprojects.
 
-                foreach (ProjectItem projectItem in project.ProjectItems)
+                foreach (ProjectItem projectItem in parentProject.ProjectItems)
                 {
                     project = FindInSubprojects(projectItem.SubProject, projectName);
 
