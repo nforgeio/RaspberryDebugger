@@ -92,7 +92,7 @@ namespace RaspberryDebugger
             catch (SshProxyException e)
             {
                 if (usePassword ||
-                    e.InnerException == null || 
+                    e.InnerException == null ||
                     e.InnerException.GetType() != typeof(SshAuthenticationException))
                 {
                     RaspberryDebugger.Log.Exception(e, $"[{connectionInfo.Host}]");
@@ -124,8 +124,8 @@ namespace RaspberryDebugger
                     RaspberryDebugger.Log.Info($"[{connectionInfo.Host}]: Reauthorizing the public key");
 
                     var homeFolder = LinuxPath.Combine("/", "home", connectionInfo.User);
-                    var publicKey  = File.ReadAllText(connectionInfo.PublicKeyPath).Trim();
-                    var keyScript  =
+                    var publicKey = File.ReadAllText(connectionInfo.PublicKeyPath).Trim();
+                    var keyScript =
 $@"
 mkdir -p {homeFolder}/.ssh
 touch {homeFolder}/.ssh/authorized_keys
@@ -173,8 +173,8 @@ exit 0
 
         //---------------------------------------------------------------------
         // Instance members
-        
-        private ConnectionInfo  connectionInfo;
+
+        private ConnectionInfo connectionInfo;
 
         /// <summary>
         /// Constructs a connection using a password.
@@ -358,7 +358,7 @@ cat /proc/cpuinfo | grep '^Model\s' | grep -o 'Raspberry.*$'
 
 cat /proc/cpuinfo | grep 'Revision\s' | grep -o '[0-9a-fA-F]*$'
 
-# Ensure that the [/lib/dotnet] folder exists, that it's on the 
+# Ensure that the [/lib/dotnet] folder exists, that it's on the
 # PATH and that DOTNET_ROOT are defined.
 
 mkdir -p /lib/dotnet
@@ -389,12 +389,12 @@ fi
                     using (var reader = new StringReader(response.OutputText))
                     {
                         var architecture = await reader.ReadLineAsync();
-                        var path         = await reader.ReadLineAsync();
-                        var hasUnzip     = await reader.ReadLineAsync() == "unzip";
-                        var hasDebugger  = await reader.ReadLineAsync() == "debugger-installed";
-                        var sdkLine      = await reader.ReadLineAsync();
-                        var model        = await reader.ReadLineAsync();
-                        var revision     = await reader.ReadToEndAsync();
+                        var path = await reader.ReadLineAsync();
+                        var hasUnzip = await reader.ReadLineAsync() == "unzip";
+                        var hasDebugger = await reader.ReadLineAsync() == "debugger-installed";
+                        var sdkLine = await reader.ReadLineAsync();
+                        var model = await reader.ReadLineAsync();
+                        var revision = await reader.ReadToEndAsync();
 
                         revision = revision.Trim();     // Remove any whitespace at the end.
 
@@ -427,13 +427,13 @@ fi
                         }
 
                         PiStatus = new Status(
-                            architecture:  architecture,
-                            path:          path,
-                            hasUnzip:      hasUnzip,
-                            hasDebugger:   hasDebugger,
+                            architecture: architecture,
+                            path: path,
+                            hasUnzip: hasUnzip,
+                            hasDebugger: hasDebugger,
                             installedSdks: sdks,
-                            model:         model,
-                            revision:      revision
+                            model: model,
+                            revision: revision
                         );
                     }
                 });
@@ -451,12 +451,12 @@ fi
 
                         LogInfo("Creating SSH keys");
 
-                        var workstationUser    = Environment.GetEnvironmentVariable("USERNAME");
-                        var workstationName    = Environment.GetEnvironmentVariable("COMPUTERNAME");
-                        var keyName            = Guid.NewGuid().ToString("d");
-                        var homeFolder         = LinuxPath.Combine("/", "home", connectionInfo.User);
+                        var workstationUser = Environment.GetEnvironmentVariable("USERNAME");
+                        var workstationName = Environment.GetEnvironmentVariable("COMPUTERNAME");
+                        var keyName = Guid.NewGuid().ToString("d");
+                        var homeFolder = LinuxPath.Combine("/", "home", connectionInfo.User);
                         var tempPrivateKeyPath = LinuxPath.Combine(homeFolder, keyName);
-                        var tempPublicKeyPath  = LinuxPath.Combine(homeFolder, $"{keyName}.pub");
+                        var tempPublicKeyPath = LinuxPath.Combine(homeFolder, $"{keyName}.pub");
 
                         try
                         {
@@ -481,21 +481,21 @@ exit 0
                             // Download the public and private keys, persist them to the workstation
                             // and then update the connection info.
 
-                            var connections            = PackageHelper.ReadConnections();
+                            var connections = PackageHelper.ReadConnections();
                             var existingConnectionInfo = connections.SingleOrDefault(c => c.Name == connectionInfo.Name);
-                            var publicKeyPath          = Path.Combine(PackageHelper.KeysFolder, $"{connectionInfo.Name}.pub");
-                            var privateKeyPath         = Path.Combine(PackageHelper.KeysFolder, connectionInfo.Name);
+                            var publicKeyPath = Path.Combine(PackageHelper.KeysFolder, $"{connectionInfo.Name}.pub");
+                            var privateKeyPath = Path.Combine(PackageHelper.KeysFolder, connectionInfo.Name);
 
                             File.WriteAllBytes(publicKeyPath, DownloadBytes(tempPublicKeyPath));
                             File.WriteAllBytes(privateKeyPath, DownloadBytes(tempPrivateKeyPath));
 
                             connectionInfo.PrivateKeyPath = privateKeyPath;
-                            connectionInfo.PublicKeyPath  = publicKeyPath;
+                            connectionInfo.PublicKeyPath = publicKeyPath;
 
                             if (existingConnectionInfo != null)
                             {
                                 existingConnectionInfo.PrivateKeyPath = privateKeyPath;
-                                existingConnectionInfo.PublicKeyPath  = publicKeyPath;
+                                existingConnectionInfo.PublicKeyPath = publicKeyPath;
 
                                 PackageHelper.WriteConnections(connections, disableLogging: true);
                             }
@@ -529,7 +529,7 @@ rm -f {tempPublicKeyPath}
             // $todo(jefflill):
             //
             // Note that we're going to install that standalone SDK for the SDK
-            // version rather than the SDK that shipped with Visual Studio.  I'm 
+            // version rather than the SDK that shipped with Visual Studio.  I'm
             // assuming that the Visual Studio SDKs might have extra stuff we don't
             // need and it's also possible that the Visual Studio SDK for the SDK
             // version may not have shipped yet.
@@ -726,7 +726,8 @@ exit 0
             // We're going to ZIP the program files locally and then transfer the zipped
             // files to the Raspberry to be expanded there.
 
-            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
+            var debugFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
+            var groupname = "gpio"; //TODO: need to shown in configuration
             var uploadScript =
 $@"
 
@@ -751,6 +752,10 @@ fi
 # The wrapper program needs execute permissions.
 
 if ! chmod 770 {debugFolder}/{assemblyName} ; then
+    exit 1
+fi
+
+if ! chgrp {groupname} {debugFolder}/{assemblyName} ; then
     exit 1
 fi
 
