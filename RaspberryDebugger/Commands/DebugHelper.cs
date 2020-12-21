@@ -414,10 +414,17 @@ namespace RaspberryDebugger
         /// </summary>
         /// <param name="connectionInfo">The connection info.</param>
         /// <param name="targetSdk">The target SDK.</param>
+        /// <param name="projectProperties">The project properties.</param>
+        /// <param name="projectSettings">The project's Raspberry debug settings.</param>
         /// <returns>The <see cref="Connection"/> or <c>null</c> if there was an error.</returns>
-        public static async Task<Connection> InitializeConnectionAsync(ConnectionInfo connectionInfo, Sdk targetSdk, ProjectProperties projectProperties)
+        public static async Task<Connection> InitializeConnectionAsync(ConnectionInfo connectionInfo, Sdk targetSdk, ProjectProperties projectProperties, ProjectSettings projectSettings)
         {
-            var connection = await Connection.ConnectAsync(connectionInfo);
+            Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
+            Covenant.Requires<ArgumentNullException>(targetSdk != null, nameof(targetSdk));
+            Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
+            Covenant.Requires<ArgumentNullException>(projectSettings != null, nameof(projectSettings));
+
+            var connection = await Connection.ConnectAsync(connectionInfo, projectSettings: projectSettings);
 
             // .NET Core only supports Raspberry models 3 and 4.
 

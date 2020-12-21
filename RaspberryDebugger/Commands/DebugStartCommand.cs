@@ -166,7 +166,7 @@ namespace RaspberryDebugger
 
             // Establish a Raspberry connection to handle some things before we start the debugger.
 
-            var connection = await DebugHelper.InitializeConnectionAsync(connectionInfo, targetSdk, projectProperties);
+            var connection = await DebugHelper.InitializeConnectionAsync(connectionInfo, targetSdk, projectProperties, PackageHelper.GetProjectSettings(dte.Solution, project));
 
             if (connection == null)
             {

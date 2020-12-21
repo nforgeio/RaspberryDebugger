@@ -61,5 +61,13 @@ namespace RaspberryDebugger
         /// </summary>
         [JsonProperty(PropertyName = "RemoteDebugTarget", Required = Required.AllowNull)]
         public string RemoteDebugTarget { get; set; }
+
+        /// <summary>
+        /// Specifies the Linux group the program should execute within.  
+        /// This defaults to <c>gpio</c>.
+        /// </summary>
+        [JsonProperty(PropertyName = "TargetGroup", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue("gpio")]
+        public string TargetGroup { get; set; } = "gpio";
     }
 }

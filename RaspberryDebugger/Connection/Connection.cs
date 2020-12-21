@@ -47,9 +47,14 @@ namespace RaspberryDebugger
         /// </summary>
         /// <param name="connectionInfo">The connection information.</param>
         /// <param name="usePassword">Optionally forces use of the password instead of the public key.</param>
+        /// <param name="projectSettings">
+        /// Optionally specifies the project settings.  This must be specified for connections that
+        /// will be used for remote debugging but may be omitted for connections just used for setting
+        /// things up like SSH keys, etc.
+        /// </param>
         /// <returns>The connection.</returns>
         /// <exception cref="Exception">Thrown when the connection could not be established.</exception>
-        public static async Task<Connection> ConnectAsync(ConnectionInfo connectionInfo, bool usePassword = false)
+        public static async Task<Connection> ConnectAsync(ConnectionInfo connectionInfo, bool usePassword = false, ProjectSettings projectSettings = null)
         {
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
 
@@ -82,7 +87,7 @@ namespace RaspberryDebugger
                     credentials = SshCredentials.FromPrivateKey(connectionInfo.User, File.ReadAllText(connectionInfo.PrivateKeyPath));
                 }
 
-                var connection = new Connection(connectionInfo.Host, address, connectionInfo, credentials);
+                var connection = new Connection(connectionInfo.Host, address, connectionInfo, credentials, projectSettings);
 
                 connection.Connect(TimeSpan.Zero);
                 await connection.InitializeAsync();
@@ -174,7 +179,8 @@ exit 0
         //---------------------------------------------------------------------
         // Instance members
 
-        private ConnectionInfo  connectionInfo;
+        private ConnectionInfo      connectionInfo;
+        private ProjectSettings     projectSettings;
 
         /// <summary>
         /// Constructs a connection using a password.
@@ -183,10 +189,16 @@ exit 0
         /// <param name="address">The IP address.</param>
         /// <param name="connectionInfo">The connection information.</param>
         /// <param name="credentials">The SSH credentials.</param>
-        private Connection(string name, IPAddress address, ConnectionInfo connectionInfo, SshCredentials credentials)
+        /// <param name="projectSettings">
+        /// Optionally specifies the project settings.  This must be specified for connections that
+        /// will be used for remote debugging but may be omitted for connections just used for setting
+        /// things up like SSH keys, etc.
+        /// </param>
+        private Connection(string name, IPAddress address, ConnectionInfo connectionInfo, SshCredentials credentials, ProjectSettings projectSettings)
             : base(name, address, credentials, connectionInfo.Port, logWriter: null)
         {
-            this.connectionInfo = connectionInfo;
+            this.connectionInfo  = connectionInfo;
+            this.projectSettings = projectSettings;
 
             // Disable connection level logging, etc.
 
@@ -726,8 +738,22 @@ exit 0
             // We're going to ZIP the program files locally and then transfer the zipped
             // files to the Raspberry to be expanded there.
 
-            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
-            var groupname    = "gpio";  // $todo(jefflill): need to show in configuration
+            var debugFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
+            var groupScript = string.Empty;
+
+            if (!string.IsNullOrEmpty(projectSettings.TargetGroup))
+            {
+                groupScript =
+$@"
+# Add the program assembly to the user specified target group (if any).  This
+# defaults to [gpio] so users will be able to access the GPIO pins.
+
+if ! chgrp {projectSettings.TargetGroup} {debugFolder}/{assemblyName} ; then
+    exit 1
+fi
+";
+            }
+
             var uploadScript =
 $@"
 
@@ -749,16 +775,12 @@ if ! unzip program.zip -d {debugFolder} ; then
     exit 1
 fi
 
-# The wrapper program needs execute permissions.
+# The program assembly needs execute permissions.
 
 if ! chmod 770 {debugFolder}/{assemblyName} ; then
     exit 1
 fi
-
-if ! chgrp {groupname} {debugFolder}/{assemblyName} ; then
-    exit 1
-fi
-
+{groupScript}
 exit 0
 ";
             // I'm not going to do a progress dialog because this should be fast.

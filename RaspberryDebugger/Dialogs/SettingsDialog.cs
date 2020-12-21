@@ -101,6 +101,8 @@ namespace RaspberryDebugger
                     targetComboBox.SelectedIndex = connectionNameToIndex[selectedConnection.Name];
                 }
             }
+
+            targetGroup.Text = projectSettings.TargetGroup;
         }
 
         /// <summary>
@@ -131,6 +133,24 @@ namespace RaspberryDebugger
                     projectSettings.RemoteDebugTarget     = selectedItem;
                     break;
             }
+
+            var targetGroupName = targetGroup.Text.Trim();
+
+            if (targetGroupName.Contains(" "))
+            {
+                targetGroup.Focus();
+                targetGroup.SelectAll();
+
+                MessageBoxEx.Show(
+                    $"Invalid Linux group name: group names should not include spaces.",
+                    $"Target Group Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            projectSettings.TargetGroup = targetGroup.Text;
 
             DialogResult = DialogResult.OK;
         }
