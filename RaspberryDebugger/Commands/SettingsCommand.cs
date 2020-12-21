@@ -139,10 +139,11 @@ namespace RaspberryDebugger
             if (project == null)
             {
                 MessageBoxEx.Show(
-                    "We were not able to locate the startup project",
-                    "Start Project not found",
+                    "Please select a startup project using the Project/Set as Startup project menu or by right clicking a project in the Solution Explorer and enabling this.",
+                    "Startup Project not found",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
+
                 return;
             }
 

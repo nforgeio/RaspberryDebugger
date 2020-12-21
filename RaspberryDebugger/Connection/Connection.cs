@@ -124,8 +124,8 @@ namespace RaspberryDebugger
                     RaspberryDebugger.Log.Info($"[{connectionInfo.Host}]: Reauthorizing the public key");
 
                     var homeFolder = LinuxPath.Combine("/", "home", connectionInfo.User);
-                    var publicKey = File.ReadAllText(connectionInfo.PublicKeyPath).Trim();
-                    var keyScript =
+                    var publicKey  = File.ReadAllText(connectionInfo.PublicKeyPath).Trim();
+                    var keyScript  =
 $@"
 mkdir -p {homeFolder}/.ssh
 touch {homeFolder}/.ssh/authorized_keys
@@ -174,7 +174,7 @@ exit 0
         //---------------------------------------------------------------------
         // Instance members
 
-        private ConnectionInfo connectionInfo;
+        private ConnectionInfo  connectionInfo;
 
         /// <summary>
         /// Constructs a connection using a password.
@@ -389,12 +389,12 @@ fi
                     using (var reader = new StringReader(response.OutputText))
                     {
                         var architecture = await reader.ReadLineAsync();
-                        var path = await reader.ReadLineAsync();
-                        var hasUnzip = await reader.ReadLineAsync() == "unzip";
-                        var hasDebugger = await reader.ReadLineAsync() == "debugger-installed";
-                        var sdkLine = await reader.ReadLineAsync();
-                        var model = await reader.ReadLineAsync();
-                        var revision = await reader.ReadToEndAsync();
+                        var path         = await reader.ReadLineAsync();
+                        var hasUnzip     = await reader.ReadLineAsync() == "unzip";
+                        var hasDebugger  = await reader.ReadLineAsync() == "debugger-installed";
+                        var sdkLine      = await reader.ReadLineAsync();
+                        var model        = await reader.ReadLineAsync();
+                        var revision     = await reader.ReadToEndAsync();
 
                         revision = revision.Trim();     // Remove any whitespace at the end.
 
@@ -427,13 +427,13 @@ fi
                         }
 
                         PiStatus = new Status(
-                            architecture: architecture,
-                            path: path,
-                            hasUnzip: hasUnzip,
-                            hasDebugger: hasDebugger,
+                            architecture:  architecture,
+                            path:          path,
+                            hasUnzip:      hasUnzip,
+                            hasDebugger:   hasDebugger,
                             installedSdks: sdks,
-                            model: model,
-                            revision: revision
+                            model:         model,
+                            revision:      revision
                         );
                     }
                 });
@@ -451,12 +451,12 @@ fi
 
                         LogInfo("Creating SSH keys");
 
-                        var workstationUser = Environment.GetEnvironmentVariable("USERNAME");
-                        var workstationName = Environment.GetEnvironmentVariable("COMPUTERNAME");
-                        var keyName = Guid.NewGuid().ToString("d");
-                        var homeFolder = LinuxPath.Combine("/", "home", connectionInfo.User);
+                        var workstationUser    = Environment.GetEnvironmentVariable("USERNAME");
+                        var workstationName    = Environment.GetEnvironmentVariable("COMPUTERNAME");
+                        var keyName            = Guid.NewGuid().ToString("d");
+                        var homeFolder         = LinuxPath.Combine("/", "home", connectionInfo.User);
                         var tempPrivateKeyPath = LinuxPath.Combine(homeFolder, keyName);
-                        var tempPublicKeyPath = LinuxPath.Combine(homeFolder, $"{keyName}.pub");
+                        var tempPublicKeyPath  = LinuxPath.Combine(homeFolder, $"{keyName}.pub");
 
                         try
                         {
@@ -481,21 +481,21 @@ exit 0
                             // Download the public and private keys, persist them to the workstation
                             // and then update the connection info.
 
-                            var connections = PackageHelper.ReadConnections();
+                            var connections            = PackageHelper.ReadConnections();
                             var existingConnectionInfo = connections.SingleOrDefault(c => c.Name == connectionInfo.Name);
-                            var publicKeyPath = Path.Combine(PackageHelper.KeysFolder, $"{connectionInfo.Name}.pub");
-                            var privateKeyPath = Path.Combine(PackageHelper.KeysFolder, connectionInfo.Name);
+                            var publicKeyPath          = Path.Combine(PackageHelper.KeysFolder, $"{connectionInfo.Name}.pub");
+                            var privateKeyPath         = Path.Combine(PackageHelper.KeysFolder, connectionInfo.Name);
 
                             File.WriteAllBytes(publicKeyPath, DownloadBytes(tempPublicKeyPath));
                             File.WriteAllBytes(privateKeyPath, DownloadBytes(tempPrivateKeyPath));
 
                             connectionInfo.PrivateKeyPath = privateKeyPath;
-                            connectionInfo.PublicKeyPath = publicKeyPath;
+                            connectionInfo.PublicKeyPath  = publicKeyPath;
 
                             if (existingConnectionInfo != null)
                             {
                                 existingConnectionInfo.PrivateKeyPath = privateKeyPath;
-                                existingConnectionInfo.PublicKeyPath = publicKeyPath;
+                                existingConnectionInfo.PublicKeyPath  = publicKeyPath;
 
                                 PackageHelper.WriteConnections(connections, disableLogging: true);
                             }
@@ -726,8 +726,8 @@ exit 0
             // We're going to ZIP the program files locally and then transfer the zipped
             // files to the Raspberry to be expanded there.
 
-            var debugFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
-            var groupname = "gpio"; //TODO: need to shown in configuration
+            var debugFolder  = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(Username), programName);
+            var groupname    = "gpio";  // $todo(jefflill): need to show in configuration
             var uploadScript =
 $@"
 

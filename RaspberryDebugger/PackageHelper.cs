@@ -376,7 +376,7 @@ namespace RaspberryDebugger
             var projectName    = (string)((object[])solution.SolutionBuild.StartupProjects).FirstOrDefault();
             var startupProject = (Project)null;
 
-            //TODO: when startup project is located solution folder following code will not resolve startupProject
+            // $todo(jefflill): when startup project is located solution folder following code will not find it.
             foreach (Project project in solution.Projects)
             {
                 if (project.UniqueName == projectName)
