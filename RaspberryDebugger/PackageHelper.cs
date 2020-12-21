@@ -376,6 +376,7 @@ namespace RaspberryDebugger
             var projectName    = (string)((object[])solution.SolutionBuild.StartupProjects).FirstOrDefault();
             var startupProject = (Project)null;
 
+            //TODO: when startup project is located solution folder following code will not resolve startupProject
             foreach (Project project in solution.Projects)
             {
                 if (project.UniqueName == projectName)
@@ -615,7 +616,7 @@ namespace RaspberryDebugger
         //---------------------------------------------------------------------
         // Progress related code
 
-        const string progressCaption = "Raspberry Debugger";
+        private const string progressCaption = "Raspberry Debugger";
 
         private static IVsThreadedWaitDialog2   progressDialog = null;
         private static Stack<string>            operationStack = new Stack<string>();
