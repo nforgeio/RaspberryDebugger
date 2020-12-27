@@ -6,7 +6,7 @@
         <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug your Raspberry .NET Core and .NET 5 applications on a real Raspberry Pi using Visual Studio.</Description>
         <License>license.txt</License>
         <GettingStartedGuide>https://github.com/nforgeio/RaspberryDebugger</GettingStartedGuide>
-        <ReleaseNotes>https://github.com/nforgeio/RaspberryDebugger/releases/tag/v0.6</ReleaseNotes>
+        <ReleaseNotes>https://github.com/nforgeio/RaspberryDebugger/releases/tag/v1.0</ReleaseNotes>
         <Icon>packageicon.png</Icon>
         <Tags>raspberry pi debugger</Tags>
     </Metadata>
