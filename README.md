@@ -8,7 +8,7 @@ _A Visual Studio Extension for debugging .NET Core applications remotely on a Ra
 * https://github.com/dotnet/runtime/issues/44745
 * [#15](https://github.com/nforgeio/RaspberryDebugger/issues/15): .NET 5.0.100 remote Raspberry debugging doesn't work
 
-The workaround until Microsoft fixes this is to revert your app back to a .NET Core 3.1 SDK.  Unfortunately, Raspberry Debugger v0.4 had a bug that prevented the installation of a .NET 3.1 SDK so the workaround doesn't work for that release.  This is fixed for our v0.5 release.
+The workaround until Microsoft fixes this is to revert your app back to a .NET Core 3.1 SDK.
 
 ---
 
