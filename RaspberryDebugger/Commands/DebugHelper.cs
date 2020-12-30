@@ -58,13 +58,13 @@ namespace RaspberryDebugger
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            Log.Info("Checking for native OpenSSH client");
+            Log.Info("Checking for native Windows OpenSSH client");
 
             var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative", "OpenSSH", "ssh.exe");
 
             if (!File.Exists(openSshPath))
             {
-                Log.WriteLine("Raspberry debugging requires the native OpenSSH client.  See this:");
+                Log.WriteLine("Raspberry debugging requires the native Windows OpenSSH client.  See this:");
                 Log.WriteLine("https://techcommunity.microsoft.com/t5/itops-talk-blog/installing-and-configuring-openssh-on-windows-server-2019/ba-p/309540");
 
                 var button = MessageBox.Show(
@@ -228,8 +228,8 @@ namespace RaspberryDebugger
             if (!await PublishProjectAsync(dte, solution, project, projectProperties))
             {
                 MessageBox.Show(
-                    "[dotnet publish] failed for the project.\r\n\r\nLook at the Debug Output for more details.",
-                    "Build Failed",
+                    "[dotnet publish] failed for the project.\r\n\r\nLook at the Output/Debug panel for more details.",
+                    "Publish Failed",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
@@ -269,15 +269,18 @@ namespace RaspberryDebugger
 
             if (errorList.Count > 0)
             {
+                Log.Error($"Build failed: [{errorList.Count}] errors");
                 return false;
             }
 
-            await Task.Yield();
+            Log.Info("Build succeeded");
 
             // Publish the project so all required binaries and assets end up
             // in the output folder.
 
             Log.Info($"Publishing: {projectProperties.FullPath}");
+
+            await Task.Yield();
 
             var response = await NeonHelper.ExecuteCaptureAsync(
                 "dotnet",
@@ -291,12 +294,15 @@ namespace RaspberryDebugger
                     projectProperties.FullPath
                 });
 
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             if (response.ExitCode == 0)
             {
+                Log.Error("Publish succeeded");
                 return true;
             }
 
-            Log.Error("Build Failed!");
+            Log.Error("Publish failed");
             Log.WriteLine(response.AllText);
 
             return false;

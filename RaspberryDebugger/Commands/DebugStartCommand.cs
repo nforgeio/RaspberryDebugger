@@ -131,7 +131,7 @@ namespace RaspberryDebugger
             {
                 return;
             }
-
+            
             var project = DebugHelper.GetTargetProject(dte);
 
             if (project == null)
@@ -152,7 +152,7 @@ namespace RaspberryDebugger
                     ".NET 5 debugging is not currently supported due to a .NET Runtime bug:\r\n\r\nhttps://github.com/dotnet/runtime/issues/44745",
                     ".NET 5 Not Supported (temporarily)",
                     MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                    MessageBoxIcon.Warning);
 
                 return;
             }

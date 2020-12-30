@@ -67,7 +67,7 @@ namespace RaspberryDebugger
         public const int SettingsCommandId                   = 0x0100;
         public const int DebugStartCommandId                 = 0x0200;
         public const int DebugStartWithoutDebuggingCommandId = 0x0201;
-        public const int DebugAttachToProcessCommandId      = 0x0202;
+        public const int DebugAttachToProcessCommandId       = 0x0202;
 
         private static object               debugSyncLock = new object();
         private static IVsOutputWindowPane  debugPane     = null;
