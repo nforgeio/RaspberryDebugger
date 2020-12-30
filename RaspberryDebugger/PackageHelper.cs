@@ -563,7 +563,7 @@ namespace RaspberryDebugger
         /// solution's directory.
         /// </summary>
         /// <param name="solution">The current solution.</param>
-        /// <returns>The projects read or an empty object if the file doesn't exist.</returns>
+        /// <returns>The projects read or an object with no projects if the file doesn't exist.</returns>
         public static RaspberryProjects ReadRaspberryProjects(Solution solution)
         {
             Covenant.Requires<ArgumentNullException>(solution != null);
@@ -572,22 +572,13 @@ namespace RaspberryDebugger
 
             var path = GetRaspberryProjectsPath(solution);
 
-            try
+            if (File.Exists(path))
             {
-                if (File.Exists(path))
-                {
-                    return NeonHelper.JsonDeserialize<RaspberryProjects>(File.ReadAllText(path));
-                }
-                else
-                {
-                    return new RaspberryProjects();
-                }
+                return NeonHelper.JsonDeserialize<RaspberryProjects>(File.ReadAllText(path));
             }
-            catch (Exception e)
+            else
             {
-                // $todo(jefflill): Remove this try-catch.
-
-                throw;
+                return new RaspberryProjects();
             }
         }
 
