@@ -141,6 +141,24 @@ namespace RaspberryDebugger
 
             var projectProperties = ProjectProperties.CopyFrom(dte.Solution, project);
 
+            //-----------------------------------------------------------------
+            // $todo(jefflill): Remove this after .NET 5 debugging works (#15)
+
+            var sdkVersion = new Version(projectProperties.SdkVersion);
+
+            if (sdkVersion >= new Version("5.0.0"))
+            {
+                MessageBox.Show(
+                    ".NET 5 debugging is not currently supported due to a .NET Runtime bug:\r\n\r\nhttps://github.com/dotnet/runtime/issues/44745",
+                    ".NET 5 Not Supported (temporarily)",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
+
+            //-----------------------------------------------------------------
+
             if (!await DebugHelper.PublishProjectWithUIAsync(dte, dte.Solution, project, projectProperties))
             {
                 return;
