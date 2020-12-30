@@ -17,14 +17,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
-using Microsoft;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Settings;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell.Settings;
-using Microsoft.VisualStudio.Threading;
-
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger

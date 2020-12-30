@@ -28,8 +28,8 @@ using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Threading;
 
-using Neon.Common;
 using BrightIdeasSoftware;
+using Neon.Common;
 
 namespace RaspberryDebugger
 {

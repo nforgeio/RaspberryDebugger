@@ -35,8 +35,10 @@ using EnvDTE80;
 
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+
 using Neon.Common;
 using Neon.Net;
+
 using Newtonsoft.Json.Linq;
 
 using Task = System.Threading.Tasks.Task;

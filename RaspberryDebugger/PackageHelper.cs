@@ -35,14 +35,14 @@ using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 
 using EnvDTE;
+using EnvDTE80;
+
 using Newtonsoft.Json;
 
 using Neon.Common;
 using Neon.IO;
 
 using Task = System.Threading.Tasks.Task;
-using EnvDTE80;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace RaspberryDebugger
 {

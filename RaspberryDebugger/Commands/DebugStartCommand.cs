@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Net.Http;
 using System.IO;
 using System.Net;
 using System.Linq;
@@ -28,6 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -36,14 +38,12 @@ using EnvDTE80;
 
 using Neon.Common;
 using Neon.IO;
+using Neon.SSH;
 using Neon.Windows;
 
 using Newtonsoft.Json.Linq;
 
 using Task = System.Threading.Tasks.Task;
-using System.Net.Http;
-using Microsoft.VisualStudio.Debugger.Interop;
-using Neon.SSH;
 
 namespace RaspberryDebugger
 {

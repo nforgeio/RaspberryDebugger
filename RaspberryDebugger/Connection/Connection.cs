@@ -22,9 +22,8 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net;
-
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.OLE.Interop;
+
 using Neon.Common;
 using Neon.IO;
 using Neon.Net;

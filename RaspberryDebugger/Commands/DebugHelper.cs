@@ -29,6 +29,7 @@ using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 
 using EnvDTE;
 using EnvDTE80;
@@ -40,7 +41,6 @@ using Neon.Windows;
 using Newtonsoft.Json.Linq;
 
 using Task = System.Threading.Tasks.Task;
-using Microsoft.VisualStudio.Threading;
 
 namespace RaspberryDebugger
 {

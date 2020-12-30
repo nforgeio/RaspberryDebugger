@@ -18,19 +18,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Data;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Neon.Common;
 using Neon.Net;
-using System.Diagnostics.Contracts;
-using EnvDTE;
-using System.Text.RegularExpressions;
 
 namespace RaspberryDebugger
 {
