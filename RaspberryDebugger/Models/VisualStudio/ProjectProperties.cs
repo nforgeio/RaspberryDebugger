@@ -70,6 +70,35 @@ namespace RaspberryDebugger
             Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (string.IsNullOrEmpty(project.FullName))
+            {
+                // We'll see this for unsupported Visual Studio projects and will just
+                // return project properties indicating this.
+
+                return new ProjectProperties()
+                {
+                    Name                  = project.Name,
+                    FullPath              = project.FullName,
+                    Configuration         = null,
+                    IsNetCore             = false,
+                    SdkVersion            = null,
+                    OutputFolder          = null,
+                    OutputFileName        = null,
+                    IsExecutable          = false,
+                    AssemblyName          = null,
+                    DebugEnabled          = false,
+                    DebugConnectionName   = null,
+                    CommandLineArgs       = new List<string>(),
+                    EnvironmentVariables  = new Dictionary<string, string>(),
+                    IsSupportedSdkVersion = false,
+                    IsRaspberryCompatible = false,
+                    IsAspNet              = false,
+                    AspPort               = 0,
+                    AspLaunchBrowser      = false,
+                    AspRelativeBrowserUri = null
+                };
+            }
+
             var projectFolder = Path.GetDirectoryName(project.FullName);
             var projectFile   = File.ReadAllText(project.FullName);
             var isNetCore     = true;
@@ -91,48 +120,11 @@ namespace RaspberryDebugger
 
             netVersion = SemanticVersion.Parse(versionRegex.Match(monikers[1]).Groups["version"].Value);
 
-#if DOESNT_WORK
             // The [dotnet --info] command doesn't work as I expected because it doesn't
-            // appear to examine the project file when determining the SDK version./
+            // appear to examine the project file when determining the SDK version.
             //
             //      https://github.com/nforgeio/RaspberryDebugger/issues/16
-
-            // We're going to execute [dotnet --info] in the project directory, to obtain the 
-            // SDK version which will be on the second line which will look something like:
             //
-            //      Version:   3.1.301
-            //
-            // The cool thing is that this will honor any [global.json] files in the solution.
-
-            var orgDirectory = Environment.CurrentDirectory;
-
-            Environment.CurrentDirectory = projectFolder;
-
-            try
-            {
-                var response = NeonHelper.ExecuteCapture("dotnet", new object[] { "--info" });
-
-                // Note that we'll stick with the version we extracted from the TargetFrameworkMoniker
-                // above on the off chance that this call fails.
-
-                if (response.ExitCode == 0)
-                {
-                    using (var reader = new StringReader(response.OutputText))
-                    {
-                        var versionLine = reader.Lines().Skip(1).Take(1).FirstOrDefault().Trim();
-
-                        Covenant.Assert(versionLine != null);
-                        Covenant.Assert(versionLine.StartsWith("Version:"));
-
-                        sdkName = versionLine.Split(':')[1];
-                    }
-                }
-            }
-            finally
-            {
-                Environment.CurrentDirectory = orgDirectory;
-            }
-#else
             // So, we're just going to use the latest known SDK from our catalog instead.
             // This isn't ideal but should work fine for the vast majority of people.
 
@@ -156,17 +148,7 @@ namespace RaspberryDebugger
                 }
             }
 
-            if (targetSdk == null)
-            {
-                // I don't believe we'll ever see this because the project shouldn't build
-                // when the required SDK isn't present.
-
-                Log.Error($"Unable to locate an SDK for [{targetFrameworkMonikers}].");
-                Covenant.Assert(false, $"Unable to locate an SDK for [{targetFrameworkMonikers}].");
-            }
-
-            sdkName = targetSdk.Name;
-#endif
+            sdkName = targetSdk?.Name;
 
             // Load [Properties/launchSettings.json] if present to obtain the command line
             // arguments and environment variables as well as the target connection.  Note
@@ -314,7 +296,7 @@ namespace RaspberryDebugger
 
             // Determine whether the referenced .NET Core SDK is currently supported.
 
-            var sdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName) && item.Architecture == SdkArchitecture.ARM32);
+            var sdk = sdkName == null ? null : PackageHelper.SdkCatalog.Items.SingleOrDefault(item => SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName) && item.Architecture == SdkArchitecture.ARM32);
 
             var isSupportedSdkVersion = sdk != null;
 

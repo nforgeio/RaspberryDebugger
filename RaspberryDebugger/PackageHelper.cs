@@ -511,6 +511,39 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
+        /// Adds any projects suitable for debugging on a Raspberry to the <paramref name="solutionProjects"/>
+        /// list, recursing into projects that are actually solution folders as required.
+        /// </summary>
+        /// <param name="solutionProjects">The list where discovered projects will be added.</param>
+        /// <param name="solution">The parent solution.</param>
+        /// <param name="project">The project or solution folder.</param>
+        public static void GetSolutionProjects(List<Project> solutionProjects, Solution solution, Project project)
+        {
+            Covenant.Requires<ArgumentNullException>(solutionProjects != null, nameof(solutionProjects));
+            Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
+            Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
+
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (project.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
+            {
+                foreach (ProjectItem projectItem in project.ProjectItems)
+                {
+                    GetSolutionProjects(solutionProjects, solution, projectItem.SubProject);
+                }
+            }
+            else
+            {
+                var projectProperties = ProjectProperties.CopyFrom(solution, project);
+
+                if (projectProperties.IsRaspberryCompatible)
+                {
+                    solutionProjects.Add(project);
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns the path to the <b>$/.vs/raspberry-projects.json</b> file for
         /// the current solution.
         /// </summary>
@@ -539,13 +572,22 @@ namespace RaspberryDebugger
 
             var path = GetRaspberryProjectsPath(solution);
 
-            if (File.Exists(path))
+            try
             {
-                return NeonHelper.JsonDeserialize<RaspberryProjects>(File.ReadAllText(path));
+                if (File.Exists(path))
+                {
+                    return NeonHelper.JsonDeserialize<RaspberryProjects>(File.ReadAllText(path));
+                }
+                else
+                {
+                    return new RaspberryProjects();
+                }
             }
-            else
+            catch (Exception e)
             {
-                return new RaspberryProjects();
+                // $todo(jefflill): Remove this try-catch.
+
+                throw;
             }
         }
 
@@ -562,16 +604,23 @@ namespace RaspberryDebugger
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Prune any projects with GUIDs that are no longer present in
-            // the solution so these don't accumulate.
+            // the solution so these don't accumulate.  Note that we need to
+            // recurse into solution folders to look for any projects there.
 
-            var solutionProjectIds = new HashSet<string>();
+            var solutionProjects = new List<Project>();
 
             foreach (Project project in solution.Projects)
             {
-                solutionProjectIds.Add(project.UniqueName);
+                GetSolutionProjects(solutionProjects, solution, project);
             }
 
-            var delList = new List<string>();
+            var solutionProjectIds = new HashSet<string>();
+            var delList            = new List<string>();
+
+            foreach (var project in solutionProjects)
+            {
+                solutionProjectIds.Add(project.UniqueName);
+            }
 
             foreach (var projectid in projects.Keys)
             {
