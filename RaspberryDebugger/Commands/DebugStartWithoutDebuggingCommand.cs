@@ -53,12 +53,12 @@ namespace RaspberryDebugger
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandId = RaspberryDebugPackage.DebugStartWithoutDebuggingCommandId;
+        public const int CommandId = RaspberryDebuggerPackage.DebugStartWithoutDebuggingCommandId;
 
         /// <summary>
         /// Package command set ID.
         /// </summary>
-        public static readonly Guid CommandSet = RaspberryDebugPackage.CommandSet;
+        public static readonly Guid CommandSet = RaspberryDebuggerPackage.CommandSet;
 
         /// <summary>
         /// VS Package that provides this command, not null.

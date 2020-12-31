@@ -341,7 +341,7 @@ namespace RaspberryDebugger
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var vsShell = (IVsUIShell)RaspberryDebugPackage.GetGlobalService(typeof(IVsUIShell));
+            var vsShell = (IVsUIShell)RaspberryDebuggerPackage.GetGlobalService(typeof(IVsUIShell));
 
             if (vsShell != null)
             {
@@ -683,7 +683,7 @@ namespace RaspberryDebugger
                 rootDescription = description;
                 operationStack.Push(description);
 
-                var dialogFactory = (IVsThreadedWaitDialogFactory)RaspberryDebugPackage.GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
+                var dialogFactory = (IVsThreadedWaitDialogFactory)RaspberryDebuggerPackage.GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
 
                 dialogFactory.CreateInstance(out progressDialog);
 
@@ -773,7 +773,7 @@ namespace RaspberryDebugger
                 rootDescription = description;
                 operationStack.Push(description);
 
-                var dialogFactory = (IVsThreadedWaitDialogFactory)RaspberryDebugPackage.GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
+                var dialogFactory = (IVsThreadedWaitDialogFactory)RaspberryDebuggerPackage.GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
 
                 dialogFactory.CreateInstance(out progressDialog);
 

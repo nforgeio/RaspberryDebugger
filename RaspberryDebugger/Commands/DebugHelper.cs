@@ -150,7 +150,7 @@ namespace RaspberryDebugger
             if (!projectProperties.IsNetCore)
             {
                 MessageBox.Show(
-                    "Only .NETCoreApp v3.1 projects are supported for Raspberry debugging.",
+                    "Only .NET Core 3.1 or .NET 5 projects are supported for Raspberry debugging.",
                     "Invalid Project Type",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -262,6 +262,22 @@ namespace RaspberryDebugger
             // verify that there were no errors before proceeding.
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            // Ensure that the project is completely loaded by Visual Studio.  I've seen
+            // random crashes when building or publishing projects when VS is still loading
+            // projects.
+
+            var projectGuid      = projectProperties.Guid;
+            var solutionService4 = (IVsSolution4)await RaspberryDebuggerPackage.Instance.GetServiceAsync(typeof(SVsSolution));
+
+            if (solutionService4 == null)
+            {
+                Covenant.Assert(solutionService4 != null, $"Service [{typeof(SVsSolution).Name}] is not available.");
+            }
+
+            solutionService4.EnsureProjectIsLoaded(ref projectGuid, (uint)__VSBSLFLAGS.VSBSLFLAGS_LoadAllPendingProjects);
+
+            // Build the project to ensure that there are no compile-time errors.
 
             Log.Info($"Building: {projectProperties.FullPath}");
 

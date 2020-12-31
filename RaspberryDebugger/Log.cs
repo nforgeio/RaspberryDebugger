@@ -23,7 +23,7 @@ namespace RaspberryDebugger
 {
     /// <summary>
     /// Logs to the Visual Studio debug log output.  This class is a convenient wrapper around the
-    /// <see cref="RaspberryDebugPackage.Log(string)"/> method.
+    /// <see cref="RaspberryDebuggerPackage.Log(string)"/> method.
     /// </summary>
     internal static class Log
     {
@@ -33,7 +33,7 @@ namespace RaspberryDebugger
         /// <param name="text">The text text.</param>
         public static void Write(string text)
         {
-            RaspberryDebugPackage.Log(text);
+            RaspberryDebuggerPackage.Log(text);
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace RaspberryDebugger
         /// <param name="text">Optionally specifies the log text.</param>
         public static void WriteLine(string text = "")
         {
-            RaspberryDebugPackage.Log(text + "\n");
+            RaspberryDebuggerPackage.Log(text + "\n");
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace RaspberryDebugger
             sb.Append(e.StackTrace);
             sb.Append("\n");
 
-            RaspberryDebugPackage.Log(sb.ToString());
+            RaspberryDebuggerPackage.Log(sb.ToString());
         }
     }
 }

@@ -32,7 +32,7 @@ using System.Windows.Forms;
 
 using EnvDTE;
 using EnvDTE80;
-
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -68,6 +68,7 @@ namespace RaspberryDebugger
         {
             Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
             Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
+
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (string.IsNullOrEmpty(project.FullName))
@@ -100,7 +101,6 @@ namespace RaspberryDebugger
             }
 
             var projectFolder = Path.GetDirectoryName(project.FullName);
-            var projectFile   = File.ReadAllText(project.FullName);
             var isNetCore     = true;
             var netVersion    = (SemanticVersion)null;
             var sdkName       = (string)null;
@@ -306,12 +306,20 @@ namespace RaspberryDebugger
                                         outputType == 1 && // 1=EXE
                                         isSupportedSdkVersion;
 
+            // We need to jump through some hoops to obtain the project GUID.
+
+            var solutionService = RaspberryDebuggerPackage.Instance.SolutionService;
+
+            Covenant.Assert(solutionService.GetProjectOfUniqueName(project.UniqueName, out var hierarchy) == VSConstants.S_OK);
+            Covenant.Assert(solutionService.GetGuidOfProject(hierarchy, out var projectGuid) == VSConstants.S_OK);
+
             // Return the properties.
 
             return new ProjectProperties()
             {
                 Name                  = project.Name,
                 FullPath              = project.FullName,
+                Guid                  = projectGuid,
                 Configuration         = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
                 IsNetCore             = isNetCore,
                 SdkVersion            = sdk?.Version,
@@ -464,6 +472,11 @@ namespace RaspberryDebugger
         /// Returns the fullly qualfied path to the project file.
         /// </summary>
         public string FullPath { get; private set; }
+
+        /// <summary>
+        /// Returns the project's GUID.
+        /// </summary>
+        public Guid Guid { get; private set; }
 
         /// <summary>
         /// Indicates that the project targets .NET Core rather than the .NET Framework.

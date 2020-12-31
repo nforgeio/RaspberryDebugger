@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    RaspberryDebugPackage.cs
+// FILE:	    RaspberryDebuggerPackage.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Copyright (c) 2020 by neonFORGE, LLC.  All rights reserved.
 //
@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -44,11 +45,11 @@ namespace RaspberryDebugger
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
-    [Guid(RaspberryDebugPackage.PackageGuidString)]
+    [Guid(RaspberryDebuggerPackage.PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [ProvideOptionPage(typeof(ConnectionsPage), "Raspberry Debugger", "Connections", 0, 0, true)]
-    internal sealed class RaspberryDebugPackage : AsyncPackage
+    internal sealed class RaspberryDebuggerPackage : AsyncPackage
     {
         //---------------------------------------------------------------------
         // Static members
@@ -64,19 +65,19 @@ namespace RaspberryDebugger
         public static readonly Guid CommandSet = new Guid("3e88353d-7372-44fb-a34f-502ec7453200");
 
         // Command IDs:
-        public const int SettingsCommandId                   = 0x0100;
-        public const int DebugStartCommandId                 = 0x0200;
+        public const int SettingsCommandId = 0x0100;
+        public const int DebugStartCommandId = 0x0200;
         public const int DebugStartWithoutDebuggingCommandId = 0x0201;
-        public const int DebugAttachToProcessCommandId       = 0x0202;
+        public const int DebugAttachToProcessCommandId = 0x0202;
 
-        private static object               debugSyncLock = new object();
-        private static IVsOutputWindowPane  debugPane     = null;
-        private static Queue<string>        debugLogQueue = new Queue<string>();
+        private static object debugSyncLock = new object();
+        private static IVsOutputWindowPane debugPane = null;
+        private static Queue<string> debugLogQueue = new Queue<string>();
 
         /// <summary>
         /// Returns the package instance.
         /// </summary>
-        public static RaspberryDebugPackage Instance { get; private set; }
+        public static RaspberryDebuggerPackage Instance { get; private set; }
 
         /// <summary>
         /// Logs text to the Visual Studio Debug output panel.
@@ -138,12 +139,12 @@ namespace RaspberryDebugger
         //---------------------------------------------------------------------
         // Instance members
 
-        private DTE2            dte;
-        private CommandEvents   debugStartCommandEvent;
-        private CommandEvents   debugStartWithoutDebuggingCommandEvent;
-        private CommandEvents   debugAttachToProcessCommandEvent;
-        private CommandEvents   debugRestartCommandEvent;
-        private bool            debugMode = false;
+        private DTE2 dte;
+        private CommandEvents debugStartCommandEvent;
+        private CommandEvents debugStartWithoutDebuggingCommandEvent;
+        private CommandEvents debugAttachToProcessCommandEvent;
+        private CommandEvents debugRestartCommandEvent;
+        private bool debugMode = false;
 
         /// <summary>
         /// Initializes the package.
@@ -153,13 +154,24 @@ namespace RaspberryDebugger
         /// <returns>The tracking <see cref="Task"/>.</returns>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            Instance = this;
-            dte      = (DTE2)(await GetServiceAsync(typeof(SDTE)));
-
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
 
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+
+            // Basic initialization.
+
+            Instance = this;
+            dte      = (DTE2)(await GetServiceAsync(typeof(SDTE)));
+
+            // Get references to necessary the IDE services.
+
+            SolutionService = await RaspberryDebuggerPackage.Instance.GetServiceAsync(typeof(IVsSolution)) as IVsSolution;
+
+            if (SolutionService == null)
+            {
+                Covenant.Assert(false, "GetService(typeof(IVsSolution)) returns NULL.");
+            }
 
             // Initialize the log panel.
 
@@ -173,15 +185,15 @@ namespace RaspberryDebugger
             // let the default command implementations do their thing when we're not doing Raspberry
             // debugging.
 
-            debugStartCommandEvent                 = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0127];
+            debugStartCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0127];
             debugStartWithoutDebuggingCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0170];
-            debugAttachToProcessCommandEvent       = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x00d5];
-            debugRestartCommandEvent               = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0128];
+            debugAttachToProcessCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x00d5];
+            debugRestartCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0128];
 
-            debugStartCommandEvent.BeforeExecute                 += DebugStartCommandEvent_BeforeExecute;
+            debugStartCommandEvent.BeforeExecute += DebugStartCommandEvent_BeforeExecute;
             debugStartWithoutDebuggingCommandEvent.BeforeExecute += DebugStartWithoutDebuggingCommandEvent_BeforeExecute;
-            debugAttachToProcessCommandEvent.BeforeExecute       += AttachToProcessCommandEvent_BeforeExecute;
-            debugRestartCommandEvent.BeforeExecute               += DebugRestartCommandEvent_BeforeExecute;
+            debugAttachToProcessCommandEvent.BeforeExecute += AttachToProcessCommandEvent_BeforeExecute;
+            debugRestartCommandEvent.BeforeExecute += DebugRestartCommandEvent_BeforeExecute;
 
             // Initialize the new commands.
 
@@ -190,6 +202,12 @@ namespace RaspberryDebugger
             await DebugStartWithoutDebuggingCommand.InitializeAsync(this);
             await DebugAttachToProcessCommand.InitializeAsync(this);
         }
+
+        /// <summary>
+        /// Returns the Visual Studio solution service.  We're going to assume that this available
+        /// immediately upon package load and that it doesn't change thereafter.
+        /// </summary>
+        public IVsSolution SolutionService { get; private set; }
 
         //---------------------------------------------------------------------
         // DEBUG Command interceptors
