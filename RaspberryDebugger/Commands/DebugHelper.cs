@@ -263,6 +263,8 @@ namespace RaspberryDebugger
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+            Log.Info($"Building: {projectProperties.FullPath}");
+
             solution.SolutionBuild.BuildProject(solution.SolutionBuild.ActiveConfiguration.Name, project.UniqueName, WaitForBuildToFinish: true);
 
             var errorList = dte.ToolWindows.ErrorList.ErrorItems;
