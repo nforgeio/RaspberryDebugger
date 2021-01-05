@@ -44,7 +44,7 @@ if not exist "%RDBG_TOOLBIN%" mkdir "%RDBG_TOOLBIN%"
 if not exist "%RDBG_BUILD%" mkdir "%RDBG_BUILD%"
 
 :done
-echo "========================================================================================="
-echo "Be sure to close and reopen Visual Studio and any command windows to pick up the changes."
-echo "========================================================================================="
+@echo "========================================================================================="
+@echo "Be sure to close and reopen Visual Studio and any command windows to pick up the changes."
+@echo "========================================================================================="
 pause
