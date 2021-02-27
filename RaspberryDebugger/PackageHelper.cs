@@ -133,6 +133,13 @@ namespace RaspberryDebugger
                             var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
 
                             cachedSdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
+
+                            // Remove any unusable SDKs from the catalog.
+
+                            foreach (var unusable in cachedSdkCatalog.Items.Where(item => item.IsUnusable).ToArray())
+                            {
+                                cachedSdkCatalog.Items.Remove(unusable);
+                            }
                         }
                     }
 

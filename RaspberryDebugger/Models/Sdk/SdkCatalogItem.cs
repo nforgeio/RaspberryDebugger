@@ -64,6 +64,21 @@ namespace RaspberryDebugger
         public string SHA512 { get; set; }
 
         /// <summary>
+        /// Indicates whether the SDK is actually usable or not.  This defaults
+        /// to <c>false</c>.  This is set for some early .NET 5.0 releases
+        /// that didn't work on ARM64.
+        /// </summary>
+        [JsonProperty(PropertyName = "Unusable", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(false)]
+        public bool IsUnusable { get; set; }
+
+        /// <summary>
+        /// Indicates that the SDK is usable.
+        /// </summary>
+        [JsonIgnore]
+        public bool IsUsable => !IsUnusable;
+
+        /// <summary>
         /// Indicates that this is a standaloneg SDK vs. one integrated into Visual Studio;
         /// </summary>
         [JsonIgnore]
