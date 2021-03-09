@@ -133,19 +133,22 @@ namespace NetCoreCatalogChecker
 
                 sdkLinkToItem.Add($"{item.Name}/{item.Architecture}", item);
             }
-
-            // Verify the links and SHA256 hashes.
+            
+            // Verify the links and SHA256 hashes.  We're going to do this check in reverse
+            // order by .NET version name to verify newer entries first because those will
+            // be most likely to be incorrect.
 
             using (var client = new HttpClient())
             {
                 foreach (var item in catalog.Items
-                    .OrderBy(item => item.Name)
+                    .OrderByDescending(item => SemanticVersion.Parse(item.Version))
+                    .ThenBy(item => item.Name)
                     .ThenBy(item => item.Architecture))
                 {
                     Console.WriteLine();
                     Console.WriteLine("----------------------------------------");
                     Console.WriteLine();
-                    Console.WriteLine($"SDK:    {item.Name}/{item.Architecture}");
+                    Console.WriteLine($"SDK:    {item.Name}/{item.Architecture} (v{item.Version})");
                     Console.WriteLine($"Link:   {item.Link}");
 
                     // I've seen some transient issues with downloading SDKs from Microsoft: 404 & 503
