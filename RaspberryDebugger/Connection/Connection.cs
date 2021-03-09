@@ -579,7 +579,7 @@ rm -f {tempPublicKeyPath}
 
             LogInfo($"Installing SDK v{targetSdk.Version}");
 
-            return await PackageHelper.ExecuteWithProgressAsync<bool>($"Download and install SDK v{targetSdk.Version} on Raspberry...",
+            return await PackageHelper.ExecuteWithProgressAsync<bool>($"Download and install SDK for .NET v{targetSdk.Version} on Raspberry...",
                 async () =>
                 {
                     var installScript =
