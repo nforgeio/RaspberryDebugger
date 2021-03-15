@@ -19,7 +19,7 @@
 
 6. Open the solution, set the build configuration to **RELEASE** and then manually clean and build the solution.
 
-7. Run this command to complete the release process, copying the build artifcats to the [$/Build] folder:
+7. Run this command to complete the release process by copying the build artifcats to the [$/Build] folder:
 
    `%RDBG_TOOLBIN%\builder.cmd`
 

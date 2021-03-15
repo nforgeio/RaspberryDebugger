@@ -1,12 +1,12 @@
 Raspberry Debugger is a Visual Studio extension intended for debugging .NET Core applications remotely on a Raspberry Pi.
 
+Please submit any issues you encounter at:
+
+https://github.com/nforgeio/RaspberryDebugger/issues
+
 ## Highlights:
 
 `WRITE SOMETHING HERE!`
-
-Please submit any issues you encounter to:
-
-https://github.com/nforgeio/RaspberryDebugger/issues
 
 ## Changes: 
 
@@ -21,8 +21,6 @@ Simply download the `RaspberryDebugger.vsix` file to your workstation and double
 Visit our GitHub project for instructions: https://github.com/nforgeio/RaspberryDebugger
 
 ### Build Artifacts and SHA512 signatures:
-
-This is is the Raspberry Debugger VSIX package:
 
 > **RaspberryDebugger.vsix:**
 > SHA512: `FILL THIS IN`
