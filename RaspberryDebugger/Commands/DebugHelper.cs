@@ -295,10 +295,81 @@ namespace RaspberryDebugger
 
             // Publish the project so all required binaries and assets end up
             // in the output folder.
+            // 
+            // Note that we're taking care to only forward a few standard 
+            // environment variables because Visual Studio seems to communicate
+            // with dotnet related processes with environment variables and 
+            // these can cause conflicts when we invoke [dotnet] below to
+            // publish the project.
 
             Log.Info($"Publishing: {projectProperties.FullPath}");
 
             await Task.Yield();
+
+            var allowedVariableNames =
+@"
+ALLUSERSPROFILE
+APPDATA
+architecture
+architecture_bits
+CommonProgramFiles
+CommonProgramFiles(x86)
+CommonProgramW6432
+COMPUTERNAME
+ComSpec
+DOTNETPATH
+DOTNET_CLI_TELEMETRY_OPTOUT
+DriverData
+HOME
+HOMEDRIVE
+HOMEPATH
+LOCALAPPDATA
+NUMBER_OF_PROCESSORS
+OS
+Path
+PATHEXT
+POWERSHELL_DISTRIBUTION_CHANNEL
+PROCESSOR_ARCHITECTURE
+PROCESSOR_IDENTIFIER
+PROCESSOR_LEVEL
+PROCESSOR_REVISION
+ProgramData
+ProgramFiles
+ProgramFiles(x86)
+ProgramW6432
+PUBLIC
+SystemDrive
+SystemRoot
+TEMP
+USERDOMAIN
+USERDOMAIN_ROAMINGPROFILE
+USERNAME
+USERPROFILE
+windir
+";
+            var allowedVariables     = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+            var environmentVariables = new Dictionary<string, string>();
+
+            using (var reader = new StringReader(allowedVariableNames))
+            {
+                foreach (var line in reader.Lines())
+                {
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        continue;
+                    }
+
+                    allowedVariables.Add(line.Trim());
+                }
+            }
+
+            foreach (string variable in Environment.GetEnvironmentVariables().Keys)
+            {
+                if (allowedVariables.Contains(variable))
+                {
+                    environmentVariables[variable] = Environment.GetEnvironmentVariable(variable);
+                }
+            }
 
             var response = await NeonHelper.ExecuteCaptureAsync(
                 "dotnet",
@@ -310,7 +381,8 @@ namespace RaspberryDebugger
                     "--no-self-contained",
                     "--output", projectProperties.PublishFolder,
                     projectProperties.FullPath
-                });
+                },
+                environmentVariables: environmentVariables);
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -320,7 +392,7 @@ namespace RaspberryDebugger
                 return true;
             }
 
-            Log.Error("Publish failed");
+            Log.Error($"Publish failed: ExitCode={response.ExitCode}");
             Log.WriteLine(response.AllText);
 
             return false;
