@@ -532,11 +532,14 @@ namespace RaspberryDebugger
 
                 foreach (ProjectItem projectItem in parentProject.ProjectItems)
                 {
-                    project = FindInSubprojects(projectItem.SubProject, projectName);
-
-                    if (project != null)
+                    if (projectItem.SubProject != null)
                     {
-                        break;
+                        project = FindInSubprojects(projectItem.SubProject, projectName);
+
+                        if (project != null)
+                        {
+                            break;
+                        }
                     }
                 }
             }
