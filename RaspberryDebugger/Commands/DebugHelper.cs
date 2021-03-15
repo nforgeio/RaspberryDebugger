@@ -404,14 +404,14 @@ namespace RaspberryDebugger
             // Note that there be maore than one match a standalone SDK or one that ships
             // with Visual Studio.  We'll favor the standalone one if possible.
 
-            var sdkItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion && 
+            var sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion && 
                                                                                  item.IsStandalone &&
                                                                                  item.Architecture == SdkArchitecture.ARM32);
             if (sdkItem == null)
             {
                 // Look for a Visual Studio SDK instead.
 
-                sdkItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion &&
+                sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion &&
                                                                                  item.Architecture == SdkArchitecture.ARM32);
             }
 

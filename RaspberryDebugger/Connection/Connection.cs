@@ -556,13 +556,13 @@ rm -f {tempPublicKeyPath}
 
             // Locate the standalone SDK for the request .NET version.
 
-            var targetSdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.IsStandalone && item.Version == sdkVersion && item.Architecture == SdkArchitecture.ARM32);
+            var targetSdk = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.IsStandalone && item.Version == sdkVersion && item.Architecture == SdkArchitecture.ARM32);
 
             if (targetSdk == null)
             {
                 // Fall back to the Visual Studio SDK, if there is one.
 
-                targetSdk = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Version == sdkVersion);
+                targetSdk = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Version == sdkVersion);
                 LogInfo($"Cannot find standalone SDK for [{sdkVersion}] for falling back to [{targetSdk.Name}], version [v{targetSdk.Version}].");
             }
 

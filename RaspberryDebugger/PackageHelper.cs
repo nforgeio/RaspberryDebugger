@@ -53,6 +53,7 @@ namespace RaspberryDebugger
     {
         private static object               syncLock               = new object();
         private static SdkCatalog           cachedSdkCatalog       = null;
+        private static SdkCatalog           cachedGoodSdkCatalog   = null;
         private static RaspberryCatalog     cachedRaspberryCatalog = null;
         private static List<Sdk>            cachedWorkstationSdks  = null;
 
@@ -116,7 +117,7 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Returns information about the known .NET Core SDKs,
+        /// Returns information about the all good .NET Core SDKs, including the unusable ones.
         /// </summary>
         public static SdkCatalog SdkCatalog
         {
@@ -133,17 +134,43 @@ namespace RaspberryDebugger
                             var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
 
                             cachedSdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
-
-                            // Remove any unusable SDKs from the catalog.
-
-                            foreach (var unusable in cachedSdkCatalog.Items.Where(item => item.IsUnusable).ToArray())
-                            {
-                                cachedSdkCatalog.Items.Remove(unusable);
-                            }
                         }
                     }
 
                     return cachedSdkCatalog;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns information about the known good .NET Core SDKs,
+        /// </summary>
+        public static SdkCatalog SdkGoodCatalog
+        {
+            get
+            {
+                lock (syncLock)
+                {
+                    if (cachedGoodSdkCatalog == null)
+                    {
+                        var assembly = Assembly.GetExecutingAssembly();
+
+                        using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json"))
+                        {
+                            var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
+
+                            cachedGoodSdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
+
+                            // Remove any unusable SDKs from the catalog.
+
+                            foreach (var unusable in cachedGoodSdkCatalog.Items.Where(item => item.IsUnusable).ToArray())
+                            {
+                                cachedGoodSdkCatalog.Items.Remove(unusable);
+                            }
+                        }
+                    }
+
+                    return cachedGoodSdkCatalog;
                 }
             }
         }
@@ -240,7 +267,7 @@ namespace RaspberryDebugger
                         foreach (var line in reader.Lines())
                         {
                             var name    = line.Split(' ').First().Trim();
-                            var sdkItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == name && item.Architecture == SdkArchitecture.ARM32);
+                            var sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Name == name && item.Architecture == SdkArchitecture.ARM32);
                             var version = sdkItem?.Version;
 
                             cachedWorkstationSdks.Add(new Sdk(name, version));

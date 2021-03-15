@@ -131,7 +131,7 @@ namespace RaspberryDebugger
             var targetSdk        = (Sdk)null;
             var targetSdkVersion = (SemanticVersion)null;
 
-            foreach (var sdkItem in PackageHelper.SdkCatalog.Items
+            foreach (var sdkItem in PackageHelper.SdkGoodCatalog.Items
                 .Where(item => item.IsStandalone && item.Architecture == SdkArchitecture.ARM32))
             {
                 var sdkVersion = SemanticVersion.Parse(sdkItem.Version);
@@ -296,7 +296,7 @@ namespace RaspberryDebugger
 
             // Determine whether the referenced .NET Core SDK is currently supported.
 
-            var sdk = sdkName == null ? null : PackageHelper.SdkCatalog.Items.SingleOrDefault(item => SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName) && item.Architecture == SdkArchitecture.ARM32);
+            var sdk = sdkName == null ? null : PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName) && item.Architecture == SdkArchitecture.ARM32);
 
             var isSupportedSdkVersion = sdk != null;
 
