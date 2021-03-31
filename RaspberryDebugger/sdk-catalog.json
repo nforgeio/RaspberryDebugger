@@ -320,7 +320,7 @@
       "Version": "3.1.13",
       "Architecture": "ARM64",
       "Link": "https://download.visualstudio.microsoft.com/download/pr/94a88a85-be1e-464a-8cdd-6eb23d8559a1/b715559dd50aec6097db76ca50e2154b/dotnet-sdk-3.1.407-linux-arm64.tar.gz",
-      "SHA512": "4ae1c92bd4cdf0ea459591e87aea0e2f560df9d2c406e68dcf6667576ebf7761817683b565d42aeca74a6f03cdb8342d3fd1f9c81a4657a78043a5f765dc549c3"
+      "SHA512": "4ae1c92bd4cdf0ea459591e87aea0e2f560df9d2c406e68dcf6667576ebf7761817683b565d42aeca74a6f03cdb8342d3fd1f9c81a4657a78043a5f765dc549c"
     },
     {
       "Unusable": true,
