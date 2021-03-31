@@ -371,31 +371,40 @@ windir
                 }
             }
 
-            var response = await NeonHelper.ExecuteCaptureAsync(
-                "dotnet",
-                new object[]
-                {
-                    "publish",
-                    "--configuration", projectProperties.Configuration,
-                    "--runtime", projectProperties.Runtime,
-                    "--no-self-contained",
-                    "--output", projectProperties.PublishFolder,
-                    projectProperties.FullPath
-                },
-                environmentVariables: environmentVariables);
-
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            if (response.ExitCode == 0)
+            try
             {
-                Log.Error("Publish succeeded");
-                return true;
+                var response = await NeonHelper.ExecuteCaptureAsync(
+                    "dotnet",
+                    new object[]
+                    {
+                        "publish",
+                        "--configuration", projectProperties.Configuration,
+                        "--runtime", projectProperties.Runtime,
+                        "--no-self-contained",
+                        "--output", projectProperties.PublishFolder,
+                        projectProperties.FullPath
+                    },
+                    environmentVariables: environmentVariables);
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                if (response.ExitCode == 0)
+                {
+                    Log.Error("Publish succeeded");
+                    return true;
+                }
+
+                Log.Error($"Publish failed: ExitCode={response.ExitCode}");
+                Log.WriteLine(response.AllText);
+
+                return false;
             }
-
-            Log.Error($"Publish failed: ExitCode={response.ExitCode}");
-            Log.WriteLine(response.AllText);
-
-            return false;
+            catch (Exception e)
+            {
+                Log.Error(NeonHelper.ExceptionError(e));
+                
+                return false;
+            }
         }
 
         /// <summary>
