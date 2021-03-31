@@ -4,11 +4,7 @@ Please submit any issues you encounter at:
 
 https://github.com/nforgeio/RaspberryDebugger/issues
 
-## Highlights:
-
-`WRITE SOMETHING HERE!`
-
-## Changes: 
+## Changes:
 
 `WRITE SOMETHING HERE!`
 
