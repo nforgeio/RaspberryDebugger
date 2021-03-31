@@ -50,7 +50,7 @@
     <NoWarn>CS0414</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Commands\DebugHelper.cs" />
+    <Compile Include="DebugHelper.cs" />
     <Compile Include="Commands\DebugStartCommand.cs" />
     <Compile Include="Commands\DebugAttachToProcessCommand.cs" />
     <Compile Include="Commands\DebugStartWithoutDebuggingCommand.cs" />
