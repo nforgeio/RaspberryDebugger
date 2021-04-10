@@ -9,7 +9,7 @@ namespace Blinkie
     {
         static void Main(string[] args)
         {
-            var var = Environment.GetEnvironmentVariable("TEST");      
+            var var = Environment.GetEnvironmentVariable("TEST");
 
             using (var gpio = new GpioController(PinNumberingScheme.Logical))
             {
