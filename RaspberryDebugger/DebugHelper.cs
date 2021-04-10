@@ -287,7 +287,15 @@ namespace RaspberryDebugger
 
             if (errorList.Count > 0)
             {
+                for (int i = 1; i <= errorList.Count; i++)
+                {
+                    var error = errorList.Item(i);
+
+                    Log.Error($"{error.FileName}({error.Line},{error.Column}: {error.Description})");
+                }
+
                 Log.Error($"Build failed: [{errorList.Count}] errors");
+                Log.Error($"See the Build/Output panel for more information");
                 return false;
             }
 
