@@ -381,18 +381,39 @@ windir
 
             try
             {
-                var response = await NeonHelper.ExecuteCaptureAsync(
-                    "dotnet",
-                    new object[]
-                    {
+                ExecuteResponse response;
+
+                if (!string.IsNullOrEmpty(projectProperties.Framework))
+                {
+                    response = await NeonHelper.ExecuteCaptureAsync(
+                        "dotnet",
+                        new object[]
+                        {
+                        "publish",
+                        "--configuration", projectProperties.Configuration,
+                        "--framework", projectProperties.Framework,
+                        "--runtime", projectProperties.Runtime,
+                        "--no-self-contained",
+                        "--output", projectProperties.PublishFolder,
+                        projectProperties.FullPath
+                        },
+                        environmentVariables: environmentVariables).ConfigureAwait(false);
+                }
+                else
+                {
+                    response = await NeonHelper.ExecuteCaptureAsync(
+                        "dotnet",
+                        new object[]
+                        {
                         "publish",
                         "--configuration", projectProperties.Configuration,
                         "--runtime", projectProperties.Runtime,
                         "--no-self-contained",
                         "--output", projectProperties.PublishFolder,
                         projectProperties.FullPath
-                    },
-                    environmentVariables: environmentVariables);
+                        },
+                        environmentVariables: environmentVariables).ConfigureAwait(false);
+                }
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
