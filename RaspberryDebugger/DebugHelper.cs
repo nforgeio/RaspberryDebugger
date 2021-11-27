@@ -542,7 +542,8 @@ windir
             // .NET Core only supports Raspberry models 3 and 4.
 
             if (!connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 3 Model") &&
-                !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 4 Model"))
+                !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 4 Model") &&
+                !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi Zero 2"))
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
