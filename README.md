@@ -1,4 +1,4 @@
-# Raspberry Debugger
+# Raspberry Debugger forked from nforgeio/RaspberryDebugger
 _A Visual Studio Extension for debugging .NET Core applications remotely on a Raspberry Pi_
 
 ---
