@@ -60,7 +60,7 @@ namespace RaspberryDebugger
 
             Log.Info("Checking for native Windows OpenSSH client");
 
-            var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative", "OpenSSH", "ssh.exe");
+            var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32", "OpenSSH", "ssh.exe");
 
             if (!File.Exists(openSshPath))
             {
