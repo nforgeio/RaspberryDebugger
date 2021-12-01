@@ -3,7 +3,7 @@ _A Visual Studio Extension for debugging .NET Core applications remotely on a Ra
 
 ---
 
-**IMPORTANT:** .NET 5.0 starting with the SDK 5.0.102 works now!
+**IMPORTANT:** .NET 6.0 starting with the SDK 6.0.100 works now!
 
 ---
 
@@ -13,15 +13,15 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 
 ### Requirements
 
-* Windows 10
-* Visual Studio 2019 Community Edition (or better)
+* Windows 10/11
+* Visual Studio 2022 Community Edition (or better)
 * Raspberry Pi running 32-bit Raspberry Pi OS
 * Raspberry user allowed to `sudo`
 * [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed automatically when required)
 
 ### Features
 
-* Supports Raspberry Pi 3+ devices
+* Supports Raspberry Pi 3+ devices ans Zero 2 W
 * Raspberry Pi OS 32-bit (we haven't tested other operating systems)
 * Console and ASPNET .NET applications supported
 * Configures SSH 2048-bit RSA key pair automatically
