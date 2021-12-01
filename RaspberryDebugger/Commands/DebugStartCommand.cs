@@ -315,7 +315,7 @@ fi
                 new JObject
                 (
                     new JProperty("version", "0.2.1"),
-                    new JProperty("adapter", Path.Combine(systemRoot, "Sysnative", "OpenSSH", "ssh.exe")),
+                    new JProperty("adapter", Path.Combine(systemRoot, "System32", "OpenSSH", "ssh.exe")),
                     new JProperty("adapterArgs", $"-i \"{connectionInfo.PrivateKeyPath}\" -o \"StrictHostKeyChecking no\" {connectionInfo.User}@{connectionInfo.Host} {PackageHelper.RemoteDebuggerPath} --interpreter=vscode {engineLogging}"),
                     new JProperty("configurations",
                         new JArray
