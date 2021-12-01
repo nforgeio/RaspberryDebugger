@@ -437,6 +437,20 @@
       "Architecture": "ARM64",
       "Link": "https://download.visualstudio.microsoft.com/download/pr/c1f15b51-5e8c-4e6c-a803-241790159af3/b5cbcc59f67089d760e0ed4a714c47ed/dotnet-sdk-5.0.202-linux-arm64.tar.gz",
       "SHA512": "26ec125a0637e71acad20386474df89a101e9ae948921b5de0cd343f4bc0e84b4e7b2318e15978723eb3b9d321e89b790c3f0424a43c29b0015fc6f2b9e3e9d9"
+    },
+    {
+      "Name": "6.0.100",
+      "Version": "6.0.0",
+      "Architecture": "ARM32",
+      "Link": "https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-6.0.100-linux-arm32-binaries",
+      "SHA512": ""
+    },
+    {
+      "Name": "6.0.100",
+      "Version": "6.0.0",
+      "Architecture": "ARM64",
+      "Link": "https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-6.0.100-linux-arm64-binaries",
+      "SHA512": ""
     }
   ]
 }
