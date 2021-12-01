@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="Raspberry Debugger.79c7fc56-a78c-4e6b-b73d-f202de491d34" Version="1.7" Language="en-US" Publisher="neonFORGE LLC" />
+        <Identity Id="Raspberry Debugger.79c7fc56-a78c-4e6b-b73d-f202de491d34" Version="1.8" Language="en-US" Publisher="neonFORGE LLC" />
         <DisplayName>Raspberry Debugger</DisplayName>
-        <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug your Raspberry .NET Core and .NET 5 applications on a real Raspberry Pi using Visual Studio.</Description>
+        <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug your Raspberry .NET Core and .NET5/ .NET 6 applications on a real Raspberry Pi using Visual Studio.</Description>
         <License>license.txt</License>
         <GettingStartedGuide>https://github.com/nforgeio/RaspberryDebugger</GettingStartedGuide>
-        <ReleaseNotes>https://github.com/nforgeio/RaspberryDebugger/releases/tag/v1.7</ReleaseNotes>
+        <ReleaseNotes>https://github.com/nforgeio/RaspberryDebugger/releases/tag/v1.8</ReleaseNotes>
         <Icon>packageicon.png</Icon>
         <Tags>raspberry pi debugger</Tags>
     </Metadata>
     <Installation>
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
-        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0,17.0)" />
         <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
     </Installation>
     <Dependencies>

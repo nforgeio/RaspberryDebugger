@@ -111,7 +111,7 @@ namespace RaspberryDebugger
                 debugLogQueue.Enqueue(text);
             }
 
-            Instance.JoinableTaskFactory.RunAsync(
+            _ = Instance.JoinableTaskFactory.RunAsync(
                 async () =>
                 {
                     await Task.Yield();     // Get off of the callers stack

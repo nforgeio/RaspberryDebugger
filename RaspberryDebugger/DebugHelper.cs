@@ -275,8 +275,6 @@ namespace RaspberryDebugger
                 Covenant.Assert(solutionService4 != null, $"Service [{typeof(SVsSolution).Name}] is not available.");
             }
 
-            solutionService4.EnsureProjectIsLoaded(ref projectGuid, (uint)__VSBSLFLAGS.VSBSLFLAGS_LoadAllPendingProjects);
-
             // Build the project to ensure that there are no compile-time errors.
 
             Log.Info($"Building: {projectProperties.FullPath}");
