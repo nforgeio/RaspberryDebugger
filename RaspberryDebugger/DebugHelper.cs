@@ -548,7 +548,8 @@ windir
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 MessageBoxEx.Show(
-                    $"Your [{connection.PiStatus.RaspberryModel}] is not supported.  .NET Core requires a Raspberry Model 3 or 4.",
+                    $"Your [{connection.PiStatus.RaspberryModel}] is not supported." +
+                    $" .NET Core requires a Raspberry Model 3 or 4 or Pi Zero 2.",
                     $"Raspberry Not Supported",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
