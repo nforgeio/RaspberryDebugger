@@ -21,7 +21,7 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 
 ### Features
 
-* Supports Raspberry Pi 3+ devices ans Zero 2 W
+* Supports Raspberry Pi 3+ devices and Zero 2 W
 * Raspberry Pi OS 32-bit (we haven't tested other operating systems)
 * Console and ASPNET .NET applications supported
 * Configures SSH 2048-bit RSA key pair automatically
