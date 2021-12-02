@@ -150,7 +150,7 @@ namespace RaspberryDebugger
             if (!projectProperties.IsNetCore)
             {
                 MessageBox.Show(
-                    "Only .NET Core 3.1 or .NET 5 projects are supported for Raspberry debugging.",
+                    "Only .NET Core 3.1 or .NET 5 + 6 projects are supported for Raspberry debugging.",
                     "Invalid Project Type",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
