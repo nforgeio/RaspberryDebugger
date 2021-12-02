@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Neon.Common" NoWarn="NU1605" Version="2.12.0" />
-    <PackageReference Include="Neon.Cryptography" NoWarn="NU1605" Version="2.12.0" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" Version="12.0.3" />
+    <PackageReference Include="Neon.Common" NoWarn="NU1605" Version="2.18.2" />
+    <PackageReference Include="Neon.Cryptography" NoWarn="NU1605" Version="2.18.2" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" Version="13.0.1" />
   </ItemGroup>
 
 </Project>

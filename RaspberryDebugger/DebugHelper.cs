@@ -60,7 +60,7 @@ namespace RaspberryDebugger
 
             Log.Info("Checking for native Windows OpenSSH client");
 
-            var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative", "OpenSSH", "ssh.exe");
+            var openSshPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32", "OpenSSH", "ssh.exe");
 
             if (!File.Exists(openSshPath))
             {
@@ -274,8 +274,6 @@ namespace RaspberryDebugger
             {
                 Covenant.Assert(solutionService4 != null, $"Service [{typeof(SVsSolution).Name}] is not available.");
             }
-
-            solutionService4.EnsureProjectIsLoaded(ref projectGuid, (uint)__VSBSLFLAGS.VSBSLFLAGS_LoadAllPendingProjects);
 
             // Build the project to ensure that there are no compile-time errors.
 
@@ -540,7 +538,6 @@ windir
             var connection = await Connection.ConnectAsync(connectionInfo, projectSettings: projectSettings);
 
             // .NET Core only supports Raspberry models 3 and 4.
-
             if (!connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 3 Model") &&
                 !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 4 Model") &&
                 !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi Zero 2"))
