@@ -16,18 +16,19 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
-
+using System.Collections.Generic;
+using Polly;
 using Neon.Common;
 using Neon.Cryptography;
-
 using Newtonsoft.Json;
 using RaspberryDebugger;
+using System.Diagnostics;
 
 namespace NetCoreCatalogChecker
 {
@@ -140,6 +141,19 @@ namespace NetCoreCatalogChecker
 
             using (var client = new HttpClient())
             {
+                // I've seen some transient issues with downloading SDKs from Microsoft: 404 & 503
+                // We're going to retry up to 3 times.
+                // Wait 10 minutes for low download rates
+
+                var timeOut = TimeSpan.FromMinutes(10);
+                client.Timeout = timeOut;
+
+               var watch = new Stopwatch();
+
+                var retryPolicy = Policy
+                    .Handle<Exception> ()
+                    .WaitAndRetryAsync(3, attempt => timeOut);      // retry 3 times
+
                 foreach (var item in catalog.Items
                     .OrderByDescending(item => SemanticVersion.Parse(item.Version))
                     .ThenBy(item => item.Name)
@@ -151,21 +165,24 @@ namespace NetCoreCatalogChecker
                     Console.WriteLine($"SDK:    {item.Name}/{item.Architecture} (v{item.Version})");
                     Console.WriteLine($"Link:   {item.Link}");
 
-                    // I've seen some transient issues with downloading SDKs from Microsoft: 404 & 503
-                    // We're going to retry up to 5 times.
-
                     var binary = (byte[])null;
 
-                    for (int i = 0; i < 5; i++)
+                    try
                     {
-                        try
+                        watch.Start();
+
+                        await retryPolicy.ExecuteAsync(async () =>
                         {
-                            binary = await client.GetByteArraySafeAsync(item.Link);
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(NeonHelper.ExceptionError(e));
-                        }
+                           binary = await client.GetByteArraySafeAsync(item.Link);
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(NeonHelper.ExceptionError(e));
+                    }
+                    finally
+                    {
+                        watch.Stop();
                     }
 
                     if (binary == null)
@@ -179,6 +196,7 @@ namespace NetCoreCatalogChecker
                     if (actualSha512 == expectedSha512)
                     {
                         Console.WriteLine("SHA512: Hashes match");
+                        Console.WriteLine($@"Time elapsed: {watch.Elapsed:m\:ss\.ff}");
                     }
                     else
                     {
@@ -199,11 +217,15 @@ namespace NetCoreCatalogChecker
             if (ok)
             {
                 Console.WriteLine("Catalog is OK");
+                Console.WriteLine("Hit any key to close console");
+                Console.ReadKey();
                 Environment.Exit(1);
             }
             else
             {
                 Console.WriteLine("*** ERROR: One or more catalog items have issues");
+                Console.WriteLine("Hit any key to close console");
+                Console.ReadKey();
                 Environment.Exit(0);
             }
         }
