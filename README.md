@@ -3,7 +3,7 @@ _A Visual Studio Extension for debugging .NET Core applications remotely on a Ra
 
 ---
 
-**IMPORTANT:** Only .NET 6.0 starting with the SDK 6.0.100 works now and can be ONLY used in Visual Studio 2022 for the first!
+**IMPORTANT:** .NET 6.0 starting with the SDK 6.0.100 works now and can be ONLY used in Visual Studio 2022 for the first!
 
 ---
 
