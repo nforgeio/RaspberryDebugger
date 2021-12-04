@@ -19,6 +19,7 @@
     <PackageReference Include="Neon.Common" NoWarn="NU1605" Version="2.18.2" />
     <PackageReference Include="Neon.Cryptography" NoWarn="NU1605" Version="2.18.2" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" Version="13.0.1" />
+    <PackageReference Include="Polly" Version="7.2.2" />
   </ItemGroup>
 
 </Project>
