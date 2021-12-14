@@ -38,7 +38,7 @@ using Neon.IO;
 using Neon.Windows;
 
 using Newtonsoft.Json.Linq;
-
+using RaspberryDebugger.Commands;
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger

@@ -16,43 +16,29 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
-using System.Globalization;
-using System.Net.Http;
 using System.IO;
-using System.Net;
-using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-
-using Microsoft.VisualStudio.Debugger.Interop;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-
 using EnvDTE;
 using EnvDTE80;
-
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Neon.Common;
 using Neon.IO;
 using Neon.SSH;
-using Neon.Windows;
-
 using Newtonsoft.Json.Linq;
-
 using Task = System.Threading.Tasks.Task;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Commands
 {
     /// <summary>
     /// Handles the <b>Start Debugging</b> command for Raspberry enabled projects.
     /// </summary>
     internal sealed class DebugStartCommand
     {
-        private DTE2    dte;
+        private readonly DTE2 dte;
 
         /// <summary>
         /// Command ID.
@@ -63,11 +49,6 @@ namespace RaspberryDebugger
         /// Package command set ID.
         /// </summary>
         public static readonly Guid CommandSet = RaspberryDebuggerPackage.CommandSet;
-
-        /// <summary>
-        /// VS Package that provides this command, not null.
-        /// </summary>
-        private readonly AsyncPackage package;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugStartCommand"/> class.
@@ -82,24 +63,18 @@ namespace RaspberryDebugger
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.package = package;
             this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
-            var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem      = new MenuCommand(this.Execute, menuCommandID);
+            var menuCommandId = new CommandID(CommandSet, CommandId);
+            var menuItem      = new MenuCommand(Execute, menuCommandId);
              
-            commandService.AddCommand(menuItem);
+            commandService?.AddCommand(menuItem);
         }
 
         /// <summary>
         /// Returns the command instance.
         /// </summary>
         public static DebugStartCommand Instance { get; private set; }
-
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider => this.package;
 
         /// <summary>
         /// Initializes the singleton instance of the command.
@@ -121,9 +96,9 @@ namespace RaspberryDebugger
         /// </summary>
         /// <param name="sender">Event sender.</param>
         /// <param name="e">Event args.</param>
-#pragma warning disable VSTHRD100
+#pragma warning disable VSTHRD100 // Avoid async void methods
         private async void Execute(object sender, EventArgs e)
-#pragma warning restore VSTHRD100 
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -181,66 +156,74 @@ namespace RaspberryDebugger
 
                 using (var tempFile = await CreateLaunchSettingsAsync(connectionInfo, projectProperties))
                 {
-                    dte.ExecuteCommand("DebugAdapterHost.Launch", $"/LaunchJson:\"{tempFile.Path}\"");
+                    try
+                    {
+                        dte.ExecuteCommand("DebugAdapterHost.Launch", $"/LaunchJson:\"{tempFile.Path}\"");
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine(exception);
+                    }
                 }
 
                 // Launch the browser for ASPNET apps if requested.  Note that we're going to do this
                 // on a background task to poll the Raspberry, waiting for the app to create the create
                 // the LISTENING socket.
 
-                if (projectProperties.IsAspNet && projectProperties.AspLaunchBrowser)
-                {
-                    var baseUri     = $"http://{connectionInfo.Host}:{projectProperties.AspPort}";
-                    var launchReady = false;
+                if (!projectProperties.IsAspNet || !projectProperties.AspLaunchBrowser) return;
+                
+                //var baseUri     = $"http://{connection.Address}:{projectProperties.AspPort}";
+                var baseUri     = $"http://{connection.Name}.local";
+                var launchReady = false;
 
-                    await NeonHelper.WaitForAsync(
-                        async () =>
+                await NeonHelper.WaitForAsync(
+                    async () =>
+                    {
+                        if (dte.Mode != vsIDEMode.vsIDEModeDebug)
                         {
-                            if (dte.Mode != vsIDEMode.vsIDEModeDebug)
-                            {
-                                // The developer must have stopped debugging before the ASPNET
-                                // application was able to begin servicing requests.
+                            // The developer must have stopped debugging before the ASPNET
+                            // application was able to begin servicing requests.
 
-                                return true;
+                            return true;
+                        }
+
+                        try
+                        {
+                            var appListeningScript =
+                                $@"
+                                    if lsof -i -P -n | grep --quiet 'TCP 127.0.0.1:{projectProperties.AspPort}' ; then
+                                        exit 0
+                                    else
+                                        exit 1
+                                    fi
+                                    ";
+
+                            var response = connection.SudoCommand(CommandBundle.FromScript(appListeningScript));
+
+                            if (response.ExitCode != 0)
+                            {
+                                return false;
                             }
-
-                            try
-                            {
-                                var appListeningScript =
-$@"
-if lsof -i -P -n | grep --quiet 'TCP \*:{projectProperties.AspPort} (LISTEN)' ; then
-    exit 0
-else
-    exit 1
-fi
-";
-                                var response = connection.SudoCommand(CommandBundle.FromScript(appListeningScript));
-
-                                if (response.ExitCode != 0)
-                                {
-                                    return false;
-                                }
 
                             // Wait just a bit longer to give the application a chance to
                             // perform any additional initialization.
 
                             await Task.Delay(TimeSpan.FromSeconds(1));
 
-                                launchReady = true;
-                                return true;
-                            }
-                            catch
-                            {
-                                return false;
-                            }
-                        },
-                        timeout: TimeSpan.FromSeconds(30),
-                        pollInterval: TimeSpan.FromSeconds(0.5));
+                            launchReady = true;
+                            return true;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+                    },
+                    timeout: TimeSpan.FromSeconds(60),
+                    pollInterval: TimeSpan.FromSeconds(0.5));
 
-                    if (launchReady)
-                    {
-                        NeonHelper.OpenBrowser($"{baseUri}{projectProperties.AspRelativeBrowserUri}");
-                    }
+                if (launchReady)
+                {
+                    NeonHelper.OpenBrowser($"{baseUri}{projectProperties.AspRelativeBrowserUri}");
                 }
             }
         }
@@ -258,7 +241,7 @@ fi
             Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
 
             var systemRoot  = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            var debugFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(connectionInfo.User), projectProperties.Name);
+            var debugFolder = LinuxPath.Combine(PackageHelper.RemoteDebugBinaryRoot(connectionInfo?.User), projectProperties?.Name);
 
             // NOTE:
             //
@@ -275,20 +258,27 @@ fi
             // This means that we need add [program.dll] as the first argument, followed 
             // by the program arguments.
 
-            var args = new JArray();
-
-            args.Add(LinuxPath.Combine(debugFolder, projectProperties.AssemblyName + ".dll"));
-
-            foreach (var arg in projectProperties.CommandLineArgs)
+            var args = new JArray
             {
-                args.Add(arg);
+                LinuxPath.Combine(debugFolder, projectProperties?.AssemblyName + ".dll")
+            };
+
+            if (projectProperties?.CommandLineArgs != null)
+            {
+                foreach (var arg in projectProperties.CommandLineArgs)
+                {
+                    args.Add(arg);
+                }
             }
 
             var environmentVariables = new JObject();
 
-            foreach (var variable in projectProperties.EnvironmentVariables)
+            if (projectProperties?.EnvironmentVariables != null)
             {
-                environmentVariables.Add(variable.Key, variable.Value);
+                foreach (var variable in projectProperties.EnvironmentVariables)
+                {
+                    environmentVariables.Add(variable.Key, variable.Value);
+                }
             }
 
             // For ASPNET apps, set the [ASPNETCORE_URLS] environment variable
@@ -296,9 +286,9 @@ fi
             // be reachable from the development workstation.  Note that we don't
             // support HTTPS at this time.
 
-            if (projectProperties.IsAspNet)
+            if (projectProperties?.IsAspNet == true)
             {
-                environmentVariables["ASPNETCORE_URLS"] = $"http://0.0.0.0:{projectProperties.AspPort}";
+                environmentVariables["ASPNETCORE_URLS"] = $"http://127.0.0.1:{projectProperties.AspPort}";
             }
 
             // Construct the debug launch JSON file.
@@ -316,7 +306,7 @@ fi
                 (
                     new JProperty("version", "0.2.1"),
                     new JProperty("adapter", Path.Combine(systemRoot, "System32", "OpenSSH", "ssh.exe")),
-                    new JProperty("adapterArgs", $"-i \"{connectionInfo.PrivateKeyPath}\" -o \"StrictHostKeyChecking no\" {connectionInfo.User}@{connectionInfo.Host} {PackageHelper.RemoteDebuggerPath} --interpreter=vscode {engineLogging}"),
+                    new JProperty("adapterArgs", $"-i \"{connectionInfo?.PrivateKeyPath}\" -o \"StrictHostKeyChecking no\" {connectionInfo?.User}@{connectionInfo?.Host} {PackageHelper.RemoteDebuggerPath} --interpreter=vscode {engineLogging}"),
                     new JProperty("configurations",
                         new JArray
                         (
