@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="Raspberry Debugger.79c7fc56-a78c-4e6b-b73d-f202de491d34" Version="2.0" Language="en-US" Publisher="neonFORGE LLC" />
+        <Identity Id="Raspberry Debugger.ad3c23b5-73d1-4502-9ae1-0b0539b6505b" Version="2.0" Language="en-US" Publisher="GingerMintSoft" />
         <DisplayName>Raspberry Debugger</DisplayName>
         <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug your Raspberry .NET 6 applications on a real Raspberry Pi using Visual Studio 2022.
 Raspberry Debugger forked from nforgeio/RaspberryDebugger</Description>
@@ -14,13 +14,7 @@ Raspberry Debugger forked from nforgeio/RaspberryDebugger</Description>
     </Metadata>
     <Installation>
         <InstallationTarget Version="[17.0,18.0)" Id="Microsoft.VisualStudio.Community">
-            <ProductArchitecture>x86</ProductArchitecture>
-        </InstallationTarget>
-        <InstallationTarget Version="[17.0,18.0)" Id="Microsoft.VisualStudio.Community">
             <ProductArchitecture>amd64</ProductArchitecture>
-        </InstallationTarget>
-        <InstallationTarget Version="[17.0,18.0)" Id="Microsoft.VisualStudio.Pro">
-            <ProductArchitecture>x86</ProductArchitecture>
         </InstallationTarget>
         <InstallationTarget Version="[17.0,18.0)" Id="Microsoft.VisualStudio.Pro">
             <ProductArchitecture>amd64</ProductArchitecture>
