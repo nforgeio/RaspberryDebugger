@@ -173,3 +173,7 @@ The **Project/Raspberry Debug Settings** menu persists the settings to the new `
 
 * _The Raspberry Debugger extension is compatible with Raspberry Pi_
 * _Raspberry Pi is a trademark of the Raspberry Pi Foundation_
+
+### Known Issues
+* ASP.NET debugging not working because of .NET 6 error: Absolute Path required
+* Only one project in an solution gets transferred to Raspberry Pi
