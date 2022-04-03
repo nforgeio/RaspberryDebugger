@@ -70,9 +70,9 @@ namespace RaspberryDebugger
         public const int DebugStartWithoutDebuggingCommandId = 0x0201;
         public const int DebugAttachToProcessCommandId = 0x0202;
 
-        private static object debugSyncLock = new object();
+        private static readonly object debugSyncLock = new object();
         private static IVsOutputWindowPane debugPane = null;
-        private static Queue<string> debugLogQueue = new Queue<string>();
+        private static readonly Queue<string> debugLogQueue = new Queue<string>();
 
         /// <summary>
         /// Returns the package instance.
@@ -130,7 +130,7 @@ namespace RaspberryDebugger
 
                         while (debugLogQueue.Count > 0)
                         {
-                            debugPane.OutputString(debugLogQueue.Dequeue());
+                            debugPane.OutputStringThreadSafe(debugLogQueue.Dequeue());
                         }
                     }
                 });
@@ -144,7 +144,9 @@ namespace RaspberryDebugger
         private CommandEvents debugStartWithoutDebuggingCommandEvent;
         private CommandEvents debugAttachToProcessCommandEvent;
         private CommandEvents debugRestartCommandEvent;
-        private bool debugMode = false;
+#pragma warning disable IDE0051 // Remove unused private members
+        private readonly bool debugMode = false;
+#pragma warning restore IDE0051 // Remove unused private members
 
         /// <summary>
         /// Initializes the package.

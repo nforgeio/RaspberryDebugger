@@ -48,7 +48,9 @@ namespace RaspberryDebugger
     /// </summary>
     internal sealed class DebugAttachToProcessCommand
     {
-        private DTE2    dte;
+#pragma warning disable IDE0052 // Remove unread private members
+        private readonly DTE2 dte;
+#pragma warning restore IDE0052 // Remove unread private members
 
         /// <summary>
         /// Command ID.
@@ -95,7 +97,9 @@ namespace RaspberryDebugger
         /// <summary>
         /// Gets the service provider from the owner package.
         /// </summary>
+#pragma warning disable IDE0051 // Remove unused private members
         private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider => this.package;
+#pragma warning restore IDE0051 // Remove unused private members
 
         /// <summary>
         /// Initializes the singleton instance of the command.
