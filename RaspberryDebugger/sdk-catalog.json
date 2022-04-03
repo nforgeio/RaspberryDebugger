@@ -29,6 +29,13 @@
       "SHA512": "df52611b3135650322030d18c685fa6d0fc0adabae976ea9509ab3e4daa306098b3e4dca31f1950c573dbadf7cfcffacc6ad609c893ec31bbb4df897548651cf"
     },
     {
+      "Name": "6.0.100",
+      "Version": "6.0.0",
+      "Architecture": "ARM32",
+      "Link": "https://download.visualstudio.microsoft.com/download/pr/1f85b038-9917-4d0a-8485-5dc86510eec7/a7555924fe292c6c2140893f066abe65/dotnet-sdk-6.0.100-linux-arm.tar.gz",
+      "SHA512": "c1e555893c48c4f4256d3e6b1d36b31d8a4d7763a6e958fb63dd31436c660648d481612b5e25d79a613e84a1954f5eac2c9c2b740bf410958172780f7bbeaeb3"
+    },
+    {
       "Name": "6.0.201",
       "Version": "6.0.3",
       "Architecture": "ARM32",
