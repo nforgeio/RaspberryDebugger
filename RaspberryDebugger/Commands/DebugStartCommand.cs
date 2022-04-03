@@ -52,7 +52,7 @@ namespace RaspberryDebugger
     /// </summary>
     internal sealed class DebugStartCommand
     {
-        private DTE2    dte;
+        private readonly DTE2 dte;
 
         /// <summary>
         /// Command ID.
@@ -67,7 +67,9 @@ namespace RaspberryDebugger
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
+#pragma warning disable IDE0052 // Remove unread private members
         private readonly AsyncPackage package;
+#pragma warning restore IDE0052 // Remove unread private members
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugStartCommand"/> class.
@@ -95,11 +97,6 @@ namespace RaspberryDebugger
         /// Returns the command instance.
         /// </summary>
         public static DebugStartCommand Instance { get; private set; }
-
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider => this.package;
 
         /// <summary>
         /// Initializes the singleton instance of the command.
@@ -275,9 +272,10 @@ fi
             // This means that we need add [program.dll] as the first argument, followed 
             // by the program arguments.
 
-            var args = new JArray();
-
-            args.Add(LinuxPath.Combine(debugFolder, projectProperties.AssemblyName + ".dll"));
+            var args = new JArray
+            {
+                LinuxPath.Combine(debugFolder, projectProperties.AssemblyName + ".dll")
+            };
 
             foreach (var arg in projectProperties.CommandLineArgs)
             {
