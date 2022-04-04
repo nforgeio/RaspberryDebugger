@@ -7,10 +7,10 @@ _A Visual Studio Extension for debugging .NET Core applications remotely on a Ra
 
 For Asp.NET debugging set the runtime identifier project property to:
 
-  <PropertyGroup>
-    ...
-    <RuntimeIdentifier>linux-arm</RuntimeIdentifier>
-  </PropertyGroup>
+>  <PropertyGroup>
+>    ...
+>    <RuntimeIdentifier>linux-arm</RuntimeIdentifier>
+>  </PropertyGroup>
 
 ---
 
