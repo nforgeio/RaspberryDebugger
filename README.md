@@ -138,6 +138,15 @@ When debugging .NET Core Console projects, you can pass command line arguments a
 
 When debugging ASPNET projects, you can pass command line arguments and environment variables to the remote program and you also have the option to start a browser on your workstation and have it display a page from your application.
 
+For Asp.NET debugging set the runtime identifier project property to:
+
+```
+<PropertyGroup>
+   ...
+   <RuntimeIdentifier>linux-arm</RuntimeIdentifier>
+</PropertyGroup>
+```
+
 Your web application will be deployed on your Raspberry on all network interfaces, using the port specified by the **App URL**.
 
 ![Screenshot](/Doc/Images/GettingStarted/AspNetProperties.png?raw=true)
