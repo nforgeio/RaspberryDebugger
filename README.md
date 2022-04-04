@@ -13,6 +13,7 @@ For Asp.NET debugging set the runtime identifier project property to:
    <RuntimeIdentifier>linux-arm</RuntimeIdentifier>
 </PropertyGroup>
 ```
+https://docs.microsoft.com/de-de/dotnet/core/rid-catalog
 ---
 
 You can use Visual Studio Code to develop and debug .NET Core applications either directly on your Raspberry or remotely from another computer but until today, there's been no easy way to use regular Visual Studio to develop and debug applications for Raspberry.
