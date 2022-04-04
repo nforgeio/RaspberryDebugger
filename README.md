@@ -5,6 +5,13 @@ _A Visual Studio Extension for debugging .NET Core applications remotely on a Ra
 
 **IMPORTANT:** .NET 6.0 starting with the SDK 6.0.100 works now and can be ONLY used in Visual Studio 2022 for the first!
 
+For Asp.NET debugging set the runtime identifier project property to:
+
+  <PropertyGroup>
+    ...
+    <RuntimeIdentifier>linux-arm</RuntimeIdentifier>
+  </PropertyGroup>
+
 ---
 
 You can use Visual Studio Code to develop and debug .NET Core applications either directly on your Raspberry or remotely from another computer but until today, there's been no easy way to use regular Visual Studio to develop and debug applications for Raspberry.
