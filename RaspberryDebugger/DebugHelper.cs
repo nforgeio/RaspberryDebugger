@@ -490,16 +490,13 @@ windir
             // We're just going to return a matching SDK from the catalog (if it exists).
             // Note that there be maore than one match a standalone SDK or one that ships
             // with Visual Studio.  We'll favor the standalone one if possible.
+            var sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion && item.IsStandalone);
 
-            var sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion && 
-                                                                                 item.IsStandalone &&
-                                                                                 item.Architecture == SdkArchitecture.ARM32);
             if (sdkItem == null)
             {
                 // Look for a Visual Studio SDK instead.
 
-                sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion &&
-                                                                                 item.Architecture == SdkArchitecture.ARM32);
+                sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion);
             }
 
             if (sdkItem == null)

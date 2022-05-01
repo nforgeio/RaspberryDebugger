@@ -132,7 +132,7 @@ namespace RaspberryDebugger
             var targetSdkVersion = (SemanticVersion)null;
 
             foreach (var sdkItem in PackageHelper.SdkGoodCatalog.Items
-                .Where(item => item.IsStandalone && item.Architecture == SdkArchitecture.ARM32))
+                .Where(item => item.IsStandalone))
             {
                 var sdkVersion = SemanticVersion.Parse(sdkItem.Version);
 
@@ -144,7 +144,7 @@ namespace RaspberryDebugger
                 if (targetSdkVersion == null || sdkVersion > targetSdkVersion)
                 {
                     targetSdkVersion = sdkVersion;
-                    targetSdk        = new Sdk(sdkItem.Name, sdkItem.Version);;
+                    targetSdk        = new Sdk(sdkItem.Name, sdkItem.Version);
                 }
             }
 
