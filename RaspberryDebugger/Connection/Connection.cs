@@ -573,8 +573,12 @@ namespace RaspberryDebugger
 
             // Install the SDK.
             LogInfo($"Installing SDK v{targetSdk.Version}");
+            
+            var installSdkInfo = 
+                $"Download and install SDK for .NET v{targetSdk.Version} " +
+                $"({targetSdk.Architecture.GetAttributeOfType<EnumMemberAttribute>().Value}) on Raspberry...";
 
-            return await PackageHelper.ExecuteWithProgressAsync<bool>($"Download and install SDK for .NET v{targetSdk.Version} on Raspberry...",
+            return await PackageHelper.ExecuteWithProgressAsync<bool>(installSdkInfo,
                 async () =>
                 {
                     var installScript =
