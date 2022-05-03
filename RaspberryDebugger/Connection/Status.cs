@@ -59,21 +59,21 @@ namespace RaspberryDebugger
             Covenant.Requires<ArgumentNullException>(path != null, nameof(path));
             Covenant.Requires<ArgumentNullException>(installedSdks != null, nameof(installedSdks));
 
-            this.Architecture      = processor;
+            this.Processor         = processor;
             this.PATH              = path;
             this.HasUnzip          = hasUnzip;
             this.HasDebugger       = hasDebugger;
             this.InstalledSdks     = installedSdks.ToList();
             this.RaspberryModel    = model;
             this.RaspberryRevision = revision;
-            this.PiArchitecture    = architecture;
+            this.Architecture      = architecture;
         }
 
         /// <summary>
         /// <summary>
         /// Returns the chip architecture (like <b>armv71</b>).
         /// </summary>
-        public string Architecture { get; private set; }
+        public string Processor { get; private set; }
 
         /// <summary>
         /// Returns the current value of the <b>PATH</b> environment variable.
@@ -109,6 +109,6 @@ namespace RaspberryDebugger
         /// <summary>
         /// Returns the Raspberry architecture.
         /// </summary>
-        public SdkArchitecture PiArchitecture { get; private set; }
+        public SdkArchitecture Architecture { get; private set; }
     }
 }

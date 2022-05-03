@@ -544,10 +544,10 @@ namespace RaspberryDebugger
         public async Task<bool> InstallSdkAsync()
         {
             var sdkOnPi = PiStatus.InstalledSdks.FirstOrDefault();
-            var sdkVersion = sdkOnPi?.Version ?? String.Empty;
-            var sdkArchitecture = sdkOnPi?.Architecture ?? SdkArchitecture.ARM32;
+            var sdkOnPiVersion = sdkOnPi?.Version ?? String.Empty;
+            var sdkOnPiArchitecture = sdkOnPi?.Architecture ?? SdkArchitecture.ARM32;
 
-            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkVersion && sdk.Architecture == sdkArchitecture))
+            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkOnPiVersion && sdk.Architecture == sdkOnPiArchitecture))
             {
                 return await Task.FromResult(true);    // Already installed
             }
@@ -556,7 +556,7 @@ namespace RaspberryDebugger
             // Figure out the latest SDK version - Microsoft versioning: the highest number
             var targetSdk = PackageHelper.SdkGoodCatalog.Items
                 .OrderByDescending(item => item.Version)
-                .FirstOrDefault(item => item.Architecture == PiStatus.PiArchitecture);
+                .FirstOrDefault(item => item.Architecture == PiStatus.Architecture);
 
             if (targetSdk == null)
             {
