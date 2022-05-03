@@ -26,14 +26,14 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 
 * Windows 10/11
 * Visual Studio 2022 Community Edition (or better)
-* Raspberry Pi running 32-bit Raspberry Pi OS
+* Raspberry Pi running 32-bit and as Beta 64-bit Raspberry Pi OS
 * Raspberry user allowed to `sudo`
 * [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed automatically when required)
 
 ### Features
 
 * Supports Raspberry Pi 3+ devices and Zero 2 W
-* Raspberry Pi OS 32-bit (we haven't tested other operating systems)
+* Raspberry Pi OS 32-bit/64-bit (raspbian)
 * Console and ASPNET .NET applications supported
 * Configures SSH 2048-bit RSA key pair automatically
 * **F5/Run** debugging
