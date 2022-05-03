@@ -546,13 +546,13 @@ namespace RaspberryDebugger
             var sdkVersion = sdkOnPi?.Version ?? String.Empty;
             var sdkArchitecture = sdkOnPi?.Architecture ?? SdkArchitecture.ARM32;
 
-            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkVersion))
+            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkVersion && sdk.Architecture == sdkArchitecture))
             {
                 return await Task.FromResult(true);    // Already installed
             }
          
             // Locate the standalone SDK for the request .NET version.
-            // TODO: figure out the latest
+            // Figure out the latest SDK version - Microsoft versioning: the highest number
             var targetSdk = PackageHelper.SdkGoodCatalog.Items
                 .OrderByDescending(item => item.Version)
                 .FirstOrDefault(item => item.Architecture == sdkArchitecture);
