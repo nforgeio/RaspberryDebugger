@@ -38,7 +38,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="architecture">The chip architecture.</param>
+        /// <param name="processor">The chip architecture.</param>
         /// <param name="hasUnzip">Indicates whether <b>unzip</b> is installed.</param>
         /// <param name="hasDebugger">Indicates whether the debugger is installed.</param>
         /// <param name="installedSdks">The installed .NET Core SDKs.</param>
@@ -46,32 +46,34 @@ namespace RaspberryDebugger
         /// <param name="model">The Raspberry board model.</param>
         /// <param name="revision">The Raspberry board revision.</param>
         public Status(
-            string              architecture, 
+            string              processor, 
             string              path, 
             bool                hasUnzip, 
             bool                hasDebugger, 
             IEnumerable<Sdk>    installedSdks,
             string              model,
-            string              revision)
+            string              revision,
+            SdkArchitecture     architecture)
         {
-            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(architecture), nameof(architecture));
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(processor), nameof(processor));
             Covenant.Requires<ArgumentNullException>(path != null, nameof(path));
             Covenant.Requires<ArgumentNullException>(installedSdks != null, nameof(installedSdks));
 
-            this.Architecture      = architecture;
+            this.Processor         = processor;
             this.PATH              = path;
             this.HasUnzip          = hasUnzip;
             this.HasDebugger       = hasDebugger;
             this.InstalledSdks     = installedSdks.ToList();
             this.RaspberryModel    = model;
             this.RaspberryRevision = revision;
+            this.Architecture      = architecture;
         }
 
         /// <summary>
         /// <summary>
         /// Returns the chip architecture (like <b>armv71</b>).
         /// </summary>
-        public string Architecture { get; private set; }
+        public string Processor { get; private set; }
 
         /// <summary>
         /// Returns the current value of the <b>PATH</b> environment variable.
@@ -103,5 +105,10 @@ namespace RaspberryDebugger
         /// Returns the Raspberry board revision.
         /// </summary>
         public string RaspberryRevision { get; private set; }
+
+        /// <summary>
+        /// Returns the Raspberry architecture.
+        /// </summary>
+        public SdkArchitecture Architecture { get; private set; }
     }
 }

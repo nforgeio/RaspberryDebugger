@@ -41,12 +41,14 @@ namespace RaspberryDebugger
         /// </summary>
         /// <param name="name">The SDK name.</param>
         /// <param name="version">The SDK version.</param>
-        public Sdk(string name, string version)
+        /// <param name="architecture">The SDK bitness architecture.</param>
+        public Sdk(string name, string version, SdkArchitecture architecture = SdkArchitecture.ARM32)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(name), nameof(name));
 
             this.Name    = name;
             this.Version = version;
+            this.Architecture = architecture;
         }
 
         /// <summary>
@@ -58,5 +60,7 @@ namespace RaspberryDebugger
         /// Returns thge version of the SDK (like <b>3.1.8</b>).
         /// </summary>
         public string Version { get; private set; }
+
+        public SdkArchitecture Architecture { get; private set; }
     }
 }

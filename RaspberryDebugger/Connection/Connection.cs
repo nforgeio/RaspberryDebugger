@@ -22,12 +22,14 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 using Neon.Common;
 using Neon.IO;
 using Neon.Net;
 using Neon.SSH;
+using RaspberryDebugger.Extensions;
 using Renci.SshNet.Common;
 
 namespace RaspberryDebugger
@@ -130,17 +132,18 @@ namespace RaspberryDebugger
                     var homeFolder = LinuxPath.Combine("/", "home", connectionInfo.User);
                     var publicKey  = File.ReadAllText(connectionInfo.PublicKeyPath).Trim();
                     var keyScript  =
-$@"
-mkdir -p {homeFolder}/.ssh
-touch {homeFolder}/.ssh/authorized_keys
+                    $@"
+                    mkdir -p {homeFolder}/.ssh
+                    touch {homeFolder}/.ssh/authorized_keys
 
-if ! grep --quiet '{publicKey}' {homeFolder}/.ssh/authorized_keys ; then
-    echo '{publicKey}' >> {homeFolder}/.ssh/authorized_keys
-    exit $?
-fi
+                    if ! grep --quiet '{publicKey}' {homeFolder}/.ssh/authorized_keys ; then
+                        echo '{publicKey}' >> {homeFolder}/.ssh/authorized_keys
+                        exit $?
+                    fi
 
-exit 0
-";
+                    exit 0
+                    ";
+
                     connection.ThrowOnError(connection.RunCommand(CommandBundle.FromScript(keyScript)));
                     return connection;
                 }
@@ -305,101 +308,102 @@ exit 0
                     Log($"[{Name}]: Retrieving status");
 
                     var statusScript =
-$@"
-# This script will return the status information via STDOUT line-by-line
-# in this order:
-#
-# Chip Architecture
-# PATH environment variable
-# Unzip Installed (""unzip"" or ""unzip-missing"")
-# Debugger Installed (""debugger-installed"" or ""debugger-missing"")
-# List of installed SDKs names (e.g. 3.1.108) separated by commas
-# Raspberry Model like:     Raspberry Pi 4 Model B Rev 1.2
-# Raspberry Revision like:  c03112
-#
-# This script also ensures that the [/lib/dotnet] directory exists, that
-# it has reasonable permissions, and that the folder exists on the system
-# PATH and that DOTNET_ROOT points to the folder.
+                    $@"
+                    # This script will return the status information via STDOUT line-by-line
+                    # in this order:
+                    #
+                    # Chip Architecture
+                    # PATH environment variable
+                    # Unzip Installed (""unzip"" or ""unzip-missing"")
+                    # Debugger Installed (""debugger-installed"" or ""debugger-missing"")
+                    # List of installed SDKs names (e.g. 3.1.108) separated by commas
+                    # Raspberry Model like:     Raspberry Pi 4 Model B Rev 1.2
+                    # Raspberry Revision like:  c03112
+                    #
+                    # This script also ensures that the [/lib/dotnet] directory exists, that
+                    # it has reasonable permissions, and that the folder exists on the system
+                    # PATH and that DOTNET_ROOT points to the folder.
 
-# Set the SDK and debugger installation paths.
+                    # Set the SDK and debugger installation paths.
 
-DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
-DEBUGFOLDER={PackageHelper.RemoteDebuggerFolder}
+                    DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
+                    DEBUGFOLDER={PackageHelper.RemoteDebuggerFolder}
 
-# Get the chip architecture
+                    # Get the chip architecture
 
-uname -m
+                    uname -m
 
-# Get the current PATH
+                    # Get the current PATH
 
-echo $PATH
+                    echo $PATH
 
-# Detect whether [unzip] is installed.
+                    # Detect whether [unzip] is installed.
 
-if which unzip &> /dev/nul ; then
-    echo 'unzip'
-else
-    echo 'unzip-missing'
-fi
+                    if which unzip &> /dev/nul ; then
+                        echo 'unzip'
+                    else
+                        echo 'unzip-missing'
+                    fi
 
-# Detect whether the [vsdbg] debugger is installed.
+                    # Detect whether the [vsdbg] debugger is installed.
 
-if [ -d $DEBUGFOLDER ] ; then
-    echo 'debugger-installed'
-else
-    echo 'debugger-missing'
-fi
+                    if [ -d $DEBUGFOLDER ] ; then
+                        echo 'debugger-installed'
+                    else
+                        echo 'debugger-missing'
+                    fi
 
-# List the SDK folders.  These folder names are the same as the
-# corresponding SDK name.  We'll list the files on one line
-# with the SDK names separated by commas.  We'll return a blank
-# line if the SDK directory doesn't exist.
+                    # List the SDK folders.  These folder names are the same as the
+                    # corresponding SDK name.  We'll list the files on one line
+                    # with the SDK names separated by commas.  We'll return a blank
+                    # line if the SDK directory doesn't exist.
 
-if [ -d $DOTNET_ROOT/sdk ] ; then
-    ls -m $DOTNET_ROOT/sdk
-else
-    echo ''
-fi
+                    if [ -d $DOTNET_ROOT/sdk ] ; then
+                        ls -m $DOTNET_ROOT/sdk
+                    else
+                        echo ''
+                    fi
 
-# Output the Raspberry board model.
+                    # Output the Raspberry board model.
 
-cat /proc/cpuinfo | grep '^Model\s' | grep -o 'Raspberry.*$'
+                    cat /proc/cpuinfo | grep '^Model\s' | grep -o 'Raspberry.*$'
 
-# Output the Raspberry board revision.
+                    # Output the Raspberry board revision.
 
-cat /proc/cpuinfo | grep 'Revision\s' | grep -o '[0-9a-fA-F]*$'
+                    cat /proc/cpuinfo | grep 'Revision\s' | grep -o '[0-9a-fA-F]*$'
 
-# Ensure that the [/lib/dotnet] folder exists, that it's on the
-# PATH and that DOTNET_ROOT are defined.
+                    # Ensure that the [/lib/dotnet] folder exists, that it's on the
+                    # PATH and that DOTNET_ROOT are defined.
 
-mkdir -p /lib/dotnet
-chown root:root /lib/dotnet
-chmod 755 /lib/dotnet
+                    mkdir -p /lib/dotnet
+                    chown root:root /lib/dotnet
+                    chmod 755 /lib/dotnet
 
-# Set these for the current session:
+                    # Set these for the current session:
 
-export DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
-export PATH=$PATH:$DOTNET_ROOT
+                    export DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
+                    export PATH=$PATH:$DOTNET_ROOT
 
-# and for future sessions too:
+                    # and for future sessions too:
 
-if ! grep --quiet DOTNET_ROOT /etc/profile ; then
+                    if ! grep --quiet DOTNET_ROOT /etc/profile ; then
 
-    echo """"                                >> /etc/profile
-    echo ""#------------------------------"" >> /etc/profile
-    echo ""# Raspberry Debugger:""           >> /etc/profile
-    echo ""export DOTNET_ROOT=$DOTNET_ROOT"" >> /etc/profile
-    echo ""export PATH=$PATH""               >> /etc/profile
-    echo ""#------------------------------"" >> /etc/profile
-fi
-";
+                        echo """"                                >> /etc/profile
+                        echo ""#------------------------------"" >> /etc/profile
+                        echo ""# Raspberry Debugger:""           >> /etc/profile
+                        echo ""export DOTNET_ROOT=$DOTNET_ROOT"" >> /etc/profile
+                        echo ""export PATH=$PATH""               >> /etc/profile
+                        echo ""#------------------------------"" >> /etc/profile
+                    fi
+                    ";
+
                     Log($"[{Name}]: Fetching status");
 
                     response = ThrowOnError(SudoCommand(CommandBundle.FromScript(statusScript)));
 
                     using (var reader = new StringReader(response.OutputText))
                     {
-                        var architecture = await reader.ReadLineAsync();
+                        var processor    = await reader.ReadLineAsync();
                         var path         = await reader.ReadLineAsync();
                         var hasUnzip     = await reader.ReadLineAsync() == "unzip";
                         var hasDebugger  = await reader.ReadLineAsync() == "debugger-installed";
@@ -409,48 +413,50 @@ fi
 
                         revision = revision.Trim();     // Remove any whitespace at the end.
 
-                        Log($"[{Name}]: architecture: {architecture}");
-                        Log($"[{Name}]: path:         {path}");
-                        Log($"[{Name}]: unzip:        {hasUnzip}");
-                        Log($"[{Name}]: debugger:     {hasDebugger}");
-                        Log($"[{Name}]: sdks:         {sdkLine}");
-                        Log($"[{Name}]: model:        {model}");
-                        Log($"[{Name}]: revision:     {revision}");
+                        Log($"[{Name}]: processor: {processor}");
+                        Log($"[{Name}]: path:      {path}");
+                        Log($"[{Name}]: unzip:     {hasUnzip}");
+                        Log($"[{Name}]: debugger:  {hasDebugger}");
+                        Log($"[{Name}]: sdks:      {sdkLine}");
+                        Log($"[{Name}]: model:     {model}");
+                        Log($"[{Name}]: revision:  {revision}");
+
+                        // raspberry pi platform architecture
+                        var architecture = processor.Contains(Platform.Bitness32.GetAttributeOfType<EnumMemberAttribute>().Value) 
+                            ? SdkArchitecture.ARM32 
+                            : SdkArchitecture.ARM64;
 
                         // Convert the comma separated SDK names into a [PiSdk] list.
-
                         var sdks = new List<Sdk>();
 
                         foreach (var sdkName in sdkLine.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(sdk => sdk.Trim()))
                         {
-                            // $todo(jefflill): We're only supporting 32-bit SDKs at this time.
-
-                            var sdkCatalogItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == sdkName && item.Architecture == SdkArchitecture.ARM32);
+                            var sdkCatalogItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == sdkName && item.Architecture == architecture);
 
                             if (sdkCatalogItem != null)
                             {
-                                sdks.Add(new Sdk(sdkName, sdkCatalogItem.Version));
+                                sdks.Add(new Sdk(sdkName, sdkCatalogItem.Version, architecture));
                             }
                             else
                             {
-                                LogWarning($".NET SDK [{sdkName}] is present on [{Name}] but is not known to the RaspberryDebugger extension.  Consider updating the extension.");
+                                LogWarning($".NET SDK [{sdkName}] is present on [{Name}] but is not known to the RaspberryDebugger extension. Consider updating the extension.");
                             }
                         }
 
                         PiStatus = new Status(
-                            architecture:  architecture,
+                            processor:     processor,
                             path:          path,
                             hasUnzip:      hasUnzip,
                             hasDebugger:   hasDebugger,
                             installedSdks: sdks,
                             model:         model,
-                            revision:      revision
+                            revision:      revision,
+                            architecture:  architecture
                         );
                     }
                 });
 
             // Create and configure an SSH key for this connection if one doesn't already exist.
-
             if (string.IsNullOrEmpty(connectionInfo.PrivateKeyPath) || !File.Exists(connectionInfo.PrivateKeyPath))
             {
                 await PackageHelper.ExecuteWithProgressAsync("Creating SSH keys...",
@@ -472,21 +478,22 @@ fi
                         try
                         {
                             var createKeyScript =
-$@"
-# Create the key pair
+                            $@"
+                            # Create the key pair
 
-if ! ssh-keygen -t rsa -b 2048 -P '' -C '{workstationUser}@{workstationName}' -f {tempPrivateKeyPath} -m pem ; then
-    exit 1
-fi
+                            if ! ssh-keygen -t rsa -b 2048 -P '' -C '{workstationUser}@{workstationName}' -f {tempPrivateKeyPath} -m pem ; then
+                                exit 1
+                            fi
 
-# Append the public key to the user's [authorized_keys] file to enable it.
+                            # Append the public key to the user's [authorized_keys] file to enable it.
 
-mkdir -p {homeFolder}/.ssh
-touch {homeFolder}/.ssh/authorized_keys
-cat {tempPublicKeyPath} >> {homeFolder}/.ssh/authorized_keys
+                            mkdir -p {homeFolder}/.ssh
+                            touch {homeFolder}/.ssh/authorized_keys
+                            cat {tempPublicKeyPath} >> {homeFolder}/.ssh/authorized_keys
 
-exit 0
-";
+                            exit 0
+                            ";
+
                             ThrowOnError(RunCommand(CommandBundle.FromScript(createKeyScript)));
 
                             // Download the public and private keys, persist them to the workstation
@@ -516,10 +523,11 @@ exit 0
                             // Delete the temporary key files on the Raspberry.
 
                             var removeKeyScript =
-$@"
-rm -f {tempPrivateKeyPath}
-rm -f {tempPublicKeyPath}
-";
+                            $@"
+                            rm -f {tempPrivateKeyPath}
+                            rm -f {tempPublicKeyPath}
+                            ";
+
                             ThrowOnError(SudoCommand(CommandBundle.FromScript(removeKeyScript)));
                         }
 
@@ -529,120 +537,108 @@ rm -f {tempPublicKeyPath}
         }
 
         /// <summary>
-        /// Installs the specified .NET Core SDK on the Raspberry if it's not already installed.
+        /// Installs the .NET Core SDK on the Raspberry if it's not already installed.
+        /// The Raspberry architectue is driving the installation - the newest .NET Core version is taken
         /// </summary>
-        /// <param name="sdkVersion">The SDK version.</param>
         /// <returns><c>true</c> on success.</returns>
-        public async Task<bool> InstallSdkAsync(string sdkVersion)
+        public async Task<bool> InstallSdkAsync()
         {
-            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(sdkVersion), nameof(sdkVersion));
+            var sdkOnPi = PiStatus.InstalledSdks.FirstOrDefault();
+            var sdkOnPiVersion = sdkOnPi?.Version ?? String.Empty;
+            var sdkOnPiArchitecture = sdkOnPi?.Architecture ?? SdkArchitecture.ARM32;
 
-            // $todo(jefflill):
-            //
-            // Note that we're going to install that standalone SDK for the SDK
-            // version rather than the SDK that shipped with Visual Studio.  I'm
-            // assuming that the Visual Studio SDKs might have extra stuff we don't
-            // need and it's also possible that the Visual Studio SDK for the SDK
-            // version may not have shipped yet.
-            //
-            // We may want to re-evaluate this in the future.
-
-            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkVersion))
+            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkOnPiVersion && sdk.Architecture == sdkOnPiArchitecture))
             {
                 return await Task.FromResult(true);    // Already installed
             }
-
-            LogInfo($".NET Core SDK [v{sdkVersion}] is not installed.");
-
+         
             // Locate the standalone SDK for the request .NET version.
-
-            var targetSdk = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.IsStandalone && item.Version == sdkVersion && item.Architecture == SdkArchitecture.ARM32);
-
-            if (targetSdk == null)
-            {
-                // Fall back to the Visual Studio SDK, if there is one.
-
-                targetSdk = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Version == sdkVersion);
-                LogInfo($"Cannot find standalone SDK for [{sdkVersion}] for falling back to [{targetSdk.Name}], version [v{targetSdk.Version}].");
-            }
+            // Figure out the latest SDK version - Microsoft versioning: the highest number
+            var targetSdk = PackageHelper.SdkGoodCatalog.Items
+                .OrderByDescending(item => item.Version)
+                .FirstOrDefault(item => item.Architecture == PiStatus.Architecture);
 
             if (targetSdk == null)
             {
-                LogError($"RasberryDebug is unaware of .NET Core SDK [v{sdkVersion}].");
+                LogError($"RasberryDebug is unaware of .NET Core SDK.");
                 LogError($"Try updating the RasberryDebug extension or report this issue at:");
                 LogError($"https://github.com/nforgeio/RaspberryDebugger/issues");
 
                 return await Task.FromResult(false);
             }
+            else
+            {
+                LogInfo($".NET Core SDK [v{targetSdk.Version}] is not installed.");
+            }
 
             // Install the SDK.
-
             LogInfo($"Installing SDK v{targetSdk.Version}");
 
             return await PackageHelper.ExecuteWithProgressAsync<bool>($"Download and install SDK for .NET v{targetSdk.Version} on Raspberry...",
                 async () =>
                 {
                     var installScript =
-$@"
-export DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
+                    $@"
+                    export DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
 
-# Ensure that the packages required by .NET Core are installed:
-#
-#       https://docs.microsoft.com/en-us/dotnet/core/install/linux-debian#dependencies
+                    # Ensure that the packages required by .NET Core are installed:
+                    #
+                    #       https://docs.microsoft.com/en-us/dotnet/core/install/linux-debian#dependencies
 
-if ! apt-get update ; then
-    exit 1
-fi
+                    if ! apt-get update ; then
+                        exit 1
+                    fi
 
-if ! apt-get install -yq libc6 libgcc1 libgssapi-krb5-2 libicu-dev libssl1.1 libstdc++6 zlib1g libgdiplus ; then
-    exit 1
-fi
+                    if ! apt-get install -yq libc6 libgcc1 libgssapi-krb5-2 libicu-dev libssl1.1 libstdc++6 zlib1g libgdiplus ; then
+                        exit 1
+                    fi
 
-# Remove any existing SDK download.  This might be present if a
-# previous installation attempt failed.
+                    # Remove any existing SDK download.  This might be present if a
+                    # previous installation attempt failed.
 
-if ! rm -f /tmp/dotnet-sdk.tar.gz ; then
-    exit 1
-fi
+                    if ! rm -f /tmp/dotnet-sdk.tar.gz ; then
+                        exit 1
+                    fi
 
-# Download the SDK installation file to a temporary file.
+                    # Download the SDK installation file to a temporary file.
 
-if ! wget --quiet -O /tmp/dotnet-sdk.tar.gz {targetSdk.Link} ; then
-    exit 1
-fi
+                    if ! wget --quiet -O /tmp/dotnet-sdk.tar.gz {targetSdk.Link} ; then
+                        exit 1
+                    fi
 
-# Verify the SHA512.
+                    # Verify the SHA512.
 
-orgDir=$cwd
-cd /tmp
+                    orgDir=$cwd
+                    cd /tmp
 
-if ! echo '{targetSdk.SHA512}  dotnet-sdk.tar.gz' | sha512sum --check - ; then
-    cd $orgDir
-    exit 1
-fi
+                    if ! echo '{targetSdk.SHA512}  dotnet-sdk.tar.gz' | sha512sum --check - ; then
+                        cd $orgDir
+                        exit 1
+                    fi
 
-cd $orgDir
+                    cd $orgDir
 
-# Make sure the installation directory exists.
+                    # Make sure the installation directory exists.
 
-if ! mkdir -p $DOTNET_ROOT ; then
-    exit 1
-fi
+                    if ! mkdir -p $DOTNET_ROOT ; then
+                        exit 1
+                    fi
 
-# Unpack the SDK to the installation directory.
+                    # Unpack the SDK to the installation directory.
 
-if ! tar -zxf /tmp/dotnet-sdk.tar.gz -C $DOTNET_ROOT --no-same-owner ; then
-    exit 1
-fi
+                    if ! tar -zxf /tmp/dotnet-sdk.tar.gz -C $DOTNET_ROOT --no-same-owner ; then
+                        exit 1
+                    fi
 
-# Remove the temporary installation file.
+                    # Remove the temporary installation file.
 
-if ! rm /tmp/dotnet-sdk.tar.gz ; then
-    exit 1
-fi
+                    if ! rm /tmp/dotnet-sdk.tar.gz ; then
+                        exit 1
+                    fi
 
-exit 0
-";
+                    exit 0
+                    ";
+
                     try
                     {
                         var response = SudoCommand(CommandBundle.FromScript(installScript));
@@ -651,7 +647,7 @@ exit 0
                         {
                             // Add the newly installed SDK to the list of installed SDKs.
 
-                            PiStatus.InstalledSdks.Add(new Sdk(targetSdk.Name, targetSdk.Version));
+                            PiStatus.InstalledSdks.Add(new Sdk(targetSdk.Name, targetSdk.Version, targetSdk.Architecture));
                             return await Task.FromResult(true);
                         }
                         else
@@ -685,13 +681,14 @@ exit 0
                 async () =>
                 {
                     var installScript =
-$@"
-if ! curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l {PackageHelper.RemoteDebuggerFolder} ; then
-    exit 1
-fi
+                    $@"
+                    if ! curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l {PackageHelper.RemoteDebuggerFolder} ; then
+                        exit 1
+                    fi
 
-exit 0
-";
+                    exit 0
+                    ";
+
                     try
                     {
                         var response = SudoCommand(CommandBundle.FromScript(installScript));
@@ -743,47 +740,47 @@ exit 0
             if (!string.IsNullOrEmpty(projectSettings.TargetGroup))
             {
                 groupScript =
-$@"
-# Add the program assembly to the user specified target group (if any).  This
-# defaults to [gpio] so users will be able to access the GPIO pins.
+                $@"
+                # Add the program assembly to the user specified target group (if any).  This
+                # defaults to [gpio] so users will be able to access the GPIO pins.
 
-if ! chgrp {projectSettings.TargetGroup} {debugFolder}/{assemblyName} ; then
-    exit 1
-fi
-";
+                if ! chgrp {projectSettings.TargetGroup} {debugFolder}/{assemblyName} ; then
+                    exit 1
+                fi
+                ";
             }
 
             var uploadScript =
-$@"
+            $@"
 
-# Ensure that the debug folder exists.
+            # Ensure that the debug folder exists.
 
-if ! mkdir -p {debugFolder} ; then
-    exit 1
-fi
+            if ! mkdir -p {debugFolder} ; then
+                exit 1
+            fi
 
-# Clear all existing program files.
+            # Clear all existing program files.
 
-if ! rm -rf {debugFolder}/* ; then
-    exit 1
-fi
+            if ! rm -rf {debugFolder}/* ; then
+                exit 1
+            fi
 
-# Unzip the binary and other files to the debug folder.
+            # Unzip the binary and other files to the debug folder.
 
-if ! unzip program.zip -d {debugFolder} ; then
-    exit 1
-fi
+            if ! unzip program.zip -d {debugFolder} ; then
+                exit 1
+            fi
 
-# The program assembly needs execute permissions.
+            # The program assembly needs execute permissions.
 
-if ! chmod 770 {debugFolder}/{assemblyName} ; then
-    exit 1
-fi
-{groupScript}
-exit 0
-";
+            if ! chmod 770 {debugFolder}/{assemblyName} ; then
+                exit 1
+            fi
+            {groupScript}
+            exit 0
+            ";
+
             // I'm not going to do a progress dialog because this should be fast.
-
             try
             {
                 LogInfo($"Uploading program to: [{debugFolder}]");

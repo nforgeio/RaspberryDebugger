@@ -500,46 +500,6 @@ windir
         }
 
         /// <summary>
-        /// Determine which .NET SDK we should target for the project.
-        /// </summary>
-        /// <param name="projectProperties">The project properties.</param>
-        /// <returns>The target <see cref="SDK"/> or <c>null</c> when one could not be located.</returns>
-        public static Sdk GetTargetSdk(ProjectProperties projectProperties)
-        {
-            Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
-
-            // We're just going to return a matching SDK from the catalog (if it exists).
-            // Note that there be maore than one match a standalone SDK or one that ships
-            // with Visual Studio.  We'll favor the standalone one if possible.
-
-            var sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion && 
-                                                                                 item.IsStandalone &&
-                                                                                 item.Architecture == SdkArchitecture.ARM32);
-            if (sdkItem == null)
-            {
-                // Look for a Visual Studio SDK instead.
-
-                sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Version == projectProperties.SdkVersion &&
-                                                                                 item.Architecture == SdkArchitecture.ARM32);
-            }
-
-            if (sdkItem == null)
-            {
-                MessageBoxEx.Show(
-                    $".NET Core SDK [v{projectProperties.SdkVersion}] is unknown to the Raspberry Debugger.  Please submit an issue at:\r\n\r\n{PackageHelper.GitHubIssuesUri}",
-                    "Unknown .NET Core SDK",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-
-                return null;
-            }
-            else
-            {
-                return new Sdk(sdkItem.Name, sdkItem.Version);
-            }
-        }
-
-        /// <summary>
         /// Establishes a connection to the Raspberry and ensures that the Raspberry has
         /// the target SDK, <b>vsdbg</b> installed and also handles uploading of the project
         /// binaries.
@@ -549,10 +509,9 @@ windir
         /// <param name="projectProperties">The project properties.</param>
         /// <param name="projectSettings">The project's Raspberry debug settings.</param>
         /// <returns>The <see cref="Connection"/> or <c>null</c> if there was an error.</returns>
-        public static async Task<Connection> InitializeConnectionAsync(ConnectionInfo connectionInfo, Sdk targetSdk, ProjectProperties projectProperties, ProjectSettings projectSettings)
+        public static async Task<Connection> InitializeConnectionAsync(ConnectionInfo connectionInfo, ProjectProperties projectProperties, ProjectSettings projectSettings)
         {
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
-            Covenant.Requires<ArgumentNullException>(targetSdk != null, nameof(targetSdk));
             Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
             Covenant.Requires<ArgumentNullException>(projectSettings != null, nameof(projectSettings));
 
@@ -575,15 +534,14 @@ windir
                 connection.Dispose();
                 return null;
             }
-
+           
             // Ensure that the SDK is installed.
-
-            if (!await connection.InstallSdkAsync(targetSdk.Version))
+            if (!await connection.InstallSdkAsync())
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 MessageBoxEx.Show(
-                    $"Cannot install the .NET SDK [v{targetSdk.Version}] on the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
+                    $"Cannot install the .NET SDK [v{connection.PiStatus}] on the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
                     "SDK Installation Failed",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -593,7 +551,6 @@ windir
             }
 
             // Ensure that the debugger is installed.
-
             if (!await connection.InstallDebuggerAsync())
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -609,7 +566,6 @@ windir
             }
 
             // Upload the program binaries.
-
             if (!await connection.UploadProgramAsync(projectProperties.Name, projectProperties.AssemblyName, projectProperties.PublishFolder))
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
