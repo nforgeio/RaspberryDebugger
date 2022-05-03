@@ -52,7 +52,8 @@ namespace RaspberryDebugger
             bool                hasDebugger, 
             IEnumerable<Sdk>    installedSdks,
             string              model,
-            string              revision)
+            string              revision,
+            SdkArchitecture     piArchitecture)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(architecture), nameof(architecture));
             Covenant.Requires<ArgumentNullException>(path != null, nameof(path));
@@ -65,6 +66,7 @@ namespace RaspberryDebugger
             this.InstalledSdks     = installedSdks.ToList();
             this.RaspberryModel    = model;
             this.RaspberryRevision = revision;
+            this.PiArchitecture    = piArchitecture;
         }
 
         /// <summary>
@@ -103,5 +105,10 @@ namespace RaspberryDebugger
         /// Returns the Raspberry board revision.
         /// </summary>
         public string RaspberryRevision { get; private set; }
+
+        /// <summary>
+        /// Returns the Raspberry architecture.
+        /// </summary>
+        public SdkArchitecture PiArchitecture { get; private set; }
     }
 }

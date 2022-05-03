@@ -444,13 +444,14 @@ namespace RaspberryDebugger
                         }
 
                         PiStatus = new Status(
-                            architecture:  architecture,
-                            path:          path,
-                            hasUnzip:      hasUnzip,
-                            hasDebugger:   hasDebugger,
-                            installedSdks: sdks,
-                            model:         model,
-                            revision:      revision
+                            architecture:   architecture,
+                            path:           path,
+                            hasUnzip:       hasUnzip,
+                            hasDebugger:    hasDebugger,
+                            installedSdks:  sdks,
+                            model:          model,
+                            revision:       revision,
+                            piArchitecture: architectur
                         );
                     }
                 });
@@ -555,7 +556,7 @@ namespace RaspberryDebugger
             // Figure out the latest SDK version - Microsoft versioning: the highest number
             var targetSdk = PackageHelper.SdkGoodCatalog.Items
                 .OrderByDescending(item => item.Version)
-                .FirstOrDefault(item => item.Architecture == sdkArchitecture);
+                .FirstOrDefault(item => item.Architecture == PiStatus.PiArchitecture);
 
             if (targetSdk == null)
             {
