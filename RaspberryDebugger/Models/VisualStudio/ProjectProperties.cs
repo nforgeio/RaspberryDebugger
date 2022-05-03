@@ -175,14 +175,12 @@ namespace RaspberryDebugger
                             }
 
                             // Extract additional settings for ASPNET projects.
-
                             if (settings.Property("iisSettings") != null)
                             {
                                 isAspNet = true;
 
                                 // Note that we're going to fall back to port 5000 if there are any
                                 // issues parsing the application URL.
-
                                 const int fallbackPort = 5000;
 
                                 var jProperty = profileObject.Property("applicationUrl");
