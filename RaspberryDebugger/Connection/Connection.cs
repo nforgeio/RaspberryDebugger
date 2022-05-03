@@ -537,9 +537,9 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Installs the specified .NET Core SDK on the Raspberry if it's not already installed.
+        /// Installs the .NET Core SDK on the Raspberry if it's not already installed.
+        /// The Raspberry architectue is driving the installation - the newest .NET Core version is taken
         /// </summary>
-        /// <param name="sdkVersion">The SDK version.</param>
         /// <returns><c>true</c> on success.</returns>
         public async Task<bool> InstallSdkAsync()
         {
