@@ -403,7 +403,7 @@ namespace RaspberryDebugger
 
                     using (var reader = new StringReader(response.OutputText))
                     {
-                        var architecture = await reader.ReadLineAsync();
+                        var processor    = await reader.ReadLineAsync();
                         var path         = await reader.ReadLineAsync();
                         var hasUnzip     = await reader.ReadLineAsync() == "unzip";
                         var hasDebugger  = await reader.ReadLineAsync() == "debugger-installed";
@@ -413,16 +413,16 @@ namespace RaspberryDebugger
 
                         revision = revision.Trim();     // Remove any whitespace at the end.
 
-                        Log($"[{Name}]: architecture: {architecture}");
-                        Log($"[{Name}]: path:         {path}");
-                        Log($"[{Name}]: unzip:        {hasUnzip}");
-                        Log($"[{Name}]: debugger:     {hasDebugger}");
-                        Log($"[{Name}]: sdks:         {sdkLine}");
-                        Log($"[{Name}]: model:        {model}");
-                        Log($"[{Name}]: revision:     {revision}");
+                        Log($"[{Name}]: processor: {processor}");
+                        Log($"[{Name}]: path:      {path}");
+                        Log($"[{Name}]: unzip:     {hasUnzip}");
+                        Log($"[{Name}]: debugger:  {hasDebugger}");
+                        Log($"[{Name}]: sdks:      {sdkLine}");
+                        Log($"[{Name}]: model:     {model}");
+                        Log($"[{Name}]: revision:  {revision}");
 
                         // raspberry pi platform architecture
-                        var architectur = architecture.Contains(Platform.Bitness32.GetAttributeOfType<EnumMemberAttribute>().Value) 
+                        var architecture = processor.Contains(Platform.Bitness32.GetAttributeOfType<EnumMemberAttribute>().Value) 
                             ? SdkArchitecture.ARM32 
                             : SdkArchitecture.ARM64;
 
@@ -431,11 +431,11 @@ namespace RaspberryDebugger
 
                         foreach (var sdkName in sdkLine.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(sdk => sdk.Trim()))
                         {
-                            var sdkCatalogItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == sdkName && item.Architecture == architectur);
+                            var sdkCatalogItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == sdkName && item.Architecture == architecture);
 
                             if (sdkCatalogItem != null)
                             {
-                                sdks.Add(new Sdk(sdkName, sdkCatalogItem.Version, architectur));
+                                sdks.Add(new Sdk(sdkName, sdkCatalogItem.Version, architecture));
                             }
                             else
                             {
@@ -444,14 +444,14 @@ namespace RaspberryDebugger
                         }
 
                         PiStatus = new Status(
-                            architecture:   architecture,
-                            path:           path,
-                            hasUnzip:       hasUnzip,
-                            hasDebugger:    hasDebugger,
-                            installedSdks:  sdks,
-                            model:          model,
-                            revision:       revision,
-                            piArchitecture: architectur
+                            processor:     processor,
+                            path:          path,
+                            hasUnzip:      hasUnzip,
+                            hasDebugger:   hasDebugger,
+                            installedSdks: sdks,
+                            model:         model,
+                            revision:      revision,
+                            architecture:  architecture
                         );
                     }
                 });
