@@ -181,8 +181,8 @@ namespace RaspberryDebugger
         //---------------------------------------------------------------------
         // Instance members
 
-        private ConnectionInfo      connectionInfo;
-        private ProjectSettings     projectSettings;
+        private readonly ConnectionInfo  connectionInfo;
+        private readonly ProjectSettings projectSettings;
 
         /// <summary>
         /// Constructs a connection using a password.
