@@ -417,7 +417,7 @@ windir
 
                 if (response.ExitCode == 0)
                 {
-                    Log.Error("Publish succeeded");
+                    Log.Info("Publish succeeded");
                     return true;
                 }
 
