@@ -144,7 +144,7 @@ namespace RaspberryDebugger
                 if (targetSdkVersion == null || sdkVersion > targetSdkVersion)
                 {
                     targetSdkVersion = sdkVersion;
-                    targetSdk        = new Sdk(sdkItem.Name, sdkItem.Version);
+                    targetSdk        = new Sdk(sdkItem.Name, sdkItem.Version, sdkItem.Architecture);
                 }
             }
 

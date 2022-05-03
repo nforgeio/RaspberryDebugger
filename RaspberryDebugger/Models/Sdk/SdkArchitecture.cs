@@ -42,4 +42,19 @@ namespace RaspberryDebugger
         [EnumMember(Value = "ARM64")]
         ARM64
     }
+
+    internal enum Platform
+    {
+        /// <summary>
+        /// 32-bit ARM
+        /// </summary>
+        [EnumMember(Value = "32")]
+        Bitness32,
+
+        /// <summary>
+        /// 64-bit ARM
+        /// </summary>
+        [EnumMember(Value = "64")]
+        Bitness64
+    }
 }

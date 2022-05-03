@@ -130,20 +130,8 @@ namespace RaspberryDebugger.Commands
                 return;
             }
 
-            // Identify the most recent SDK installed on the workstation that has the same 
-            // major and minor version numbers as the project.  We'll ensure that the same
-            // SDK is installed on the Raspberry (further below).
-
-            var targetSdk = DebugHelper.GetTargetSdk(projectProperties);
-
-            if (targetSdk == null)
-            {
-                return;
-            }
-
             // Establish a Raspberry connection to handle some things before we start the debugger.
-
-            var connection = await DebugHelper.InitializeConnectionAsync(connectionInfo, targetSdk, projectProperties, PackageHelper.GetProjectSettings(dte.Solution, project));
+            var connection = await DebugHelper.InitializeConnectionAsync(connectionInfo, projectProperties, PackageHelper.GetProjectSettings(dte.Solution, project));
 
             if (connection == null)
             {
@@ -169,10 +157,9 @@ namespace RaspberryDebugger.Commands
                 // Launch the browser for ASPNET apps if requested.  Note that we're going to do this
                 // on a background task to poll the Raspberry, waiting for the app to create the create
                 // the LISTENING socket.
-
-                if (!projectProperties.IsAspNet || !projectProperties.AspLaunchBrowser) return;
+                if (!projectProperties.IsAspNet || !projectProperties.AspLaunchBrowser)
+                    return;
                 
-                //var baseUri     = $"http://{connection.Address}:{projectProperties.AspPort}";
                 var baseUri     = $"http://{connection.Name}.local";
                 var launchReady = false;
 
@@ -183,7 +170,6 @@ namespace RaspberryDebugger.Commands
                         {
                             // The developer must have stopped debugging before the ASPNET
                             // application was able to begin servicing requests.
-
                             return true;
                         }
 
