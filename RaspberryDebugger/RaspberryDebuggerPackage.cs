@@ -130,7 +130,7 @@ namespace RaspberryDebugger
 
                         while (debugLogQueue.Count > 0)
                         {
-                            debugPane.OutputStringThreadSafe(debugLogQueue.Dequeue());
+                            _ = debugPane.OutputStringThreadSafe(debugLogQueue.Dequeue());
                         }
                     }
                 });

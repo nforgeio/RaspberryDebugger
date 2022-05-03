@@ -35,6 +35,9 @@ using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.ProjectSystem.Debug;
+using Microsoft.VisualStudio.ProjectSystem.Properties;
 
 using Neon.Common;
 using Neon.Net;
@@ -42,6 +45,7 @@ using Neon.Net;
 using Newtonsoft.Json.Linq;
 
 using Task = System.Threading.Tasks.Task;
+using Microsoft.VisualStudio.Threading;
 
 namespace RaspberryDebugger
 {
@@ -80,6 +84,7 @@ namespace RaspberryDebugger
                 {
                     Name                  = project.Name,
                     FullPath              = project.FullName,
+                    Framework             = string.Empty,
                     Configuration         = null,
                     IsNetCore             = false,
                     SdkVersion            = null,
@@ -108,6 +113,29 @@ namespace RaspberryDebugger
             // Read the properties we care about from the project.
 
             var targetFrameworkMonikers = (string)project.Properties.Item("TargetFrameworkMoniker").Value;
+            var targetFramework = string.Empty;
+
+            if (!(project is IVsBrowseObjectContext context))
+            {
+                context = project.Object as IVsBrowseObjectContext;
+            }
+
+            var frameworkService = context.UnconfiguredProject.Services.ExportProvider.GetExportedValueOrDefault<IActiveDebugFrameworkServices>();
+            if (null != frameworkService)
+            {
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    var configuredProject = await frameworkService.GetConfiguredProjectForActiveFrameworkAsync().ConfigureAwait(false);
+                    IProjectProperties properties = configuredProject.Services.ProjectPropertiesProvider.GetCommonProperties();
+
+                    //targetFramework = configuredProject.ProjectConfiguration.Dimensions["TargetFramework"];
+                    var successful = configuredProject.ProjectConfiguration.Dimensions.TryGetValue("TargetFramework", out targetFramework);
+
+                    Log.Info($"configuredProject.ProjectConfiguration.Dimensions['TargetFramework']: {targetFramework}");
+
+                });
+            }
+
             var outputType              = (int)project.Properties.Item("OutputType").Value;
 
             var monikers = targetFrameworkMonikers.Split(',');
@@ -274,7 +302,7 @@ namespace RaspberryDebugger
                                             aspRelativeBrowserUri = launchUri;
                                         }
                                     }
-                                    catch 
+                                    catch
                                     {
                                         // We'll fall back to "/" for any URI parsing errors.
 
@@ -319,6 +347,7 @@ namespace RaspberryDebugger
             {
                 Name                  = project.Name,
                 FullPath              = project.FullName,
+                Framework             = targetFramework,
                 Guid                  = projectGuid,
                 Configuration         = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
                 IsNetCore             = isNetCore,
@@ -341,7 +370,7 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Parses command line arguments from a string, trying to handle things like 
+        /// Parses command line arguments from a string, trying to handle things like
         /// double and single quotes as well as escaped characters.
         /// </summary>
         /// <param name="commandLine">The source command line or <c>null</c>.</param>
@@ -456,7 +485,7 @@ namespace RaspberryDebugger
                     args.Add(Regex.Unescape(arg));
                 }
             }
-            
+
             return args;
         }
 
@@ -517,6 +546,11 @@ namespace RaspberryDebugger
         public string Runtime => "linux-arm";
 
         /// <summary>
+        /// Returns the framework version.
+        /// </summary>
+        public string Framework { get; private set; }
+
+        /// <summary>
         /// Returns the publication folder.
         /// </summary>
         public string PublishFolder => Path.Combine(OutputFolder, Runtime);
@@ -537,7 +571,7 @@ namespace RaspberryDebugger
         public bool DebugEnabled { get; private set; }
 
         /// <summary>
-        /// Returns the connection name identifying the target Raspberry or <c>null</c> 
+        /// Returns the connection name identifying the target Raspberry or <c>null</c>
         /// when the default Raspberry connection should be used.
         /// </summary>
         public string DebugConnectionName { get; private set; }
