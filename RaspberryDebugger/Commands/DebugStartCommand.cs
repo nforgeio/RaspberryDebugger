@@ -50,13 +50,6 @@ namespace RaspberryDebugger.Commands
         /// </summary>
         public static readonly Guid CommandSet = RaspberryDebuggerPackage.CommandSet;
 
-        /// <summary>
-        /// VS Package that provides this command, not null.
-        /// </summary>
-#pragma warning disable IDE0052 // Remove unread private members
-        private readonly AsyncPackage package;
-#pragma warning restore IDE0052 // Remove unread private members
-
         /// Initializes a new instance of the <see cref="DebugStartCommand"/> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
