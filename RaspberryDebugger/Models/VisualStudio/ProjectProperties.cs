@@ -14,35 +14,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
-using System.Drawing.Imaging;
-using System.Drawing.Text;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 using EnvDTE;
-using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 
 using Neon.Common;
 using Neon.Net;
 
 using Newtonsoft.Json.Linq;
-
-using Task = System.Threading.Tasks.Task;
-using Microsoft.VisualStudio.Threading;
 
 namespace RaspberryDebugger
 {
@@ -107,7 +93,6 @@ namespace RaspberryDebugger
             var sdkName       = (string)null;
 
             // Read the properties we care about from the project.
-
             var targetFrameworkMonikers = (string)project.Properties.Item("TargetFrameworkMoniker").Value;
             var outputType              = (int)project.Properties.Item("OutputType").Value;
 
@@ -116,24 +101,13 @@ namespace RaspberryDebugger
             isNetCore = monikers[0] == ".NETCoreApp";
 
             // Extract the version from the moniker.  This looks like: "Version=v5.0"
-
             var versionRegex = new Regex(@"(?<version>[0-9\.]+)$");
-
             netVersion = SemanticVersion.Parse(versionRegex.Match(monikers[1]).Groups["version"].Value);
-
-            // The [dotnet --info] command doesn't work as I expected because it doesn't
-            // appear to examine the project file when determining the SDK version.
-            //
-            //      https://github.com/nforgeio/RaspberryDebugger/issues/16
-            //
-            // So, we're just going to use the latest known SDK from our catalog instead.
-            // This isn't ideal but should work fine for the vast majority of people.
 
             var targetSdk        = (Sdk)null;
             var targetSdkVersion = (SemanticVersion)null;
 
-            foreach (var sdkItem in PackageHelper.SdkGoodCatalog.Items
-                .Where(item => item.IsStandalone))
+            foreach (var sdkItem in PackageHelper.SdkGoodCatalog.Items)
             {
                 var sdkVersion = SemanticVersion.Parse(sdkItem.Version);
 
@@ -278,7 +252,6 @@ namespace RaspberryDebugger
                                     catch
                                     {
                                         // We'll fall back to "/" for any URI parsing errors.
-
                                         aspRelativeBrowserUri = "/";
                                     }
                                 }
@@ -289,33 +262,27 @@ namespace RaspberryDebugger
             }
 
             // Get the target Raspberry from the debug settings.
-
             var projects            = PackageHelper.ReadRaspberryProjects(solution);
             var projectSettings     = projects[project.UniqueName];
             var debugEnabled        = projectSettings.EnableRemoteDebugging;
             var debugConnectionName = projectSettings.RemoteDebugTarget;
 
             // Determine whether the referenced .NET Core SDK is currently supported.
-
-            var sdk = sdkName == null ? null : PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName) && item.Architecture == SdkArchitecture.ARM32);
-
+            var sdk = sdkName == null ? null : PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName));
             var isSupportedSdkVersion = sdk != null;
 
             // Determine whether the project is Raspberry compatible.
-
             var isRaspberryCompatible = isNetCore &&
                                         outputType == 1 && // 1=EXE
                                         isSupportedSdkVersion;
 
             // We need to jump through some hoops to obtain the project GUID.
-
             var solutionService = RaspberryDebuggerPackage.Instance.SolutionService;
 
             Covenant.Assert(solutionService.GetProjectOfUniqueName(project.UniqueName, out var hierarchy) == VSConstants.S_OK);
             Covenant.Assert(solutionService.GetGuidOfProject(hierarchy, out var projectGuid) == VSConstants.S_OK);
 
             // Return the properties.
-
             return new ProjectProperties()
             {
                 Name                  = project.Name,
