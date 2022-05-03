@@ -182,7 +182,7 @@ The **Project/Raspberry Debug Settings** menu persists the settings to the new `
 ### Limitations
 
 * .NET Core is not supported on Raspberry 1, 2, or Zero cards
-* 64-bit Raspberry Pi OS is not supported
+* 64-bit Raspberry Pi OS (Raspbian) is supported now in a Beta stage
 * .NET Core SDKs older than 3.1 are not supported
 * **Start Without Debugging** or **Attach to Process...** are not supported (yet)
 * Raspberry debugging uses the default project debugging profile
