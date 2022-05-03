@@ -35,9 +35,6 @@ using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.ProjectSystem;
-using Microsoft.VisualStudio.ProjectSystem.Debug;
-using Microsoft.VisualStudio.ProjectSystem.Properties;
 
 using Neon.Common;
 using Neon.Net;
@@ -84,7 +81,6 @@ namespace RaspberryDebugger
                 {
                     Name                  = project.Name,
                     FullPath              = project.FullName,
-                    Framework             = string.Empty,
                     Configuration         = null,
                     IsNetCore             = false,
                     SdkVersion            = null,
@@ -113,29 +109,6 @@ namespace RaspberryDebugger
             // Read the properties we care about from the project.
 
             var targetFrameworkMonikers = (string)project.Properties.Item("TargetFrameworkMoniker").Value;
-            var targetFramework = string.Empty;
-
-            if (!(project is IVsBrowseObjectContext context))
-            {
-                context = project.Object as IVsBrowseObjectContext;
-            }
-
-            var frameworkService = context.UnconfiguredProject.Services.ExportProvider.GetExportedValueOrDefault<IActiveDebugFrameworkServices>();
-            if (null != frameworkService)
-            {
-                ThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    var configuredProject = await frameworkService.GetConfiguredProjectForActiveFrameworkAsync().ConfigureAwait(false);
-                    IProjectProperties properties = configuredProject.Services.ProjectPropertiesProvider.GetCommonProperties();
-
-                    //targetFramework = configuredProject.ProjectConfiguration.Dimensions["TargetFramework"];
-                    var successful = configuredProject.ProjectConfiguration.Dimensions.TryGetValue("TargetFramework", out targetFramework);
-
-                    Log.Info($"configuredProject.ProjectConfiguration.Dimensions['TargetFramework']: {targetFramework}");
-
-                });
-            }
-
             var outputType              = (int)project.Properties.Item("OutputType").Value;
 
             var monikers = targetFrameworkMonikers.Split(',');
@@ -347,7 +320,6 @@ namespace RaspberryDebugger
             {
                 Name                  = project.Name,
                 FullPath              = project.FullName,
-                Framework             = targetFramework,
                 Guid                  = projectGuid,
                 Configuration         = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
                 IsNetCore             = isNetCore,
