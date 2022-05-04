@@ -28,12 +28,12 @@ namespace RaspberryDebugger.Models.Connection
         /// Password based authentication.
         /// </summary>
         [EnumMember(Value = "password")]
-        Password = 0,
+        PASSWORD = 0,
 
         /// <summary>
         /// Public SSH key based authentication.
         /// </summary>
         [EnumMember(Value = "public-key")]
-        PublicKey
+        PUBLIC_KEY
     }
 }

@@ -39,10 +39,11 @@ using Task = System.Threading.Tasks.Task;
 namespace RaspberryDebugger
 {
     /// <summary>
-    /// Remote debugger related utilties.
+    /// Remote debugger related utilities.
     /// </summary>
     internal static class DebugHelper
     {
+        private const string SupportedVersions = ".NET Core 3.1 or .NET 5 + 6";
         /// <summary>
         /// Ensures that the native Windows OpenSSH client is installed, prompting
         /// the user to install it if necessary.
@@ -62,8 +63,9 @@ namespace RaspberryDebugger
                 Log.WriteLine("https://techcommunity.microsoft.com/t5/itops-talk-blog/installing-and-configuring-openssh-on-windows-server-2019/ba-p/309540");
 
                 var button = MessageBox.Show(
-                    "Raspberry debugging requires the Windows OpenSSH client.\r\n\r\nWould you like to install this now (restart required)?",
-                    "Windows OpenSSH Client Required",
+                    @"Raspberry debugging requires the Windows OpenSSH client.
+                    Would you like to install this now (restart required)?",
+                    @"Windows OpenSSH Client Required",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question,
                     MessageBoxDefaultButton.Button2);
@@ -88,8 +90,8 @@ namespace RaspberryDebugger
                     });
 
                 MessageBox.Show(
-                    "Restart Windows to complete the OpenSSH Client installation.",
-                    "Restart Required",
+                    @"Restart Windows to complete the OpenSSH Client installation.",
+                    @"Restart Required",
                     MessageBoxButtons.OK);
 
                 return false;
@@ -115,8 +117,8 @@ namespace RaspberryDebugger
             if (dte.Solution == null)
             {
                 MessageBox.Show(
-                    "Please open a Visual Studio solution.",
-                    "Solution Required",
+                    @"Please open a Visual Studio solution.",
+                    @"Solution Required",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
 
@@ -128,8 +130,8 @@ namespace RaspberryDebugger
             if (project == null)
             {
                 MessageBox.Show(
-                    "Please select a startup project for your solution.",
-                    "Startup Project Required",
+                    @"Please select a startup project for your solution.",
+                    @"Startup Project Required",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
 
@@ -144,8 +146,8 @@ namespace RaspberryDebugger
             if (!projectProperties.IsNetCore)
             {
                 MessageBox.Show(
-                    "Only .NET Core 3.1 or .NET 5 + 6 projects are supported for Raspberry debugging.",
-                    "Invalid Project Type",
+                    $@"Only {SupportedVersions} projects are supported for Raspberry debugging.",
+                    @"Invalid Project Type",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
@@ -155,8 +157,8 @@ namespace RaspberryDebugger
             if (!projectProperties.IsExecutable)
             {
                 MessageBox.Show(
-                    "Only projects types that generate an executable program are supported for Raspberry debugging.",
-                    "Invalid Project Type",
+                    @"Only projects types that generate an executable program are supported for Raspberry debugging.",
+                    @"Invalid Project Type",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
@@ -166,8 +168,8 @@ namespace RaspberryDebugger
             if (string.IsNullOrEmpty(projectProperties.SdkVersion))
             {
                 MessageBox.Show(
-                    "The .NET Core SDK version could not be identified.",
-                    "Invalid Project Type",
+                    @"The .NET Core SDK version could not be identified.",
+                    @"Invalid Project Type",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
@@ -179,26 +181,27 @@ namespace RaspberryDebugger
             if (!projectProperties.IsSupportedSdkVersion)
             {
                 MessageBox.Show(
-                    $"The .NET Core SDK [{sdkVersion}] is not currently supported.  Only .NET Core versions [v3.1] or later will ever be supported\r\n\r\nNote that we currently support only offical SDKs (not previews or release candidates) and we check for new .NET Core SDKs every week or two.  Submit an issue if you really need support for a new SDK ASAP:\r\n\t\nhttps://github.com/nforgeio/RaspberryDebugger/issues",
-                    "SDK Not Supported",
+                    $@"The .NET Core SDK [{sdkVersion}] is not currently supported. Only .NET Core versions [v3.1] or later will ever be supported
+                    Note that we currently support only official SDKs (not previews or release candidates) and we check for new .NET Core SDKs every week or two.  
+                    Submit an issue if you really need support for a new SDK ASAP:	
+                    https://github.com/nforgeio/RaspberryDebugger/issues",
+                    @"SDK Not Supported",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
                 return null;
             }
 
-            if (projectProperties.AssemblyName.Contains(' '))
-            {
-                MessageBox.Show(
-                    $"Your assembly name [{projectProperties.AssemblyName}] includes a space.  This isn't supported.",
-                    "Unsupported Assembly Name",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+            if (!projectProperties.AssemblyName.Contains(' ')) return project;
 
-                return null;
-            }
+            MessageBox.Show(
+                $@"Your assembly name [{projectProperties.AssemblyName}] includes a space.  This isn't supported.",
+                @"Unsupported Assembly Name",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
 
-            return project;
+            return null;
+
         }
 
         /// <summary>
@@ -210,7 +213,7 @@ namespace RaspberryDebugger
         /// <param name="project"></param>
         /// <param name="projectProperties"></param>
         /// <returns></returns>
-        public static async Task<bool> PublishProjectWithUIAsync(DTE2 dte, Solution solution, Project project, ProjectProperties projectProperties)
+        public static async Task<bool> PublishProjectWithUiAsync(DTE2 dte, Solution solution, Project project, ProjectProperties projectProperties)
         {
             Covenant.Requires<ArgumentNullException>(dte != null, nameof(dte));
             Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
@@ -222,8 +225,9 @@ namespace RaspberryDebugger
             if (!await PublishProjectAsync(dte, solution, project, projectProperties))
             {
                 MessageBox.Show(
-                    "[dotnet publish] failed for the project.\r\n\r\nLook at the Output/Debug panel for more details.",
-                    "Publish Failed",
+                    @"[dotnet publish] failed for the project.
+                    Look at the Output/Debug panel for more details.",
+                    @"Publish Failed",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
@@ -261,28 +265,27 @@ namespace RaspberryDebugger
             // random crashes when building or publishing projects when VS is still loading
             // projects.
 
-            var projectGuid      = projectProperties.Guid;
             var solutionService4 = (IVsSolution4)await RaspberryDebuggerPackage.Instance.GetServiceAsync(typeof(SVsSolution));
 
             if (solutionService4 == null)
             {
-                Covenant.Assert(solutionService4 != null, $"Service [{typeof(SVsSolution).Name}] is not available.");
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                Covenant.Assert(solutionService4 != null, $"Service [{nameof(SVsSolution)}] is not available.");
             }
 
             // Build the project to ensure that there are no compile-time errors.
 
-            Log.Info($"Building: {projectProperties.FullPath}");
+            Log.Info($"Building: {projectProperties?.FullPath}");
 
-            solution.SolutionBuild.BuildProject(solution.SolutionBuild.ActiveConfiguration.Name, project.UniqueName, WaitForBuildToFinish: true);
+            solution?.SolutionBuild.BuildProject(solution.SolutionBuild.ActiveConfiguration.Name, project?.UniqueName, WaitForBuildToFinish: true);
 
-            var errorList = dte.ToolWindows.ErrorList.ErrorItems;
+            var errorList = dte?.ToolWindows.ErrorList.ErrorItems;
 
-            if (errorList.Count > 0)
+            if (errorList?.Count > 0)
             {
-                for (int i = 1; i <= errorList.Count; i++)
+                for (var i = 1; i <= errorList.Count; i++)
                 {
                     var error = errorList.Item(i);
-
                     Log.Error($"{error.FileName}({error.Line},{error.Column}: {error.Description})");
                 }
 
@@ -302,51 +305,52 @@ namespace RaspberryDebugger
             // these can cause conflicts when we invoke [dotnet] below to
             // publish the project.
 
-            Log.Info($"Publishing: {projectProperties.FullPath}");
+            Log.Info($"Publishing: {projectProperties?.FullPath}");
 
             await Task.Yield();
 
-            var allowedVariableNames =
-@"
-ALLUSERSPROFILE
-APPDATA
-architecture
-architecture_bits
-CommonProgramFiles
-CommonProgramFiles(x86)
-CommonProgramW6432
-COMPUTERNAME
-ComSpec
-DOTNETPATH
-DOTNET_CLI_TELEMETRY_OPTOUT
-DriverData
-HOME
-HOMEDRIVE
-HOMEPATH
-LOCALAPPDATA
-NUMBER_OF_PROCESSORS
-OS
-Path
-PATHEXT
-POWERSHELL_DISTRIBUTION_CHANNEL
-PROCESSOR_ARCHITECTURE
-PROCESSOR_IDENTIFIER
-PROCESSOR_LEVEL
-PROCESSOR_REVISION
-ProgramData
-ProgramFiles
-ProgramFiles(x86)
-ProgramW6432
-PUBLIC
-SystemDrive
-SystemRoot
-TEMP
-USERDOMAIN
-USERDOMAIN_ROAMINGPROFILE
-USERNAME
-USERPROFILE
-windir
-";
+            const string allowedVariableNames = 
+                @"
+                ALLUSERSPROFILE
+                APPDATA
+                architecture
+                architecture_bits
+                CommonProgramFiles
+                CommonProgramFiles(x86)
+                CommonProgramW6432
+                COMPUTERNAME
+                ComSpec
+                DOTNETPATH
+                DOTNET_CLI_TELEMETRY_OPTOUT
+                DriverData
+                HOME
+                HOMEDRIVE
+                HOMEPATH
+                LOCALAPPDATA
+                NUMBER_OF_PROCESSORS
+                OS
+                Path
+                PATHEXT
+                POWERSHELL_DISTRIBUTION_CHANNEL
+                PROCESSOR_ARCHITECTURE
+                PROCESSOR_IDENTIFIER
+                PROCESSOR_LEVEL
+                PROCESSOR_REVISION
+                ProgramData
+                ProgramFiles
+                ProgramFiles(x86)
+                ProgramW6432
+                PUBLIC
+                SystemDrive
+                SystemRoot
+                TEMP
+                USERDOMAIN
+                USERDOMAIN_ROAMINGPROFILE
+                USERNAME
+                USERPROFILE
+                windir
+                ";
+
             var allowedVariables     = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
             var environmentVariables = new Dictionary<string, string>();
 
@@ -375,7 +379,7 @@ windir
             {
                 ExecuteResponse response;
 
-                if (!string.IsNullOrEmpty(projectProperties.Framework))
+                if (!string.IsNullOrEmpty(projectProperties?.Framework))
                 {
                     response = await NeonHelper.ExecuteCaptureAsync(
                         "dotnet",
@@ -398,11 +402,11 @@ windir
                         new object[]
                         {
                         "publish",
-                        "--configuration", projectProperties.Configuration,
-                        "--runtime", projectProperties.Runtime,
+                        "--configuration", projectProperties?.Configuration,
+                        "--runtime", projectProperties?.Runtime,
                         "--no-self-contained",
-                        "--output", projectProperties.PublishFolder,
-                        projectProperties.FullPath
+                        "--output", projectProperties?.PublishFolder,
+                        projectProperties?.FullPath
                         },
                         environmentVariables: environmentVariables).ConfigureAwait(false);
                 }
@@ -439,11 +443,10 @@ windir
         public static ConnectionInfo GetDebugConnectionInfo(ProjectProperties projectProperties)
         {
             Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
-
             var existingConnections = PackageHelper.ReadConnections();
-            var connectionInfo      = (ConnectionInfo)null;
+            ConnectionInfo connectionInfo;
 
-            if (string.IsNullOrEmpty(projectProperties.DebugConnectionName))
+            if (string.IsNullOrEmpty(projectProperties?.DebugConnectionName))
             {
                 connectionInfo = existingConnections.SingleOrDefault(info => info.IsDefault);
 
@@ -499,7 +502,6 @@ windir
         /// binaries.
         /// </summary>
         /// <param name="connectionInfo">The connection info.</param>
-        /// <param name="targetSdk">The target SDK.</param>
         /// <param name="projectProperties">The project properties.</param>
         /// <param name="projectSettings">The project's Raspberry debug settings.</param>
         /// <returns>The <see cref="Connection"/> or <c>null</c> if there was an error.</returns>
@@ -560,21 +562,23 @@ windir
             }
 
             // Upload the program binaries.
-            if (!await connection.UploadProgramAsync(projectProperties.Name, projectProperties.AssemblyName, projectProperties.PublishFolder))
-            {
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            if (await connection.UploadProgramAsync(
+                    projectProperties?.Name, 
+                    projectProperties?.AssemblyName,
+                    projectProperties?.PublishFolder)) 
+                return connection;
 
-                MessageBoxEx.Show(
-                    $"Cannot upload the program binaries to the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
-                    "Debugger Installation Failed",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                connection.Dispose();
-                return null;
-            }
+            MessageBoxEx.Show(
+                $"Cannot upload the program binaries to the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
+                "Debugger Installation Failed",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
 
-            return connection;
+            connection.Dispose();
+            return null;
+
         }
     }
 }

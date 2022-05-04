@@ -118,7 +118,7 @@ namespace RaspberryDebugger.Commands
 
             //-----------------------------------------------------------------
 
-            if (!await DebugHelper.PublishProjectWithUIAsync(dte, dte.Solution, project, projectProperties))
+            if (!await DebugHelper.PublishProjectWithUiAsync(dte, dte.Solution, project, projectProperties))
             {
                 return;
             }

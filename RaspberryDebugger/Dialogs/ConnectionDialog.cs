@@ -30,7 +30,7 @@ namespace RaspberryDebugger.Dialogs
     /// </summary>
     internal partial class ConnectionDialog : Form
     {
-        private const char passwordChar = '•';
+        private const char PasswordChar = '•';
 
         private List<ConnectionInfo>    existingConnections;
 
@@ -56,7 +56,7 @@ namespace RaspberryDebugger.Dialogs
                 portTextBox.Text             = connectionInfo.Port.ToString();
                 userTextBox.Text             = connectionInfo.User;
                 passwordTextBox.Text         = connectionInfo.Password;
-                passwordTextBox.PasswordChar = passwordChar;
+                passwordTextBox.PasswordChar = PasswordChar;
                 showPasswordCheckBox.Checked = false;
                 instructionsTextBox.Visible  = string.IsNullOrEmpty(connectionInfo.PrivateKeyPath);
             };
@@ -284,7 +284,7 @@ namespace RaspberryDebugger.Dialogs
         /// <param name="args">The arguments.</param>
         private void showPasswordCheckBox_CheckedChanged(object sender, EventArgs args)
         {
-            passwordTextBox.PasswordChar = showPasswordCheckBox.Checked ? (char)0 : passwordChar;
+            passwordTextBox.PasswordChar = showPasswordCheckBox.Checked ? (char)0 : PasswordChar;
         }
     }
 }

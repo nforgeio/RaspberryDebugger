@@ -43,12 +43,12 @@ namespace RaspberryDebugger.Models.Sdk
         /// 32-bit ARM
         /// </summary>
         [EnumMember(Value = "32")]
-        Bitness32,
+        BITNESS32,
 
         /// <summary>
         /// 64-bit ARM
         /// </summary>
         [EnumMember(Value = "64")]
-        Bitness64
+        BITNESS64
     }
 }

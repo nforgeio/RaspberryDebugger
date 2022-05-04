@@ -422,7 +422,7 @@ namespace RaspberryDebugger.Connection
                         Log($"[{Name}]: revision:  {revision}");
 
                         // raspberry pi platform architecture
-                        var architecture = processor.Contains(Platform.Bitness32.GetAttributeOfType<EnumMemberAttribute>().Value) 
+                        var architecture = processor.Contains(Platform.BITNESS32.GetAttributeOfType<EnumMemberAttribute>().Value) 
                             ? SdkArchitecture.ARM32 
                             : SdkArchitecture.ARM64;
 

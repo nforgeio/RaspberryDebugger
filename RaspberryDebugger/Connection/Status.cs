@@ -53,7 +53,7 @@ namespace RaspberryDebugger.Connection
             Covenant.Requires<ArgumentNullException>(installedSdks != null, nameof(installedSdks));
 
             this.Processor         = processor;
-            this.PATH              = path;
+            this.Path              = path;
             this.HasUnzip          = hasUnzip;
             this.HasDebugger       = hasDebugger;
             this.InstalledSdks     = installedSdks.ToList();
@@ -71,7 +71,7 @@ namespace RaspberryDebugger.Connection
         /// <summary>
         /// Returns the current value of the <b>PATH</b> environment variable.
         /// </summary>
-        public string PATH { get; private set; }
+        public string Path { get; private set; }
 
         /// <summary>
         /// Returns <c>true</c> if <b>unzip</b> is installed on the Raspberry Pi.

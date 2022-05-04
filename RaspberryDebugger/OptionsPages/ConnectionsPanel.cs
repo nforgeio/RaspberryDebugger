@@ -30,14 +30,14 @@ namespace RaspberryDebugger.OptionsPages
     /// </summary>
     internal partial class ConnectionsPanel : UserControl
     {
-        private const int spacing       = 8;
+        private const int Spacing       = 8;
 
-        private const int defaultColumn = 1;
-        private const int hostColumn    = 2;
-        private const int portColumn    = 3;
-        private const int userColumn    = 4;
-        private const int authColumn    = 5;
-        private const int blankColumn   = 6;
+        private const int DefaultColumn = 1;
+        private const int HostColumn    = 2;
+        private const int PortColumn    = 3;
+        private const int UserColumn    = 4;
+        private const int AuthColumn    = 5;
+        private const int BlankColumn   = 6;
 
         private bool                    isInitialized = false;
         private List<ConnectionInfo>    connections;
@@ -59,7 +59,7 @@ namespace RaspberryDebugger.OptionsPages
         /// Returns the parent window to be used when displaying message boxes
         /// and dialogs.
         /// </summary>
-        private IWin32Window dialogParent => ConnectionsPage.PanelWindow;
+        private IWin32Window DialogParent => ConnectionsPage.PanelWindow;
 
         /// <summary>
         /// Returns the selected connection or <c>null</c>.
@@ -102,7 +102,7 @@ namespace RaspberryDebugger.OptionsPages
                     {
                         Name            = "Default",
                         Text            = "Default",
-                        DisplayIndex    = defaultColumn,
+                        DisplayIndex    = DefaultColumn,
                         Width           = 60,
                         HeaderTextAlign = HorizontalAlignment.Center,
                         TextAlign       = HorizontalAlignment.Center,
@@ -115,7 +115,7 @@ namespace RaspberryDebugger.OptionsPages
                         Name            = "Host",
                         Text            = "Host",
                         AspectName      = nameof(ConnectionInfo.Name),
-                        DisplayIndex    = hostColumn,
+                        DisplayIndex    = HostColumn,
                         Width           = 200,
                         HeaderTextAlign = HorizontalAlignment.Left,
                         TextAlign       = HorizontalAlignment.Left,
@@ -128,7 +128,7 @@ namespace RaspberryDebugger.OptionsPages
                         Name            = "Port",
                         Text            = "Port",
                         AspectName      = nameof(ConnectionInfo.Port),
-                        DisplayIndex    = portColumn,
+                        DisplayIndex    = PortColumn,
                         Width           = 60,
                         HeaderTextAlign = HorizontalAlignment.Center,
                         TextAlign       = HorizontalAlignment.Center,
@@ -141,7 +141,7 @@ namespace RaspberryDebugger.OptionsPages
                         Name            = "User",
                         Text            = "User",
                         AspectName      = nameof(ConnectionInfo.User),
-                        DisplayIndex    = userColumn,
+                        DisplayIndex    = UserColumn,
                         FillsFreeSpace  = true,
                         MaximumWidth    = 500,
                         HeaderTextAlign = HorizontalAlignment.Left,
@@ -155,7 +155,7 @@ namespace RaspberryDebugger.OptionsPages
                         Name            = "Authentication",
                         Text            = "Authentication",
                         AspectName      = nameof(ConnectionInfo.Authentication),
-                        DisplayIndex    = authColumn,
+                        DisplayIndex    = AuthColumn,
                         Width           = 100,
                         HeaderTextAlign = HorizontalAlignment.Center,
                         TextAlign       = HorizontalAlignment.Center,
@@ -167,7 +167,7 @@ namespace RaspberryDebugger.OptionsPages
                     {
                         Name            = "",
                         Text            = "",
-                        DisplayIndex    = blankColumn,
+                        DisplayIndex    = BlankColumn,
                         Width           = 0,
                         IsVisible       = false,
                         HeaderTextAlign = HorizontalAlignment.Left,
@@ -235,18 +235,18 @@ namespace RaspberryDebugger.OptionsPages
         /// <param name="args">The arguments.</param>
         private void OptionsPanel_SizeChanged(object sender, EventArgs args)
         {
-            var buttonLeft = this.Width - addButton.Width - spacing;
+            var buttonLeft = this.Width - addButton.Width - Spacing;
 
             addButton.Left         = buttonLeft;
             editButton.Left        = buttonLeft;
             verifyButton.Left        = buttonLeft;
             removeButton.Left      = buttonLeft;
 
-            titleLabel.Left        = spacing;
+            titleLabel.Left        = Spacing;
 
-            connectionsView.Left   = spacing;
+            connectionsView.Left   = Spacing;
             connectionsView.Height = this.Height - connectionsView.Top;
-            connectionsView.Width  = this.Width - addButton.Width - 4 * spacing;
+            connectionsView.Width  = this.Width - addButton.Width - 4 * Spacing;
         }
 
         /// <summary>
@@ -332,7 +332,7 @@ namespace RaspberryDebugger.OptionsPages
 
             var connectionDialog = new ConnectionDialog(newConnection, edit: false, connections);
 
-            if (connectionDialog.ShowDialog(dialogParent) == DialogResult.OK)
+            if (connectionDialog.ShowDialog(DialogParent) == DialogResult.OK)
             {
                 connections.Add(newConnection);
                 SaveConnections();
@@ -354,7 +354,7 @@ namespace RaspberryDebugger.OptionsPages
 
             var connectionDialog = new ConnectionDialog(SelectedConnection, edit: true, connections);
 
-            if (connectionDialog.ShowDialog(dialogParent) == DialogResult.OK)
+            if (connectionDialog.ShowDialog(DialogParent) == DialogResult.OK)
             {
                 SaveConnections();
                 ReloadConnections();

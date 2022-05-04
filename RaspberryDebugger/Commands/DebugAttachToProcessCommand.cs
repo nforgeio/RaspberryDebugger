@@ -67,8 +67,8 @@ namespace RaspberryDebugger.Commands
             this.package = package;
             this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
-            var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem      = new MenuCommand(this.Execute, menuCommandID);
+            var menuCommandId = new CommandID(CommandSet, CommandId);
+            var menuItem      = new MenuCommand(this.Execute, menuCommandId);
              
             commandService.AddCommand(menuItem);
         }

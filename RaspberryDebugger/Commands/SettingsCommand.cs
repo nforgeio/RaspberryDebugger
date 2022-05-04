@@ -66,8 +66,8 @@ namespace RaspberryDebugger.Commands
             this.package = package;
             this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
-            var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem      = new OleMenuCommand(this.Execute, menuCommandID);
+            var menuCommandId = new CommandID(CommandSet, CommandId);
+            var menuItem      = new OleMenuCommand(this.Execute, menuCommandId);
 
             menuItem.BeforeQueryStatus +=
                 (s, a) =>
