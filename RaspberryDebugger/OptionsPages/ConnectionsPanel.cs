@@ -39,7 +39,7 @@ namespace RaspberryDebugger.OptionsPages
         private const int AuthColumn    = 5;
         private const int BlankColumn   = 6;
 
-        private bool                    isInitialized = false;
+        private bool                    isInitialized;
         private List<ConnectionInfo>    connections;
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace RaspberryDebugger.OptionsPages
                     new OLVColumn()
                     {
                         Name            = "Default",
-                        Text            = "Default",
+                        Text            = @"Default",
                         DisplayIndex    = DefaultColumn,
                         Width           = 60,
                         HeaderTextAlign = HorizontalAlignment.Center,
@@ -113,7 +113,7 @@ namespace RaspberryDebugger.OptionsPages
                     new OLVColumn()
                     {
                         Name            = "Host",
-                        Text            = "Host",
+                        Text            = @"Host",
                         AspectName      = nameof(ConnectionInfo.Name),
                         DisplayIndex    = HostColumn,
                         Width           = 200,
@@ -126,7 +126,7 @@ namespace RaspberryDebugger.OptionsPages
                     new OLVColumn()
                     {
                         Name            = "Port",
-                        Text            = "Port",
+                        Text            = @"Port",
                         AspectName      = nameof(ConnectionInfo.Port),
                         DisplayIndex    = PortColumn,
                         Width           = 60,
@@ -139,7 +139,7 @@ namespace RaspberryDebugger.OptionsPages
                     new OLVColumn()
                     {
                         Name            = "User",
-                        Text            = "User",
+                        Text            = @"User",
                         AspectName      = nameof(ConnectionInfo.User),
                         DisplayIndex    = UserColumn,
                         FillsFreeSpace  = true,
@@ -153,7 +153,7 @@ namespace RaspberryDebugger.OptionsPages
                     new OLVColumn()
                     {
                         Name            = "Authentication",
-                        Text            = "Authentication",
+                        Text            = @"Authentication",
                         AspectName      = nameof(ConnectionInfo.Authentication),
                         DisplayIndex    = AuthColumn,
                         Width           = 100,
@@ -384,7 +384,7 @@ namespace RaspberryDebugger.OptionsPages
             {
                 try
                 {
-                    using (var connection = await Connection.Connection.ConnectAsync(currentConnection))
+                    using (await Connection.Connection.ConnectAsync(currentConnection))
                     {
                         exception = null;
                     }
@@ -404,16 +404,19 @@ namespace RaspberryDebugger.OptionsPages
                 ReloadConnections();
 
                 MessageBox.Show(this,
-                                $"[{SelectedConnection.Name}] Connection is OK!",
-                                $"Success",
+                                $@"[{SelectedConnection.Name}] Connection is OK!",
+                                $@"Success",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Information);
             }
             else
             {
                 MessageBox.Show(this,
-                                $"Connection Failed:\r\n\r\n{exception.GetType().FullName}\r\n{exception.Message}\r\n\r\nView the Debug Output for more details.",
-                                $"Connection Failed",
+                                $@"Connection Failed:
+                                {exception.GetType().FullName}
+                                {exception.Message}
+                                View the Debug Output for more details.",
+                                $@"Connection Failed",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
             }

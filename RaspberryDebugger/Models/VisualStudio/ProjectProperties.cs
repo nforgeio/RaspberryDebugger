@@ -56,15 +56,15 @@ namespace RaspberryDebugger.Models.VisualStudio
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (string.IsNullOrEmpty(project.FullName))
+            if (string.IsNullOrEmpty(project?.FullName))
             {
                 // We'll see this for unsupported Visual Studio projects and will just
                 // return project properties indicating this.
 
                 return new ProjectProperties()
                 {
-                    Name                  = project.Name,
-                    FullPath              = project.FullName,
+                    Name                  = project?.Name,
+                    FullPath              = project?.FullName,
                     Configuration         = null,
                     IsNetCore             = false,
                     SdkVersion            = null,
@@ -86,9 +86,6 @@ namespace RaspberryDebugger.Models.VisualStudio
             }
 
             var projectFolder = Path.GetDirectoryName(project.FullName);
-            var isNetCore     = true;
-            var netVersion    = (SemanticVersion)null;
-            var sdkName       = (string)null;
 
             // Read the properties we care about from the project.
             var targetFrameworkMonikers = (string)project.Properties.Item("TargetFrameworkMoniker").Value;
@@ -96,11 +93,11 @@ namespace RaspberryDebugger.Models.VisualStudio
 
             var monikers = targetFrameworkMonikers.Split(',');
 
-            isNetCore = monikers[0] == ".NETCoreApp";
+            var isNetCore = monikers[0] == ".NETCoreApp";
 
             // Extract the version from the moniker.  This looks like: "Version=v5.0"
             var versionRegex = new Regex(@"(?<version>[0-9\.]+)$");
-            netVersion = SemanticVersion.Parse(versionRegex.Match(monikers[1]).Groups["version"].Value);
+            var netVersion = SemanticVersion.Parse(versionRegex.Match(monikers[1]).Groups["version"].Value);
 
             var targetSdk        = (RaspberryDebugger.Connection.Sdk)null;
             var targetSdkVersion = (SemanticVersion)null;
@@ -114,14 +111,13 @@ namespace RaspberryDebugger.Models.VisualStudio
                     continue;
                 }
 
-                if (targetSdkVersion == null || sdkVersion > targetSdkVersion)
-                {
-                    targetSdkVersion = sdkVersion;
-                    targetSdk        = new RaspberryDebugger.Connection.Sdk(sdkItem.Name, sdkItem.Version, sdkItem.Architecture);
-                }
+                if (targetSdkVersion != null && sdkVersion <= targetSdkVersion) continue;
+
+                targetSdkVersion = sdkVersion;
+                targetSdk        = new RaspberryDebugger.Connection.Sdk(sdkItem.Name, sdkItem.Version, sdkItem.Architecture);
             }
 
-            sdkName = targetSdk?.Name;
+            var sdkName = targetSdk?.Name;
 
             // Load [Properties/launchSettings.json] if present to obtain the command line
             // arguments and environment variables as well as the target connection.  Note
@@ -140,7 +136,7 @@ namespace RaspberryDebugger.Models.VisualStudio
             //
             //              ASPNETCORE_SERVER.URLS=http://0.0.0.0:<port>
 
-            var launchSettingsPath    = Path.Combine(projectFolder, "Properties", "launchSettings.json");
+            var launchSettingsPath    = Path.Combine(projectFolder ?? string.Empty, "Properties", "launchSettings.json");
             var commandLineArgs       = new List<string>();
             var environmentVariables  = new Dictionary<string, string>();
             var isAspNet              = false;
@@ -236,14 +232,9 @@ namespace RaspberryDebugger.Models.VisualStudio
                                     {
                                         var uri = new Uri(launchUri, UriKind.RelativeOrAbsolute);
 
-                                        if (uri.IsAbsoluteUri)
-                                        {
-                                            aspRelativeBrowserUri = uri.PathAndQuery;
-                                        }
-                                        else
-                                        {
-                                            aspRelativeBrowserUri = launchUri;
-                                        }
+                                        aspRelativeBrowserUri = uri.IsAbsoluteUri 
+                                            ? uri.PathAndQuery 
+                                            : launchUri;
                                     }
                                     catch
                                     {
@@ -433,7 +424,7 @@ namespace RaspberryDebugger.Models.VisualStudio
         public string Name { get; private set; }
 
         /// <summary>
-        /// Returns the fullly qualfied path to the project file.
+        /// Returns the fully qualified path to the project file.
         /// </summary>
         public string FullPath { get; private set; }
 
@@ -470,7 +461,7 @@ namespace RaspberryDebugger.Models.VisualStudio
         public string OutputFolder { get; private set; }
 
         /// <summary>
-        /// Indicates that the program is an execuable as opposed to something
+        /// Indicates that the program is an executable as opposed to something
         /// else, like a DLL.
         /// </summary>
         public bool IsExecutable { get; private set; }
@@ -483,7 +474,7 @@ namespace RaspberryDebugger.Models.VisualStudio
         /// <summary>
         /// Returns the framework version.
         /// </summary>
-        public string Framework { get; private set; }
+        public string Framework => null;
 
         /// <summary>
         /// Returns the publication folder.
