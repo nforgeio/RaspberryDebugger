@@ -24,7 +24,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Neon.Common;
 using RaspberryDebugger.Dialogs;
-using Task = System.Threading.Tasks.Task;
+using System.Threading.Tasks;
 
 namespace RaspberryDebugger.Commands
 {
@@ -43,12 +43,7 @@ namespace RaspberryDebugger.Commands
         /// </summary>
         public static readonly Guid CommandSet = RaspberryDebuggerPackage.CommandSet;
 
-        /// <summary>
-        /// VS Package that provides this command, not null.
-        /// </summary>
-        private readonly AsyncPackage package;
-
-        private DTE2    dte;
+        private readonly DTE2 dte;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SettingsCommand"/> class.
@@ -63,7 +58,6 @@ namespace RaspberryDebugger.Commands
             
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.package = package;
             this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
             var menuCommandId = new CommandID(CommandSet, CommandId);
@@ -77,18 +71,13 @@ namespace RaspberryDebugger.Commands
                     command.Visible = PackageHelper.IsActiveProjectRaspberryCompatible(dte);
                 };
              
-            commandService.AddCommand(menuItem);
+            commandService?.AddCommand(menuItem);
         }
 
         /// <summary>
         /// Gets the instance of the command.
         /// </summary>
         public static SettingsCommand Instance { get; private set; }
-
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider => this.package;
 
         /// <summary>
         /// Initializes the singleton instance of the command.

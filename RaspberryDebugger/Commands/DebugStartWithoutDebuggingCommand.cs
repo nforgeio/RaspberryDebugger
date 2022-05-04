@@ -23,7 +23,7 @@ using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using RaspberryDebugger.Dialogs;
-using Task = System.Threading.Tasks.Task;
+using System.Threading.Tasks;
 
 namespace RaspberryDebugger.Commands
 {
@@ -32,7 +32,7 @@ namespace RaspberryDebugger.Commands
     /// </summary>
     internal sealed class DebugStartWithoutDebuggingCommand
     {
-        private DTE2    dte;
+        internal DTE2 Dte;
 
         /// <summary>
         /// Command ID.
@@ -43,11 +43,6 @@ namespace RaspberryDebugger.Commands
         /// Package command set ID.
         /// </summary>
         public static readonly Guid CommandSet = RaspberryDebuggerPackage.CommandSet;
-
-        /// <summary>
-        /// VS Package that provides this command, not null.
-        /// </summary>
-        private readonly AsyncPackage package;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugStartCommand"/> class.
@@ -62,24 +57,18 @@ namespace RaspberryDebugger.Commands
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.package = package;
-            this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            this.Dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
             var menuCommandId = new CommandID(CommandSet, CommandId);
             var menuItem      = new MenuCommand(this.Execute, menuCommandId);
              
-            commandService.AddCommand(menuItem);
+            commandService?.AddCommand(menuItem);
         }
 
         /// <summary>
         /// Returns the command instance.
         /// </summary>
         public static DebugStartWithoutDebuggingCommand Instance { get; private set; }
-
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider => this.package;
 
         /// <summary>
         /// Initializes the singleton instance of the command.
