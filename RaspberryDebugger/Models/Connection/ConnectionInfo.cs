@@ -14,8 +14,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Neon.Net;
 using Newtonsoft.Json;
 using RaspberryDebugger.OptionsPages;
@@ -65,11 +65,10 @@ namespace RaspberryDebugger.Models.Connection
 
             set
             {
-                if (isDefault != value)
-                {
-                    isDefault = value;
-                    ConnectionsPanel?.ConnectionIsDefaultChanged(this);
-                }
+                if (isDefault == value) return;
+
+                isDefault = value;
+                ConnectionsPanel?.ConnectionIsDefaultChanged(this);
             }
         }
 
@@ -122,7 +121,7 @@ namespace RaspberryDebugger.Models.Connection
         /// </summary>
         [JsonProperty(PropertyName = "PrivateKeyPath", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [DefaultValue(null)]
-        public string PrivateKeyPath { get; set; } = null;
+        public string PrivateKeyPath { get; set; }
 
         /// <summary>
         /// Path to the public key for this connection or <c>null</c> when one
@@ -130,7 +129,7 @@ namespace RaspberryDebugger.Models.Connection
         /// </summary>
         [JsonProperty(PropertyName = "PublicKeyPath", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [DefaultValue(null)]
-        public string PublicKeyPath { get; set; } = null;
+        public string PublicKeyPath { get; set; }
 
         /// <summary>
         /// Describes the authentication method.
@@ -149,6 +148,7 @@ namespace RaspberryDebugger.Models.Connection
         /// appear to have a check box changed event.
         /// </para>
         /// </summary>
+        [SuppressMessage("ReSharper", "InvalidXmlDocComment")]
         internal ConnectionsPanel ConnectionsPanel { get; set; }
     }
 }
