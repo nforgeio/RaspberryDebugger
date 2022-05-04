@@ -104,7 +104,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// Returns the root directory on the Raspberry Pi where the folder where 
         /// program binaries will be uploaded for the named user.  Each program will
-        /// have a subdirectory named for the program.
+        /// have a sub directory named for the program.
         /// </summary>
         public static string RemoteDebugBinaryRoot(string username)
         {
