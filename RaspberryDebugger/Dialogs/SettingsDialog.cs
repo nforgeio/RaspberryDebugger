@@ -14,7 +14,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -26,12 +25,11 @@ using RaspberryDebugger.Models.Project;
 namespace RaspberryDebugger.Dialogs
 {
     /// <summary>
-    /// Allows the user to edit the Rasparry related settings for a project.
+    /// Allows the user to edit the Raspberry related settings for a project.
     /// </summary>
     internal partial class SettingsDialog : Form
     {
-        private ProjectSettings             projectSettings;
-        private Dictionary<string, int>     connectionNameToIndex;
+        private readonly ProjectSettings projectSettings;
 
         /// <summary>
         /// Constructor.
@@ -47,13 +45,11 @@ namespace RaspberryDebugger.Dialogs
 
             // The instructions include "\r\n" sequences that need to be replaced with
             // actual CR/LF characters.
-
             instructionsTextBox.Text = Regex.Unescape(instructionsTextBox.Text);
 
             // Initialize the combo box with the available connections and select
             // the current one.
-
-            connectionNameToIndex = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+            var connectionNameToIndex = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
 
             var connections = PackageHelper.ReadConnections(disableLogging: true);
             var index       = 0;
@@ -72,7 +68,7 @@ namespace RaspberryDebugger.Dialogs
                 connectionNameToIndex.Add(connection.Name, index++);
             }
 
-            if (!projectSettings.EnableRemoteDebugging)
+            if (projectSettings != null && !projectSettings.EnableRemoteDebugging)
             {
                 targetComboBox.SelectedIndex = connectionNameToIndex[ProjectSettings.DisabledConnectionName];
             }
@@ -81,26 +77,30 @@ namespace RaspberryDebugger.Dialogs
                 // If the connection named in the settings exists select it,
                 // otherwise select the default.
 
-                var selectedConnection = connections.FirstOrDefault(connection => connection.Name.Equals(projectSettings.RemoteDebugTarget, StringComparison.InvariantCultureIgnoreCase));
+                var selectedConnection = connections.FirstOrDefault(connection => projectSettings != null 
+                    && connection.Name.Equals(projectSettings.RemoteDebugTarget, StringComparison.InvariantCultureIgnoreCase));
 
-                if (projectSettings.RemoteDebugTarget == null || selectedConnection == null)
+                if (projectSettings != null && (projectSettings.RemoteDebugTarget == null || selectedConnection == null))
                 {
                     targetComboBox.SelectedIndex = connectionNameToIndex[ProjectSettings.DefaultConnectionName];
                 }
                 else
                 {
-                    targetComboBox.SelectedIndex = connectionNameToIndex[selectedConnection.Name];
+                    if (selectedConnection != null)
+                    {
+                        targetComboBox.SelectedIndex = connectionNameToIndex[selectedConnection.Name];
+                    }
                 }
             }
 
-            targetGroup.Text = projectSettings.TargetGroup;
+            if (projectSettings != null) targetGroup.Text = projectSettings.TargetGroup;
         }
 
         /// <summary>
         /// Handles OK button clicks.
         /// </summary>
         /// <param name="sender">The sender</param>
-        /// <param name="args"The arguments</param>
+        /// <param name="args">Event arguments</param>
         private void okButton_Click(object sender, EventArgs args)
         {
             var selectedItem = (string)(targetComboBox.SelectedItem);
@@ -133,8 +133,8 @@ namespace RaspberryDebugger.Dialogs
                 targetGroup.SelectAll();
 
                 MessageBoxEx.Show(
-                    $"Invalid Linux group name: group names should not include spaces.",
-                    $"Target Group Error",
+                    "Invalid Linux group name: group names should not include spaces.",
+                    "Target Group Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
@@ -150,7 +150,7 @@ namespace RaspberryDebugger.Dialogs
         /// Handles Cancel button clicks.
         /// </summary>
         /// <param name="sender">The sender</param>
-        /// <param name="args"The arguments</param>
+        /// <param name="args">Event arguments</param>
         private void cancelButton_Click(object sender, EventArgs args)
         {
             DialogResult = DialogResult.Cancel;
