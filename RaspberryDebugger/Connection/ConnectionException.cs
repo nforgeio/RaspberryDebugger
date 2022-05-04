@@ -14,8 +14,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System;
+using Neon.SSH;
 
 namespace RaspberryDebugger.Connection
 {
@@ -33,10 +33,9 @@ namespace RaspberryDebugger.Connection
         /// <param name="connection">The offending connection.</param>
         /// <param name="error">The error message.</param>
         /// <returns>The exception message.</returns>
-        private static string GetMessage(Connection connection, string error)
+        private static string GetMessage(LinuxSshProxy connection, string error)
         {
             var name = connection?.Name ?? "????";
-            
             error = error ?? "unspecified error";
 
             return $"[{name}]: {error}";
