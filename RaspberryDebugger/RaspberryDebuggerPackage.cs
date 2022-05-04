@@ -14,24 +14,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
 using EnvDTE;
 using EnvDTE80;
-
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-
-using Neon.Common;
-using Neon.Diagnostics;
 using RaspberryDebugger.Commands;
 using RaspberryDebugger.Models.Project;
 using RaspberryDebugger.Models.VisualStudio;
