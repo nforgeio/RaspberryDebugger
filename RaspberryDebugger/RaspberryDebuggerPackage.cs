@@ -274,7 +274,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// Debug.Start
         /// </summary>
-        private void DebugStartCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        private void DebugStartCommandEvent_BeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -290,14 +290,14 @@ namespace RaspberryDebugger
                 return;
             }
 
-            CancelDefault = true;
+            cancelDefault = true;
             ExecuteCommand(DebugStartCommand.CommandSet, DebugStartCommand.CommandId); 
         }
 
         /// <summary>
         /// Debug.StartWithoutDebugging
         /// </summary>
-        private void DebugStartWithoutDebuggingCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        private void DebugStartWithoutDebuggingCommandEvent_BeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -308,14 +308,14 @@ namespace RaspberryDebugger
                 return;
             }
 
-            CancelDefault = true;
+            cancelDefault = true;
             ExecuteCommand(DebugStartWithoutDebuggingCommand.CommandSet, DebugStartWithoutDebuggingCommand.CommandId);
         }
 
         /// <summary>
         /// Debug.AttachToProcess
         /// </summary>
-        private void AttachToProcessCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        private void AttachToProcessCommandEvent_BeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -326,14 +326,14 @@ namespace RaspberryDebugger
                 return;
             }
 
-            CancelDefault = true;
+            cancelDefault = true;
             ExecuteCommand(DebugAttachToProcessCommand.CommandSet, DebugAttachToProcessCommand.CommandId);
         }
 
         /// <summary>
         /// Debug.Restart
         /// </summary>
-        private void DebugRestartCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        private void DebugRestartCommandEvent_BeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -344,7 +344,7 @@ namespace RaspberryDebugger
                 return;
             }
 
-            CancelDefault = true;
+            cancelDefault = true;
             ExecuteCommand(DebugAttachToProcessCommand.CommandSet, DebugAttachToProcessCommand.CommandId);
         }
     }
