@@ -20,6 +20,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+// ReSharper disable IdentifierTypo
 
 namespace RaspberryDebugger.Dialogs
 {
@@ -121,7 +122,7 @@ namespace RaspberryDebugger.Dialogs
 
         public const int WhCallwndprocret = 12;
 
-        public enum CbtHookAction : int
+        public enum CbtHookAction
         {
             HCBT_MOVESIZE = 0,
             HCBT_MINMAX = 1,
@@ -177,7 +178,7 @@ namespace RaspberryDebugger.Dialogs
 
         static MessageBoxEx()
         {
-            _hookProc = new HookProc(MessageBoxHookProc);
+            _hookProc = MessageBoxHookProc;
             _hHook    = IntPtr.Zero;
         }
 

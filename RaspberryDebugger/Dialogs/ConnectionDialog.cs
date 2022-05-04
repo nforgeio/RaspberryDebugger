@@ -32,7 +32,7 @@ namespace RaspberryDebugger.Dialogs
     {
         private const char PasswordChar = '•';
 
-        private List<ConnectionInfo>    existingConnections;
+        private readonly List<ConnectionInfo> existingConnections;
 
         /// <summary>
         /// Constructor.
@@ -62,10 +62,16 @@ namespace RaspberryDebugger.Dialogs
             };
         }
 
+        public sealed override string Text
+        {
+            get => base.Text;
+            set => base.Text = value;
+        }
+
         /// <summary>
         /// Returns the connection being created or edited.
         /// </summary>
-        internal ConnectionInfo ConnectionInfo { get; private set; }
+        internal ConnectionInfo ConnectionInfo { get; }
 
         /// <summary>
         /// Handles the OK button.
@@ -89,7 +95,7 @@ namespace RaspberryDebugger.Dialogs
                 return;
             }
 
-            if (!IPAddress.TryParse(hostText, out var address) && !NetHelper.IsValidHost(hostText))
+            if (!IPAddress.TryParse(hostText, out _) && !NetHelper.IsValidHost(hostText))
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();
@@ -176,9 +182,6 @@ namespace RaspberryDebugger.Dialogs
                 MessageBoxEx.Show(this, "You must specify a password until a SSH key has been created automatically for this connection.", "Connection Error", MessageBoxButtons.OK);
                 return;
             }
-
-            hasWhitespace = false;
-            hasQuote      = false;
 
             foreach (var ch in passwordText)
             {
