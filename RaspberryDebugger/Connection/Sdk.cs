@@ -14,7 +14,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System;
 using System.Diagnostics.Contracts;
 using RaspberryDebugger.Models.Sdk;
@@ -44,13 +43,13 @@ namespace RaspberryDebugger.Connection
         /// <summary>
         /// Returns the name of the SDK (like <b>3.1.402</b>).
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
-        /// Returns thge version of the SDK (like <b>3.1.8</b>).
+        /// Returns the version of the SDK (like <b>3.1.8</b>).
         /// </summary>
-        public string Version { get; private set; }
+        public string Version { get; }
 
-        public SdkArchitecture Architecture { get; private set; }
+        public SdkArchitecture Architecture { get; }
     }
 }
