@@ -65,9 +65,9 @@ namespace RaspberryDebugger
         public const int DebugStartWithoutDebuggingCommandId = 0x0201;
         public const int DebugAttachToProcessCommandId = 0x0202;
 
-        private static readonly object debugSyncLock = new object();
-        private static IVsOutputWindowPane debugPane = null;
-        private static readonly Queue<string> debugLogQueue = new Queue<string>();
+        private static IVsOutputWindowPane _debugPane;
+        private static readonly object DebugSyncLock = new object();
+        private static readonly Queue<string> DebugLogQueue = new Queue<string>();
 
         /// <summary>
         /// Returns the package instance.
@@ -80,7 +80,7 @@ namespace RaspberryDebugger
         /// <param name="text">The output text.</param>
         public static void Log(string text)
         {
-            if (Instance == null || debugPane == null)
+            if (Instance == null || _debugPane == null)
             {
                 return;     // Logging hasn't been initialized yet.
             }
@@ -101,9 +101,9 @@ namespace RaspberryDebugger
             // [Task.Run(...).Wait()] which would probably result in
             // background thread exhaustion.
 
-            lock (debugSyncLock)
+            lock (DebugSyncLock)
             {
-                debugLogQueue.Enqueue(text);
+                DebugLogQueue.Enqueue(text);
             }
 
             _ = Instance.JoinableTaskFactory.RunAsync(
@@ -112,20 +112,20 @@ namespace RaspberryDebugger
                     await Task.Yield();     // Get off of the callers stack
                     await Instance.JoinableTaskFactory.SwitchToMainThreadAsync(Instance.DisposalToken);
 
-                    lock (debugSyncLock)
+                    lock (DebugSyncLock)
                     {
-                        if (debugLogQueue.Count == 0)
+                        if (DebugLogQueue.Count == 0)
                         {
                             return;     // Nothing to do
                         }
 
-                        debugPane.Activate();
+                        _debugPane.Activate();
 
                         // Log any queued messages.
 
-                        while (debugLogQueue.Count > 0)
+                        while (DebugLogQueue.Count > 0)
                         {
-                            _ = debugPane.OutputStringThreadSafe(debugLogQueue.Dequeue());
+                            _ = _debugPane.OutputStringThreadSafe(DebugLogQueue.Dequeue());
                         }
                     }
                 });
@@ -175,7 +175,7 @@ namespace RaspberryDebugger
             var debugWindow     = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
             var generalPaneGuid = VSConstants.GUID_OutWindowDebugPane;
 
-            debugWindow.GetPane(ref generalPaneGuid, out debugPane);
+            debugWindow.GetPane(ref generalPaneGuid, out _debugPane);
 
             // Intercept the debugger commands and quickly decide whether the startup project is enabled
             // for Raspberry remote debugging so we can invoke our custom commands instead.  We'll just
