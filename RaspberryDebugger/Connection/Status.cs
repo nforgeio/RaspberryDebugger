@@ -14,7 +14,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -38,6 +37,7 @@ namespace RaspberryDebugger.Connection
         /// <param name="path">The current value of the PATH environment variable.</param>
         /// <param name="model">The Raspberry board model.</param>
         /// <param name="revision">The Raspberry board revision.</param>
+        /// <param name="architecture">The Core SDK architecture</param>
         public Status(
             string              processor, 
             string              path, 
@@ -56,28 +56,27 @@ namespace RaspberryDebugger.Connection
             this.Path              = path;
             this.HasUnzip          = hasUnzip;
             this.HasDebugger       = hasDebugger;
-            this.InstalledSdks     = installedSdks.ToList();
+            this.InstalledSdks     = installedSdks?.ToList();
             this.RaspberryModel    = model;
             this.RaspberryRevision = revision;
             this.Architecture      = architecture;
         }
 
         /// <summary>
-        /// <summary>
         /// Returns the chip architecture (like <b>armv71</b>).
         /// </summary>
-        public string Processor { get; private set; }
+        public string Processor { get; }
 
         /// <summary>
         /// Returns the current value of the <b>PATH</b> environment variable.
         /// </summary>
-        public string Path { get; private set; }
+        public string Path { get; }
 
         /// <summary>
         /// Returns <c>true</c> if <b>unzip</b> is installed on the Raspberry Pi.
         /// This is required and will be installed automatically.
         /// </summary>
-        public bool HasUnzip { get; private set; }
+        public bool HasUnzip { get; }
 
         /// <summary>
         /// Indicates whether the <b>vsdbg</b> debugger is installed.
@@ -87,21 +86,21 @@ namespace RaspberryDebugger.Connection
         /// <summary>
         /// Returns information about the .NET Core SDKs installed.
         /// </summary>
-        public List<Sdk> InstalledSdks { get; private set; }
+        public List<Sdk> InstalledSdks { get; }
 
         /// <summary>
         /// Returns the Raspberry board model.
         /// </summary>
-        public string RaspberryModel { get; private set; }
+        public string RaspberryModel { get; }
 
         /// <summary>
         /// Returns the Raspberry board revision.
         /// </summary>
-        public string RaspberryRevision { get; private set; }
+        public string RaspberryRevision { get; }
 
         /// <summary>
         /// Returns the Raspberry architecture.
         /// </summary>
-        public SdkArchitecture Architecture { get; private set; }
+        public SdkArchitecture Architecture { get; }
     }
 }
