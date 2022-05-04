@@ -171,17 +171,15 @@ namespace RaspberryDebugger
             }
 
             // Initialize the log panel.
-
             var debugWindow     = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
             var generalPaneGuid = VSConstants.GUID_OutWindowDebugPane;
 
-            debugWindow.GetPane(ref generalPaneGuid, out _debugPane);
+            debugWindow?.GetPane(ref generalPaneGuid, out _debugPane);
 
             // Intercept the debugger commands and quickly decide whether the startup project is enabled
             // for Raspberry remote debugging so we can invoke our custom commands instead.  We'll just
             // let the default command implementations do their thing when we're not doing Raspberry
             // debugging.
-
             debugStartCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0127];
             debugStartWithoutDebuggingCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0170];
             debugAttachToProcessCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x00d5];
@@ -193,7 +191,6 @@ namespace RaspberryDebugger
             debugRestartCommandEvent.BeforeExecute += DebugRestartCommandEvent_BeforeExecute;
 
             // Initialize the new commands.
-
             await SettingsCommand.InitializeAsync(this);
             await DebugStartCommand.InitializeAsync(this);
             await DebugStartWithoutDebuggingCommand.InitializeAsync(this);
@@ -219,17 +216,15 @@ namespace RaspberryDebugger
         /// </summary>
         /// <param name="commandSet">The command set GUID.</param>
         /// <param name="commandId">The command ID.</param>
-        /// <param name="arg">Optionall command argument.</param>
+        /// <param name="arg">Argument</param>
         /// <returns>The command result.</returns>
-        private object ExecuteCommand(Guid commandSet, int commandId, object arg = null)
+        private void ExecuteCommand(Guid commandSet, int commandId, object arg = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var result = (object)null;
 
             dte.Commands.Raise(commandSet.ToString(), commandId, ref arg, ref result);
-
-            return result;
         }
 
         /// <summary>
