@@ -14,7 +14,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System.ComponentModel;
 using Newtonsoft.Json;
 
@@ -51,7 +50,7 @@ namespace RaspberryDebugger.Models.Project
         public bool EnableRemoteDebugging { get; set; }
 
         /// <summary>
-        /// Specifes the name of the specific remote Raspberry connection to use or
+        /// Specifies the name of the specific remote Raspberry connection to use or
         /// <c>null</c> for the default connection.
         /// </summary>
         [JsonProperty(PropertyName = "RemoteDebugTarget", Required = Required.AllowNull)]
