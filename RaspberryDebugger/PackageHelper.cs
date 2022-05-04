@@ -41,7 +41,12 @@ using Newtonsoft.Json;
 
 using Neon.Common;
 using Neon.IO;
-
+using RaspberryDebugger.Connection;
+using RaspberryDebugger.Models.Connection;
+using RaspberryDebugger.Models.Project;
+using RaspberryDebugger.Models.Raspberry;
+using RaspberryDebugger.Models.Sdk;
+using RaspberryDebugger.Models.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger

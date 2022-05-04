@@ -17,21 +17,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.Contracts;
-using System.Drawing;
-using System.Data;
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using RaspberryDebugger.Models.Project;
 
-using Neon.Common;
-using Neon.Net;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Dialogs
 {
     /// <summary>
     /// Allows the user to edit the Rasparry related settings for a project.

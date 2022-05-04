@@ -15,17 +15,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Configuration;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-
 using Neon.Net;
 using Newtonsoft.Json;
+using RaspberryDebugger.OptionsPages;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.Connection
 {
     /// <summary>
     /// Describes a Raspberry Pi connection's network details and credentials.

@@ -17,18 +17,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Net;
-using Neon.Common;
-using Neon.Net;
-using Neon.SSH;
+using RaspberryDebugger.Models.Sdk;
 
-using Newtonsoft.Json;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Connection
 {
     /// <summary>
     /// Describes the current status of a remote Raspberry Pi.

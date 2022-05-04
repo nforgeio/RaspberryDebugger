@@ -14,25 +14,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
-
-using Neon.Common;
-
 using Newtonsoft.Json;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.Sdk
 {
     /// <summary>
     /// Describes an .NET Core SDK download.
     /// </summary>
     internal class SdkCatalogItem
     {
-        private bool?   isStandAlone;
-
         /// <summary>
         /// The SDK name (like "3.1.402").
         /// </summary>
@@ -61,7 +52,7 @@ namespace RaspberryDebugger
         /// The SHA512 hash expected for the download.z
         /// </summary>
         [JsonProperty(PropertyName = "SHA512", Required = Required.Always)]
-        public string SHA512 { get; set; }
+        public string Sha512 { get; set; }
 
         /// <summary>
         /// Indicates whether the SDK is actually usable or not.  This defaults
@@ -77,26 +68,5 @@ namespace RaspberryDebugger
         /// </summary>
         [JsonIgnore]
         public bool IsUsable => !IsUnusable;
-
-        /// <summary>
-        /// Indicates that this is a standaloneg SDK vs. one integrated into Visual Studio;
-        /// </summary>
-        [JsonIgnore]
-        public bool IsStandalone
-        {
-            get
-            {
-                if (isStandAlone.HasValue)
-                {
-                    return isStandAlone.Value;
-                }
-
-                // Standalone SDKs seem to have name patch versions < 200.
-
-                isStandAlone = SemanticVersion.Parse(Name).Patch < 200;
-
-                return isStandAlone.Value;
-            }
-        }
     }
 }

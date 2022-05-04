@@ -16,20 +16,10 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.Contracts;
-using System.IO;
-using System.Linq;
-using System.Net;
+using RaspberryDebugger.Models.Sdk;
 
-using Neon.Common;
-using Neon.Net;
-using Neon.SSH;
-
-using Newtonsoft.Json;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Connection
 {
     /// <summary>
     /// Holds information about a .NET Core SDK installed on a Raspberry Pi.

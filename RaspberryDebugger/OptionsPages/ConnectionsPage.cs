@@ -15,17 +15,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Settings;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.OptionsPages
 {
     /// <summary>
     /// Implements our custom debug connections options page.

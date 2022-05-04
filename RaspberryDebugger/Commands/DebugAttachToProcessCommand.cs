@@ -16,32 +16,16 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-
-using EnvDTE;
-using EnvDTE80;
-
-using Neon.Common;
-using Neon.IO;
-using Neon.Windows;
-
-using Newtonsoft.Json.Linq;
-using RaspberryDebugger.Commands;
+using RaspberryDebugger.Dialogs;
 using Task = System.Threading.Tasks.Task;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Commands
 {
     /// <summary>
     /// Handles the <b>Attach to Process...</b> command for Raspberry enabled projects.

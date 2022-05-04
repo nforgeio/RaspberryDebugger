@@ -15,15 +15,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
-using Newtonsoft.Json;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.Sdk
 {
     /// <summary>
     /// Enumerates the supported ARM architectures.

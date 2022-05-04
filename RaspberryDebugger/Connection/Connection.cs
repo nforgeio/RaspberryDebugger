@@ -17,22 +17,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-
-using Neon.Common;
 using Neon.IO;
 using Neon.Net;
 using Neon.SSH;
 using RaspberryDebugger.Extensions;
+using RaspberryDebugger.Models.Connection;
+using RaspberryDebugger.Models.Project;
+using RaspberryDebugger.Models.Sdk;
 using Renci.SshNet.Common;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Connection
 {
     /// <summary>
     /// Implements a SSH connection to the remote Raspberry Pi.
@@ -615,7 +615,7 @@ namespace RaspberryDebugger
                     orgDir=$cwd
                     cd /tmp
 
-                    if ! echo '{targetSdk.SHA512}  dotnet-sdk.tar.gz' | sha512sum --check - ; then
+                    if ! echo '{targetSdk.Sha512}  dotnet-sdk.tar.gz' | sha512sum --check - ; then
                         cd $orgDir
                         exit 1
                     fi

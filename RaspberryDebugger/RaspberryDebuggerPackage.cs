@@ -33,6 +33,9 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Neon.Common;
 using Neon.Diagnostics;
 using RaspberryDebugger.Commands;
+using RaspberryDebugger.Models.Project;
+using RaspberryDebugger.Models.VisualStudio;
+using RaspberryDebugger.OptionsPages;
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger

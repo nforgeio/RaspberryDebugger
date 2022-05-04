@@ -1,4 +1,4 @@
-﻿namespace RaspberryDebugger
+﻿namespace RaspberryDebugger.Dialogs
 {
     partial class SettingsDialog
     {

@@ -29,6 +29,8 @@ using Neon.Common;
 using Neon.IO;
 using Neon.SSH;
 using Newtonsoft.Json.Linq;
+using RaspberryDebugger.Models.Connection;
+using RaspberryDebugger.Models.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger.Commands

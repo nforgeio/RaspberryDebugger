@@ -17,21 +17,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
-using Microsoft.VisualStudio.Threading;
-
 using BrightIdeasSoftware;
-using Neon.Common;
+using RaspberryDebugger.Dialogs;
+using RaspberryDebugger.Models.Connection;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.OptionsPages
 {
     /// <summary>
     /// Implements the debug connections options panel.
@@ -392,7 +384,7 @@ namespace RaspberryDebugger
             {
                 try
                 {
-                    using (var connection = await Connection.ConnectAsync(currentConnection))
+                    using (var connection = await Connection.Connection.ConnectAsync(currentConnection))
                     {
                         exception = null;
                     }

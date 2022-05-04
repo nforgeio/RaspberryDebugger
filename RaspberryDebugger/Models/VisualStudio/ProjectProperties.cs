@@ -14,23 +14,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-
 using Neon.Common;
 using Neon.Net;
-
 using Newtonsoft.Json.Linq;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.VisualStudio
 {
     /// <summary>
     /// The Visual Studio <see cref="Project"/> class properties can only be
@@ -51,7 +49,7 @@ namespace RaspberryDebugger
         /// <param name="solution">The current solution.</param>
         /// <param name="project">The source project.</param>
         /// <returns>The cloned <see cref="ProjectProperties"/>.</returns>
-        public static ProjectProperties CopyFrom(Solution solution, Project project)
+        public static ProjectProperties CopyFrom(Solution solution, EnvDTE.Project project)
         {
             Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
             Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
@@ -104,7 +102,7 @@ namespace RaspberryDebugger
             var versionRegex = new Regex(@"(?<version>[0-9\.]+)$");
             netVersion = SemanticVersion.Parse(versionRegex.Match(monikers[1]).Groups["version"].Value);
 
-            var targetSdk        = (Sdk)null;
+            var targetSdk        = (RaspberryDebugger.Connection.Sdk)null;
             var targetSdkVersion = (SemanticVersion)null;
 
             foreach (var sdkItem in PackageHelper.SdkGoodCatalog.Items)
@@ -119,7 +117,7 @@ namespace RaspberryDebugger
                 if (targetSdkVersion == null || sdkVersion > targetSdkVersion)
                 {
                     targetSdkVersion = sdkVersion;
-                    targetSdk        = new Sdk(sdkItem.Name, sdkItem.Version, sdkItem.Architecture);
+                    targetSdk        = new RaspberryDebugger.Connection.Sdk(sdkItem.Name, sdkItem.Version, sdkItem.Architecture);
                 }
             }
 

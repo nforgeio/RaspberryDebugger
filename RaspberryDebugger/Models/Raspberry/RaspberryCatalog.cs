@@ -15,14 +15,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-
 using Newtonsoft.Json;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.Raspberry
 {
     /// <summary>
     /// Describes the known Raspberry boards as described <a href="https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md">here</a>.

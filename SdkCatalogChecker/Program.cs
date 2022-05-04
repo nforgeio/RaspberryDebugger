@@ -16,21 +16,19 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using Polly;
 using Neon.Common;
 using Neon.Cryptography;
-using Newtonsoft.Json;
-using RaspberryDebugger;
-using System.Diagnostics;
+using Polly;
+using RaspberryDebugger.Models.Sdk;
 
-namespace NetCoreCatalogChecker
+namespace SdkCatalogChecker
 {
     /// <summary>
     /// <para>
@@ -94,9 +92,6 @@ namespace NetCoreCatalogChecker
             }
 
             // Verify that all SDK names are unique for a given architecture.
-
-            var sdkNameArchectureToItem = new Dictionary<string, SdkCatalogItem>();
-
             foreach (var item in catalog.Items)
             {
                 if (sdkLinkToItem.TryGetValue($"{item.Name}/{item.Architecture}", out var existingItem))
@@ -144,7 +139,6 @@ namespace NetCoreCatalogChecker
                 // I've seen some transient issues with downloading SDKs from Microsoft: 404 & 503
                 // We're going to retry up to 3 times.
                 // Wait 10 minutes for low download rates
-
                 var timeOut = TimeSpan.FromMinutes(10);
                 client.Timeout = timeOut;
 
@@ -152,7 +146,7 @@ namespace NetCoreCatalogChecker
 
                 var retryPolicy = Policy
                     .Handle<Exception> ()
-                    .WaitAndRetryAsync(3, attempt => timeOut);      // retry 3 times
+                    .WaitAndRetryAsync(3, _ => timeOut);      // retry 3 times
 
                 foreach (var item in catalog.Items
                     .OrderByDescending(item => SemanticVersion.Parse(item.Version))
@@ -190,7 +184,7 @@ namespace NetCoreCatalogChecker
                         ok = false;
                     }
 
-                    var expectedSha512 = item.SHA512.ToLowerInvariant();
+                    var expectedSha512 = item.Sha512.ToLowerInvariant();
                     var actualSha512   = CryptoHelper.ComputeSHA512String(binary).ToLowerInvariant();
 
                     if (actualSha512 == expectedSha512)

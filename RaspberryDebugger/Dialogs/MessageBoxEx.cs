@@ -16,12 +16,12 @@
 // limitations under the License.
 
 using System;
-using System.Windows.Forms;
-using System.Text;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Forms;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Dialogs
 {
     // This class was adapted from:
     //
