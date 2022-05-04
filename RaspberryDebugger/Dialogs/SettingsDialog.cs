@@ -38,7 +38,6 @@ namespace RaspberryDebugger.Dialogs
         public SettingsDialog(ProjectSettings projectSettings)
         {
             Covenant.Requires<ArgumentNullException>(projectSettings != null);
-
             this.projectSettings = projectSettings;
 
             InitializeComponent();
@@ -76,7 +75,6 @@ namespace RaspberryDebugger.Dialogs
             {
                 // If the connection named in the settings exists select it,
                 // otherwise select the default.
-
                 var selectedConnection = connections.FirstOrDefault(connection => projectSettings != null 
                     && connection.Name.Equals(projectSettings.RemoteDebugTarget, StringComparison.InvariantCultureIgnoreCase));
 
