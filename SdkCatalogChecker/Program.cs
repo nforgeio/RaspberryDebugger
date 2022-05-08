@@ -58,9 +58,8 @@ namespace SdkCatalogChecker
         /// This program assumes that it's running within the GitHub repository.
         /// </note>
         /// </summary>
-        /// <param name="args">Ignored</param>
         /// <returns>The tracking <see cref="Task"/>.</returns>
-        public static async Task Main(string[] args)
+        public static async Task Main()
         {
             var catalogPath = Path.GetFullPath(Path.Combine(
                 Assembly.GetExecutingAssembly().Location, 
@@ -121,12 +120,12 @@ namespace SdkCatalogChecker
 
                 switch (item.Architecture)
                 {
-                    case SdkArchitecture.ARM32 when item.Link.Contains("arm64"):
+                    case SdkArchitecture.Arm32 when item.Link.Contains("arm64"):
                         ok = false;
                         Console.WriteLine("*** ERROR: ARM32 SDK link references a 64-bit SDK.");
                         continue;
 
-                    case SdkArchitecture.ARM64 when item.Link.Contains("arm32"):
+                    case SdkArchitecture.Arm64 when item.Link.Contains("arm32"):
                         ok = false;
                         Console.WriteLine("*** ERROR: ARM64 SDK link references a 32-bit SDK.");
                         continue;
