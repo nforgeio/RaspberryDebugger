@@ -169,45 +169,44 @@ namespace RaspberryDebugger.Models.VisualStudio
                             }
 
                             // Extract additional settings for ASPNET projects.
-                            if (settings.Property("iisSettings") != null)
+                            if (settings.Property("iisSettings") == null) continue;
+                            
+                            isAspNet = true;
+
+                            // Note that we're going to fall back to port 5000 if there are any
+                            // issues parsing the application URL.
+                            const int fallbackPort = 5000;
+
+                            var jProperty = profileObject.Property("applicationUrl");
+
+                            if (jProperty != null && jProperty.Value.Type == JTokenType.String)
                             {
-                                isAspNet = true;
-
-                                // Note that we're going to fall back to port 5000 if there are any
-                                // issues parsing the application URL.
-                                const int fallbackPort = 5000;
-
-                                var jProperty = profileObject.Property("applicationUrl");
-
-                                if (jProperty != null && jProperty.Value.Type == JTokenType.String)
+                                try
                                 {
-                                    try
-                                    {
-                                        var uri = new Uri((string)jProperty.Value);
+                                    var uri = new Uri((string)jProperty.Value);
 
-                                        aspPort = uri.Port;
+                                    aspPort = uri.Port;
 
-                                        if (!NetHelper.IsValidPort(aspPort))
-                                        {
-                                            aspPort = fallbackPort;
-                                        }
-                                    }
-                                    catch
+                                    if (!NetHelper.IsValidPort(aspPort))
                                     {
                                         aspPort = fallbackPort;
                                     }
                                 }
-                                else
+                                catch
                                 {
                                     aspPort = fallbackPort;
                                 }
+                            }
+                            else
+                            {
+                                aspPort = fallbackPort;
+                            }
 
-                                jProperty = profileObject.Property("launchBrowser");
+                            jProperty = profileObject.Property("launchBrowser");
 
-                                if (jProperty != null && jProperty.Value.Type == JTokenType.Boolean)
-                                {
-                                    aspLaunchBrowser = (bool)jProperty.Value;
-                                }
+                            if (jProperty != null && jProperty.Value.Type == JTokenType.Boolean)
+                            {
+                                aspLaunchBrowser = (bool)jProperty.Value;
                             }
                         }
                         else if (profile.Name == "IIS Express")
@@ -222,26 +221,26 @@ namespace RaspberryDebugger.Models.VisualStudio
                             var profileObject = (JObject)profile.Value;
                             var jProperty     = profileObject.Property("launchUrl");
 
-                            if (jProperty != null && jProperty.Value.Type == JTokenType.String)
+                            if (jProperty == null || 
+                                jProperty.Value.Type != JTokenType.String) 
+                                continue;
+                            
+                            var launchUri = (string)jProperty.Value;
+
+                            if (string.IsNullOrEmpty(launchUri)) continue;
+
+                            try
                             {
-                                var launchUri = (string)jProperty.Value;
+                                var uri = new Uri(launchUri, UriKind.RelativeOrAbsolute);
 
-                                if (!string.IsNullOrEmpty(launchUri))
-                                {
-                                    try
-                                    {
-                                        var uri = new Uri(launchUri, UriKind.RelativeOrAbsolute);
-
-                                        aspRelativeBrowserUri = uri.IsAbsoluteUri 
-                                            ? uri.PathAndQuery 
-                                            : launchUri;
-                                    }
-                                    catch
-                                    {
-                                        // We'll fall back to "/" for any URI parsing errors.
-                                        aspRelativeBrowserUri = "/";
-                                    }
-                                }
+                                aspRelativeBrowserUri = uri.IsAbsoluteUri 
+                                    ? uri.PathAndQuery 
+                                    : launchUri;
+                            }
+                            catch
+                            {
+                                // We'll fall back to "/" for any URI parsing errors.
+                                aspRelativeBrowserUri = "/";
                             }
                         }
                     }
