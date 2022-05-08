@@ -422,9 +422,9 @@ namespace RaspberryDebugger.Connection
                         Log($"[{Name}]: revision:  {revision}");
 
                         // raspberry pi platform architecture
-                        var architecture = processor.Contains(Platform.BITNESS32.GetAttributeOfType<EnumMemberAttribute>().Value) 
-                            ? SdkArchitecture.ARM32 
-                            : SdkArchitecture.ARM64;
+                        var architecture = processor.Contains(Platform.Bitness32.GetAttributeOfType<EnumMemberAttribute>().Value) 
+                            ? SdkArchitecture.Arm32 
+                            : SdkArchitecture.Arm64;
 
                         // Convert the comma separated SDK names into a [PiSdk] list.
                         var sdks = new List<Sdk>();
@@ -543,7 +543,7 @@ namespace RaspberryDebugger.Connection
         {
             var sdkOnPi = PiStatus.InstalledSdks.FirstOrDefault();
             var sdkOnPiVersion = sdkOnPi?.Version ?? String.Empty;
-            var sdkOnPiArchitecture = sdkOnPi?.Architecture ?? SdkArchitecture.ARM32;
+            var sdkOnPiArchitecture = sdkOnPi?.Architecture ?? SdkArchitecture.Arm32;
 
             if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkOnPiVersion && sdk.Architecture == sdkOnPiArchitecture))
             {

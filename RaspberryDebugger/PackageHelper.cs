@@ -263,7 +263,7 @@ namespace RaspberryDebugger
                         foreach (var line in reader.Lines())
                         {
                             var name    = line.Split(' ').First().Trim();
-                            var sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Name == name && item.Architecture == SdkArchitecture.ARM32);
+                            var sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Name == name && item.Architecture == SdkArchitecture.Arm32);
                             var version = sdkItem?.Version;
 
                             _cachedWorkstationSdks.Add(new Sdk(name, version));

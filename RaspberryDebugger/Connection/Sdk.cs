@@ -31,7 +31,7 @@ namespace RaspberryDebugger.Connection
         /// <param name="name">The SDK name.</param>
         /// <param name="version">The SDK version.</param>
         /// <param name="architecture">The SDK bitness architecture.</param>
-        public Sdk(string name, string version, SdkArchitecture architecture = SdkArchitecture.ARM32)
+        public Sdk(string name, string version, SdkArchitecture architecture = SdkArchitecture.Arm32)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(name), nameof(name));
 
