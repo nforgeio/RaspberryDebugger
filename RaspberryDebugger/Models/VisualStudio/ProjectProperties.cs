@@ -105,12 +105,13 @@ namespace RaspberryDebugger.Models.VisualStudio
             {
                 var sdkVersion = SemanticVersion.Parse(sdkItem.Version);
 
-                if (sdkVersion.Major != netVersion.Major || sdkVersion.Minor != netVersion.Minor)
-                {
+                if (sdkVersion.Major != netVersion.Major ||
+                    sdkVersion.Minor != netVersion.Minor) 
                     continue;
-                }
 
-                if (targetSdkVersion != null && sdkVersion <= targetSdkVersion) continue;
+                if (targetSdkVersion != null && 
+                    sdkVersion <= targetSdkVersion) 
+                    continue;
 
                 targetSdkVersion = sdkVersion;
                 targetSdk        = new RaspberryDebugger.Connection.Sdk(sdkItem.Name, sdkItem.Version, sdkItem.Architecture);
