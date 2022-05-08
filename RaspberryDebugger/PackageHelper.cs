@@ -147,22 +147,21 @@ namespace RaspberryDebugger
             {
                 lock (SyncLock)
                 {
-                    if (_cachedGoodSdkCatalog == null)
+                    if (_cachedGoodSdkCatalog != null) return _cachedGoodSdkCatalog;
+
+                    var assembly = Assembly.GetExecutingAssembly();
+
+                    using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json"))
                     {
-                        var assembly = Assembly.GetExecutingAssembly();
+                        var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
 
-                        using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json"))
+                        _cachedGoodSdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
+
+                        // Remove any unusable SDKs from the catalog.
+
+                        foreach (var unusable in _cachedGoodSdkCatalog.Items.Where(item => item.IsUnusable).ToArray())
                         {
-                            var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
-
-                            _cachedGoodSdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
-
-                            // Remove any unusable SDKs from the catalog.
-
-                            foreach (var unusable in _cachedGoodSdkCatalog.Items.Where(item => item.IsUnusable).ToArray())
-                            {
-                                _cachedGoodSdkCatalog.Items.Remove(unusable);
-                            }
+                            _cachedGoodSdkCatalog.Items.Remove(unusable);
                         }
                     }
 
