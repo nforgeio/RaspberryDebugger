@@ -30,6 +30,8 @@ using RaspberryDebugger.Models.Connection;
 using RaspberryDebugger.Models.Project;
 using RaspberryDebugger.Models.Sdk;
 using Renci.SshNet.Common;
+using OperatingSystem = RaspberryDebugger.Models.Sdk.OperatingSystem;
+
 // ReSharper disable StringLiteralTypo
 
 namespace RaspberryDebugger.Connection
@@ -421,21 +423,28 @@ namespace RaspberryDebugger.Connection
                         Log($"[{Name}]: model:     {model}");
                         Log($"[{Name}]: revision:  {revision}");
 
-                        // raspberry pi platform architecture
-                        var architecture = processor.Contains(Platform.Bitness32.GetAttributeOfType<EnumMemberAttribute>().Value) 
-                            ? SdkArchitecture.Arm32 
-                            : SdkArchitecture.Arm64;
+                        var osBitness = SdkArchitecture.Unknown;
+
+                        if (OperatingSystem.Bitness32.Any(bitness => processor.Contains(bitness)))
+                        {
+                            osBitness = SdkArchitecture.Arm32;
+                        }
+
+                        if (OperatingSystem.Bitness64.Any(bitness => processor.Contains(bitness)))
+                        {
+                            osBitness = SdkArchitecture.Arm64;
+                        }
 
                         // Convert the comma separated SDK names into a [PiSdk] list.
                         var sdks = new List<Sdk>();
 
                         foreach (var sdkName in sdkLine.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(sdk => sdk.Trim()))
                         {
-                            var sdkCatalogItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == sdkName && item.Architecture == architecture);
+                            var sdkCatalogItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == sdkName && item.Architecture == osBitness);
 
                             if (sdkCatalogItem != null)
                             {
-                                sdks.Add(new Sdk(sdkName, sdkCatalogItem.Version, architecture));
+                                sdks.Add(new Sdk(sdkName, sdkCatalogItem.Version, osBitness));
                             }
                             else
                             {
@@ -451,7 +460,7 @@ namespace RaspberryDebugger.Connection
                             installedSdks: sdks,
                             model:         model,
                             revision:      revision,
-                            architecture:  architecture
+                            architecture:  osBitness
                         );
                     }
                 });
@@ -552,7 +561,7 @@ namespace RaspberryDebugger.Connection
          
             // Locate the standalone SDK for the request .NET version.
             // Figure out the latest SDK version - Microsoft versioning: the highest number
-            var targetSdk = PackageHelper.SdkGoodCatalog.Items
+            var targetSdk = PackageHelper.SdkCatalog.Items
                 .OrderByDescending(item => item.Version)
                 .FirstOrDefault(item => item.Architecture == PiStatus.Architecture);
 
