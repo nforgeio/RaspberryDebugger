@@ -223,58 +223,6 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Returns the .NET SDKs currently installed on the workstation.
-        /// </summary>
-        public static List<Sdk> InstalledWorkstationSdks
-        {
-            get
-            {
-                lock (SyncLock)
-                {
-                    if (_cachedWorkstationSdks != null)
-                    {
-                        return _cachedWorkstationSdks;
-                    }
-
-                    var response = NeonHelper.ExecuteCapture("dotnet", new object[] { "--list-sdks" });
-
-                    if (response.ExitCode != 0)
-                    {
-                        throw new Exception($"[dotnet --list-sdks] failed with exitcode={response.ExitCode}]");
-                    }
-
-                    // The output will look something like this:
-                    //
-                    //      2.1.403 [C:\Program Files\dotnet\sdk]
-                    //      3.0.100-preview9-014004 [C:\Program Files\dotnet\sdk]
-                    //      3.1.100 [C:\Program Files\dotnet\sdk]
-                    //      3.1.301 [C:\Program Files\dotnet\sdk]
-                    //      3.1.402 [C:\Program Files\dotnet\sdk]
-                    //
-                    // We'll just extract the SDK name (up to the separating space) and lookup the 
-                    // version from our catalog.  SDKs that aren't in our catalog will have a NULL
-                    // version.
-
-                    _cachedWorkstationSdks = new List<Sdk>();
-
-                    using (var reader = new StringReader(response.OutputText))
-                    {
-                        foreach (var line in reader.Lines())
-                        {
-                            var name    = line.Split(' ').First().Trim();
-                            var sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Name == name && item.Architecture == SdkArchitecture.Arm32);
-                            var version = sdkItem?.Version;
-
-                            _cachedWorkstationSdks.Add(new Sdk(name, version));
-                        }
-                    }
-
-                    return _cachedWorkstationSdks;
-                }
-            }
-        }
-
-        /// <summary>
         /// Reads the persisted connection settings.
         /// </summary>
         /// <param name="disableLogging">Optionally disable logging.</param>
