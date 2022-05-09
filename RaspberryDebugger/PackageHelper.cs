@@ -52,7 +52,6 @@ namespace RaspberryDebugger
         private static SdkCatalog       _cachedSdkCatalog;
         private static SdkCatalog       _cachedGoodSdkCatalog;
         private static RaspberryCatalog _cachedRaspberryCatalog;
-        private static List<Sdk>        _cachedWorkstationSdks;
 
         /// <summary>
         /// The path to the <b>%USERPROFILE%\.raspberry</b> folder where the package
@@ -135,66 +134,6 @@ namespace RaspberryDebugger
 
                     return _cachedSdkCatalog;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Returns information about the known good .NET Core SDKs,
-        /// </summary>
-        public static SdkCatalog SdkGoodCatalog
-        {
-            get
-            {
-                lock (SyncLock)
-                {
-                    if (_cachedGoodSdkCatalog != null) return _cachedGoodSdkCatalog;
-
-                    var assembly = Assembly.GetExecutingAssembly();
-
-                    using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json"))
-                    {
-                        var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
-
-                        _cachedGoodSdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
-
-                        // Remove any unusable SDKs from the catalog.
-
-                        foreach (var unusable in _cachedGoodSdkCatalog.Items.Where(item => item.IsUnusable).ToArray())
-                        {
-                            _cachedGoodSdkCatalog.Items.Remove(unusable);
-                        }
-                    }
-
-                    return _cachedGoodSdkCatalog;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns information about the known Raspberry Pie models.
-        /// </summary>
-        public static RaspberryCatalog RaspberryCatalog
-        {
-            get
-            {
-                lock (SyncLock)
-                {
-                    if (_cachedRaspberryCatalog != null)
-                    {
-                        return _cachedRaspberryCatalog;
-                    }
-
-                    var assembly = Assembly.GetExecutingAssembly();
-
-                    using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.raspberry-catalog.json"))
-                    {
-                        var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
-
-                        _cachedRaspberryCatalog = NeonHelper.JsonDeserialize<RaspberryCatalog>(catalogJson);
-                    }
-                }
-
-                return _cachedRaspberryCatalog;
             }
         }
 

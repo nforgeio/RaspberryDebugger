@@ -101,7 +101,7 @@ namespace RaspberryDebugger.Models.VisualStudio
             var targetSdk        = (RaspberryDebugger.Connection.Sdk)null;
             var targetSdkVersion = (SemanticVersion)null;
 
-            foreach (var sdkItem in PackageHelper.SdkGoodCatalog.Items)
+            foreach (var sdkItem in PackageHelper.SdkCatalog.Items)
             {
                 var sdkVersion = SemanticVersion.Parse(sdkItem.Version);
 
@@ -254,7 +254,10 @@ namespace RaspberryDebugger.Models.VisualStudio
             var debugConnectionName = projectSettings.RemoteDebugTarget;
 
             // Determine whether the referenced .NET Core SDK is currently supported.
-            var sdk = sdkName == null ? null : PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName));
+            var sdk = sdkName == null 
+                ? null 
+                : PackageHelper.SdkCatalog.Items.SingleOrDefault(item => SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName));
+
             var isSupportedSdkVersion = sdk != null;
 
             // Determine whether the project is Raspberry compatible.
