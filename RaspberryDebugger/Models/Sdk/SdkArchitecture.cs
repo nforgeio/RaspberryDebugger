@@ -14,6 +14,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace RaspberryDebugger.Models.Sdk
@@ -33,24 +35,22 @@ namespace RaspberryDebugger.Models.Sdk
         /// 64-bit ARM
         /// </summary>
         [EnumMember(Value = "ARM64")]
-        Arm64
+        Arm64,
+
+        /// <summary>
+        /// unknown 
+        /// </summary>
+        [EnumMember(Value = "UNKNOWN")]
+        Unknown
     }
 
     /// <summary>
-    /// Enumerates the supported architecture bitness.
+    /// OperatingSystem bitness
     /// </summary>
-    internal enum Platform
+    public static class OperatingSystem
     {
-        /// <summary>
-        /// 32-bit ARM
-        /// </summary>
-        [EnumMember(Value = "32")]
-        Bitness32,
+        public static List<string> Bitness32 { get; private set; } = new List<string>(new []{"armv3", "armv7"});
 
-        /// <summary>
-        /// 64-bit ARM
-        /// </summary>
-        [EnumMember(Value = "64")]
-        Bitness64
+        public static List<string> Bitness64 { get; private set; } = new List<string>(new []{"armv8", "aarch64"});
     }
 }
