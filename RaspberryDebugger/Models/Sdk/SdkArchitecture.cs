@@ -23,7 +23,7 @@ namespace RaspberryDebugger.Models.Sdk
     /// <summary>
     /// Enumerates the supported ARM architectures.
     /// </summary>
-    internal enum SdkArchitecture
+    public enum SdkArchitecture
     {
         /// <summary>
         /// 32-bit ARM
