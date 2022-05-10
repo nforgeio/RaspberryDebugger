@@ -1,39 +1,25 @@
 {
   "Items": [
     {
-      "Name": "3.1.417",
-      "Version": "3.1.23",
+      "Name": "3.1.418",
+      "Version": "3.1.24",
       "Architecture": "ARM32",
-      "Link": "https://download.visualstudio.microsoft.com/download/pr/36a601f0-b88e-41ea-910b-4dde7b083e73/61ec8564d50fb391f9e3a10b226fdd0d/dotnet-sdk-3.1.417-linux-arm.tar.gz",
-      "SHA512": "d68f9b130f4a516cb199c9010a42acdda0c9e8c705bce0e72e9854587ee54f5a017b1cea5b84f15dae057531a8a619cffffa1e79f3413d376ba7d7226407574c"
+      "Link": "https://download.visualstudio.microsoft.com/download/pr/c2bd849e-394c-48b0-9955-0d625d0aca50/60549bead15b74667ffc76f18aa05641/dotnet-sdk-3.1.418-linux-arm.tar.gz",
+      "SHA512": "a5edf84b01740767cd0ed2d7e8f84ed66bd786fc61bc93065d3125c8eac123e6c383e7155e5ead31e344b691e23788b240f812d5a5759fa0d764c0e336f2cc22"
     },
     {
-      "Name": "3.1.417",
-      "Version": "3.1.23",
+      "Name": "3.1.418",
+      "Version": "3.1.24",
       "Architecture": "ARM64",
-      "Link": "https://download.visualstudio.microsoft.com/download/pr/d8cdb908-9a61-45e9-8cac-1899af7b49b4/0f815fae130481a31fed4d9d1ad5b217/dotnet-sdk-3.1.417-linux-x64.tar.gz",
-      "SHA512": "8eb1002ad829ddd17638b942d3f8da24ad71ccab268a92a1fa6af6a65d86a4ab7f885f663ea9c68127bb356462bce125222ec4f04dc928005cbbbb1a8658f107"
+      "Link": "https://download.visualstudio.microsoft.com/download/pr/1533613a-1a50-48d0-bffe-341276bf95b3/d20d99d497f07b40f655b888319de311/dotnet-sdk-3.1.418-linux-arm64.tar.gz",
+      "SHA512": "8c3f1254a27991f116f499b11aa389266bc63b93a85ab7103b398bdf14225755277499ccb8297012f572732e5e521c23d02fe3d99b552ecadf8af2867456ebc5"
     },
     {
-      "Name": "5.0.406",
-      "Version": "5.0.15",
+      "Name": "6.0.202",
+      "Version": "6.0.4",
       "Architecture": "ARM32",
-      "Link": "https://download.visualstudio.microsoft.com/download/pr/2c48a0d4-02cc-4f2c-b1ae-2770e6cf5806/439af3e6ab59fbce0108ee65e151546c/dotnet-sdk-5.0.406-linux-arm.tar.gz",
-      "SHA512": "7ac3e2532de5a6b41f379fee445d85040bd033799d525d021b8d582e97c22cc24b3ddfac90e222944a36e6f01538b9906b58cb0bd3c09a8cc56fb82fed8f6a79"
-    },
-    {
-      "Name": "5.0.406",
-      "Version": "5.0.15",
-      "Architecture": "ARM64",
-      "Link": "https://download.visualstudio.microsoft.com/download/pr/c4ae19f7-103c-4723-a1a2-f379226664a2/cb31a7dbd166b7e0003129c44845843b/dotnet-sdk-5.0.406-linux-arm64.tar.gz",
-      "SHA512": "df52611b3135650322030d18c685fa6d0fc0adabae976ea9509ab3e4daa306098b3e4dca31f1950c573dbadf7cfcffacc6ad609c893ec31bbb4df897548651cf"
-    },
-    {
-      "Name": "6.0.201",
-      "Version": "6.0.3",
-      "Architecture": "ARM32",
-      "Link": "https://download.visualstudio.microsoft.com/download/pr/eefec3fa-c4c3-454d-bd7d-8fda31d15e5f/62668641ffc94db5fa11187f14a981f8/dotnet-sdk-6.0.201-linux-arm.tar.gz",
-      "SHA512": "5a683430325a90dd1d8e0071a1868939fb01268f9eb389ca1dc40956fde6b9f45bec086553ad3333139e530dfe5afae48195bcdfec388b0b568989924a1f1dd7"
+      "Link": "https://download.visualstudio.microsoft.com/download/pr/e41a177d-9f0b-4afe-97a4-53587cd89d00/c2c897aa6442d49c1d2d86abb23c20b2/dotnet-sdk-6.0.202-linux-arm.tar.gz",
+      "SHA512": "8c2d56256f4bebe58caee7810b7689408ff023b1f2e68f99fa375f0115db41ef0c3eb160b9ab84dc2764443a045801a4b03f6bc9090e0c1583fca2587ea0d9d6"
     },
     {
       "Name": "6.0.202",
