@@ -551,10 +551,11 @@ namespace RaspberryDebugger.Connection
         public async Task<bool> InstallSdkAsync()
         {
             var sdkOnPi = PiStatus.InstalledSdks.FirstOrDefault();
-            var sdkOnPiVersion = sdkOnPi?.Version ?? String.Empty;
-            var sdkOnPiArchitecture = sdkOnPi?.Architecture ?? SdkArchitecture.Arm32;
+            var sdkOnPiVersion = sdkOnPi?.Version ?? string.Empty;
+            var sdkOnPiArchitecture = sdkOnPi?.Architecture ?? PiStatus.Architecture;
 
-            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkOnPiVersion && sdk.Architecture == sdkOnPiArchitecture))
+            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkOnPiVersion && 
+                                                  sdk.Architecture == sdkOnPiArchitecture))
             {
                 return await Task.FromResult(true);    // Already installed
             }
