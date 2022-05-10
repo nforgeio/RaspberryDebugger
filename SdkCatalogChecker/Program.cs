@@ -130,6 +130,7 @@ namespace SdkCatalogChecker
                         Console.WriteLine("*** ERROR: ARM64 SDK link references a 32-bit SDK.");
                         continue;
 
+                    case SdkArchitecture.Unknown:
                     default:
                         sdkLinkToItem.Add($"{item.Name}/{item.Architecture}", item);
                         break;
