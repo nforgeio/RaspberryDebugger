@@ -49,8 +49,10 @@ namespace RaspberryDebugger.Models.Sdk
     /// </summary>
     public static class OperatingSystem
     {
-        public static List<string> Bitness32 { get; private set; } = new List<string>(new []{"armv3", "armv7"});
+        public static List<string> Bitness32 { get; private set; } = 
+            new List<string>(new []{"armv3", "armv7"});
 
-        public static List<string> Bitness64 { get; private set; } = new List<string>(new []{"armv8", "aarch64"});
+        public static List<string> Bitness64 { get; private set; } = 
+            new List<string>(new []{"armv8", "aarch64"});
     }
 }
