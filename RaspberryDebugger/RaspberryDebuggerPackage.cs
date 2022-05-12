@@ -52,7 +52,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// Unique package ID.
         /// </summary>
-        public const string PackageGuidString = "fed3a92c-c8e2-40a3-a38f-ce7d35088ea5";
+        private const string PackageGuidString = "fed3a92c-c8e2-40a3-a38f-ce7d35088ea5";
 
         /// <summary>
         /// Command set ID for the package.
@@ -80,15 +80,8 @@ namespace RaspberryDebugger
         /// <param name="text">The output text.</param>
         public static void Log(string text)
         {
-            if (Instance == null || _debugPane == null)
-            {
-                return;     // Logging hasn't been initialized yet.
-            }
-
-            if (string.IsNullOrEmpty(text))
-            {
-                return;     // Nothing to log
-            }
+            if (Instance == null || _debugPane == null) return;     // Logging hasn't been initialized yet.
+            if (string.IsNullOrEmpty(text)) return;                 // Nothing to log
 
             // We're going to queue log messages in the current thread and 
             // then execute a fire-and-forget action on the UI thread to
@@ -100,7 +93,6 @@ namespace RaspberryDebugger
             // happens on the UI thread in addition to not using a 
             // [Task.Run(...).Wait()] which would probably result in
             // background thread exhaustion.
-
             lock (DebugSyncLock)
             {
                 DebugLogQueue.Enqueue(text);
