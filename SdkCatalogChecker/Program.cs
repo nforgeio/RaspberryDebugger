@@ -41,7 +41,7 @@ namespace SdkCatalogChecker
     /// to ensure that the links and hashes are still good.
     /// </para>
     /// </summary>
-    public class Program
+    public static class Program
     {
         private enum Status
         {
