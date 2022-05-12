@@ -116,6 +116,7 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <EmbeddedResource Include="raspberry-catalog.json" />
+    <None Include="sdk-parser-catalog.json" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
