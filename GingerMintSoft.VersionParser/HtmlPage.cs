@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
+﻿using HtmlAgilityPack;
+
 using System.Linq;
-using HtmlAgilityPack;
+using System.Globalization;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
+
 using GingerMintSoft.VersionParser.Architecture;
 using GingerMintSoft.VersionParser.Extensions;
 using Version = GingerMintSoft.VersionParser.Architecture.Version;
