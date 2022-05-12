@@ -17,7 +17,7 @@ namespace GingerMintSoft.VersionParser
 
         public string BaseUri { get; set; } = "https://dotnet.microsoft.com";
 
-        public string DownloadUri { get; set; } = "download/dotnet";
+        public string DownloadUri { get; } = "download/dotnet";
 
         public string DotNetUri { get; }
 
