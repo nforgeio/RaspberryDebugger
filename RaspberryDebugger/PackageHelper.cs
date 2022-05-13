@@ -31,7 +31,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using EnvDTE;
 using EnvDTE80;
-
+using GingerMintSoft.VersionParser;
+using GingerMintSoft.VersionParser.Models;
 using Neon.Common;
 using Neon.IO;
 using RaspberryDebugger.Models.Connection;
@@ -47,13 +48,8 @@ namespace RaspberryDebugger
     internal static class PackageHelper
     {
         private static readonly object  SyncLock = new object();
-        private static SdkCatalog       _cachedSdkCatalog;
-
-        /// <summary>
-        /// The path to the <b>%USERPROFILE%\.raspberry</b> folder where the package
-        /// will persist its settings and other files.
-        /// </summary>
-        public static readonly string SettingsFolder;
+        private static SdkCatalog         _cachedSdkCatalog;
+        private static SdkScrapingCatalog _cachedSdkScrapingCatalog;
 
         /// <summary>
         /// The path to the folder holding the Raspberry SSH private keys.
@@ -63,7 +59,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// The path to the JSON file defining the Raspberry Pi connections.
         /// </summary>
-        public static readonly string ConnectionsPath;
+        private static readonly string ConnectionsPath;
 
         /// <summary>
         /// The name used to prefix logged output and status bar text.
@@ -112,10 +108,41 @@ namespace RaspberryDebugger
             {
                 lock (SyncLock)
                 {
-                    if (_cachedSdkCatalog != null) return _cachedSdkCatalog;
-                    
                     var assembly = Assembly.GetExecutingAssembly();
 
+                    if (_cachedSdkScrapingCatalog != null)
+                    {
+                        using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json"))
+                        {
+                            if (catalogStream != null)
+                            {
+                                var json = new StreamReader(catalogStream).ReadToEnd();
+
+                                var jsonSerializerSettings = new JsonSerializerSettings();
+                                jsonSerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+
+                                _cachedSdkScrapingCatalog =
+                                    JsonConvert.DeserializeObject<SdkScrapingCatalog>(json, jsonSerializerSettings);
+
+                                // ReSharper disable once CollectionNeverQueried.Local
+                                var downloadPageLinks = new List<string>();
+
+                                var page = new HtmlPage();
+
+                                if (_cachedSdkScrapingCatalog?.Sdks != null)
+                                {
+                                    foreach (var downLoadUri in _cachedSdkScrapingCatalog.Sdks
+                                                 .Select(sdk => page.ReadDownloadPages(sdk.Version, sdk.Family)))
+                                    {
+                                        downloadPageLinks.AddRange(downLoadUri);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (_cachedSdkCatalog != null) return _cachedSdkCatalog;
+                    
                     using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json"))
                     {
                         _cachedSdkCatalog = NeonHelper
@@ -134,21 +161,21 @@ namespace RaspberryDebugger
         static PackageHelper()
         {
             // Initialize the settings path and folders.
-            SettingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".raspberry");
+            var settingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".raspberry");
 
-            if (!Directory.Exists(SettingsFolder))
+            if (!Directory.Exists(settingsFolder))
             {
-                Directory.CreateDirectory(SettingsFolder);
+                Directory.CreateDirectory(settingsFolder);
             }
 
-            KeysFolder = Path.Combine(SettingsFolder, "keys");
+            KeysFolder = Path.Combine(settingsFolder, "keys");
 
             if (!Directory.Exists(KeysFolder))
             {
                 Directory.CreateDirectory(KeysFolder);
             }
 
-            ConnectionsPath = Path.Combine(SettingsFolder, "connections.json");
+            ConnectionsPath = Path.Combine(settingsFolder, "connections.json");
         }
 
         /// <summary>
@@ -283,7 +310,7 @@ namespace RaspberryDebugger
         /// document.
         /// </note>
         /// </remarks>
-        public static Project GetActiveProject(DTE2 dte)
+        private static Project GetActiveProject(DTE2 dte)
         {
             Covenant.Requires<ArgumentNullException>(dte != null, nameof(dte));
             
@@ -328,7 +355,7 @@ namespace RaspberryDebugger
         /// <param name="parentProject">The parent project.</param>
         /// <param name="projectName">The desired project name.</param>
         /// <returns>The <see cref="Project"/> or <c>null</c>.</returns>
-        public static Project FindInSubProjects(Project parentProject, string projectName)
+        private static Project FindInSubProjects(Project parentProject, string projectName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -369,7 +396,7 @@ namespace RaspberryDebugger
         /// <param name="solutionProjects">The list where discovered projects will be added.</param>
         /// <param name="solution">The parent solution.</param>
         /// <param name="project">The project or solution folder.</param>
-        public static void GetSolutionProjects(List<Project> solutionProjects, Solution solution, Project project)
+        private static void GetSolutionProjects(List<Project> solutionProjects, Solution solution, Project project)
         {
             Covenant.Requires<ArgumentNullException>(solutionProjects != null, nameof(solutionProjects));
             Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
