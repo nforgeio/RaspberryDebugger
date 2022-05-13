@@ -23,6 +23,7 @@ namespace GingerMintSoft.VersionParser.Test
                               $"Checksum: {checkSum} \r\n");
 
             sdkUri = "https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-3.1.418-linux-arm32-binaries";
+            Console.WriteLine($"Download Uri: {sdkUri}\r\n");
 
             (downLoadLink, checkSum) = page.ReadDownloadUriAndChecksum($"{sdkUri}");
             Assert.IsNotNull(downLoadLink);
