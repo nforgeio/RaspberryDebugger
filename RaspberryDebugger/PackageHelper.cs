@@ -21,7 +21,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -35,6 +35,7 @@ using GingerMintSoft.VersionParser;
 using GingerMintSoft.VersionParser.Models;
 using Neon.Common;
 using Neon.IO;
+using RaspberryDebugger.Extensions;
 using RaspberryDebugger.Models.Connection;
 using RaspberryDebugger.Models.Project;
 using RaspberryDebugger.Models.Sdk;
@@ -110,44 +111,45 @@ namespace RaspberryDebugger
                 {
                     var assembly = Assembly.GetExecutingAssembly();
 
-                    if (_cachedSdkScrapingCatalog != null)
-                    {
-                        using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json"))
-                        {
-                            if (catalogStream != null)
-                            {
-                                var json = new StreamReader(catalogStream).ReadToEnd();
-
-                                var jsonSerializerSettings = new JsonSerializerSettings();
-                                jsonSerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-
-                                _cachedSdkScrapingCatalog =
-                                    JsonConvert.DeserializeObject<SdkScrapingCatalog>(json, jsonSerializerSettings);
-
-                                // ReSharper disable once CollectionNeverQueried.Local
-                                var downloadPageLinks = new List<string>();
-
-                                var page = new HtmlPage();
-
-                                if (_cachedSdkScrapingCatalog?.Sdks != null)
-                                {
-                                    foreach (var downLoadUri in _cachedSdkScrapingCatalog.Sdks
-                                                 .Select(sdk => page.ReadDownloadPages(sdk.Version, sdk.Family)))
-                                    {
-                                        downloadPageLinks.AddRange(downLoadUri);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
                     if (_cachedSdkCatalog != null) return _cachedSdkCatalog;
-                    
-                    using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json"))
+                    else _cachedSdkCatalog = new SdkCatalog();
+
+                    using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json"))
                     {
-                        _cachedSdkCatalog = NeonHelper
-                            .JsonDeserialize<SdkCatalog>(Encoding.UTF8
-                                .GetString(catalogStream.ReadToEnd()));
+                        if (catalogStream == null) return _cachedSdkCatalog;
+
+                        var jsonSerializerSettings = new JsonSerializerSettings();
+                        jsonSerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+
+                        _cachedSdkScrapingCatalog =
+                            JsonConvert.DeserializeObject<SdkScrapingCatalog>(
+                                new StreamReader(catalogStream).ReadToEnd(), 
+                                jsonSerializerSettings);
+
+                        if (_cachedSdkScrapingCatalog?.Sdks == null) return _cachedSdkCatalog;
+
+                        var page = new HtmlPage();
+
+                        foreach (var sdk in _cachedSdkScrapingCatalog.Sdks)
+                        {
+                            Parallel.ForEach(page.ReadDownloadPages(sdk.Version, sdk.Family), 
+                                new ParallelOptions
+                                {
+                                    MaxDegreeOfParallelism = Environment.ProcessorCount
+                                }, 
+                                (downloadPageLink) =>
+                            {
+                                var (downLoadLink, checkSum) = page.ReadDownloadUriAndChecksum(downloadPageLink);
+
+                                _cachedSdkCatalog.Items.Add(new SdkCatalogItem
+                                {
+                                    Name = sdk.Version.GetAttributeOfType<EnumMemberAttribute>().Value,
+                                    Architecture = (SdkArchitecture)sdk.Family,
+                                    Link = downLoadLink,
+                                    Sha512 = checkSum
+                                });
+                            });
+                        }
                     }
 
                     return _cachedSdkCatalog;
