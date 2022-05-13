@@ -14,6 +14,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// ReSharper disable StringLiteralTypo
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -248,7 +249,7 @@ namespace RaspberryDebugger
         /// <param name="project">The project.</param>
         /// <param name="projectProperties">The project properties.</param>
         /// <returns><c>true</c> on success.</returns>
-        public static async Task<bool> PublishProjectAsync(DTE2 dte, Solution solution, Project project, ProjectProperties projectProperties)
+        private static async Task<bool> PublishProjectAsync(DTE2 dte, Solution solution, Project project, ProjectProperties projectProperties)
         {
             Covenant.Requires<ArgumentNullException>(dte != null, nameof(dte));
             Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
@@ -290,7 +291,7 @@ namespace RaspberryDebugger
                 }
 
                 Log.Error($"Build failed: [{errorList.Count}] errors");
-                Log.Error($"See the Build/Output panel for more information");
+                Log.Error("See the Build/Output panel for more information");
                 return false;
             }
 
@@ -450,10 +451,11 @@ namespace RaspberryDebugger
             {
                 connectionInfo = existingConnections.SingleOrDefault(info => info.IsDefault);
 
+                // ReSharper disable once InvertIf
                 if (connectionInfo == null)
                 {
                     if (MessageBoxEx.Show(
-                        $"Raspberry connection information required.  Would you like to create a connection now?",
+                        "Raspberry connection information required.  Would you like to create a connection now?",
                         "Raspberry Connection Required",
                         MessageBoxButtons.YesNo,
                         MessageBoxIcon.Error,
@@ -522,8 +524,8 @@ namespace RaspberryDebugger
 
                 MessageBoxEx.Show(
                     $"Your [{connection.PiStatus.RaspberryModel}] is not supported." +
-                    $" .NET Core requires a Raspberry Model 3 or 4 or Pi Zero 2.",
-                    $"Raspberry Not Supported",
+                    " .NET Core requires a Raspberry Model 3 or 4 or Pi Zero 2.",
+                    "Raspberry Not Supported",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
@@ -554,7 +556,7 @@ namespace RaspberryDebugger
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 MessageBoxEx.Show(
-                    $"Cannot install the VSDBG debugger on the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
+                    "Cannot install the VSDBG debugger on the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
                     "Debugger Installation Failed",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -575,7 +577,7 @@ namespace RaspberryDebugger
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             MessageBoxEx.Show(
-                $"Cannot upload the program binaries to the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
+                "Cannot upload the program binaries to the Raspberry.\r\n\r\nCheck the Debug Output for more details.",
                 "Debugger Installation Failed",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
