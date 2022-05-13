@@ -81,34 +81,26 @@ namespace GingerMintSoft.VersionParser
             // Filter for Linux .NET SDK
             var downLoads = htmlPage.DocumentNode
                 .SelectNodes($"//a[contains(text(), '{sdk}')]")
-                .Select(x => x.GetAttributeValue("href", string.Empty))
+                .Select(row => row.GetAttributeValue("href", string.Empty))
+                .Where(href => !href.Contains("alpine") && 
+                               !href.Contains("x32") && 
+                               !href.Contains("x64") && 
+                               !href.Contains("macos") && 
+                               !href.Contains("windows") && 
+                               !href.Contains("runtime") && 
+                               !href.Contains("rc") && 
+                               !href.Contains("preview"))
                 .ToList();
 
-            // filter unwanted: only ARM32 and ARM64 Bit is welcome for Raspberry Pi
-            for (var i = 0; i < downLoads?.Count; i++)
-            {
-                if (downLoads != null && 
-                    !downLoads[i].Contains("alpine") && 
-                    !downLoads[i].Contains("x32") && 
-                    !downLoads[i].Contains("x64") && 
-                    !downLoads[i].Contains("macos") && 
-                    !downLoads[i].Contains("windows") && 
-                    !downLoads[i].Contains("runtime") && 
-                    !downLoads[i].Contains("rc") && 
-                    !downLoads[i].Contains("preview")) 
-                    continue;
-
-                downLoads?.RemoveAt(i--);
-            }
+            // reverse version number ordering -> the actual is on top
+            downLoads.Sort();
+            downLoads.Reverse();
 
             for (var i = 0; i < downLoads?.Count; i++)
             {
+                // build complete download uri
                 if (downLoads != null) downLoads[i] = $"{BaseUri}{downLoads[i]}";
             }
-
-            // reverse version number ordering -> the actual is on top
-            downLoads?.Sort();
-            downLoads?.Reverse();
 
             return downLoads ?? new List<string>();
         }
