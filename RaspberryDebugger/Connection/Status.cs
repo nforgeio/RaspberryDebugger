@@ -14,6 +14,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// ReSharper disable UnusedAutoPropertyAccessor.Local
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -65,18 +66,18 @@ namespace RaspberryDebugger.Connection
         /// <summary>
         /// Returns the chip architecture (like <b>armv71</b>).
         /// </summary>
-        public string Processor { get; }
+        private string Processor { get; set; }
 
         /// <summary>
         /// Returns the current value of the <b>PATH</b> environment variable.
         /// </summary>
-        public string Path { get; }
+        private string Path { get; set; }
 
         /// <summary>
         /// Returns <c>true</c> if <b>unzip</b> is installed on the Raspberry Pi.
         /// This is required and will be installed automatically.
         /// </summary>
-        public bool HasUnzip { get; }
+        private bool HasUnzip { get; set; }
 
         /// <summary>
         /// Indicates whether the <b>vsdbg</b> debugger is installed.
@@ -96,7 +97,7 @@ namespace RaspberryDebugger.Connection
         /// <summary>
         /// Returns the Raspberry board revision.
         /// </summary>
-        public string RaspberryRevision { get; }
+        private string RaspberryRevision { get; set; }
 
         /// <summary>
         /// Returns the Raspberry architecture.
