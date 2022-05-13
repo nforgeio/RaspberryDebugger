@@ -28,6 +28,6 @@ namespace RaspberryDebugger.Models.Sdk
         /// The list of SDK catalog items.
         /// </summary>
         [JsonProperty(PropertyName = "Items", Required = Required.Always)]
-        public List<SdkCatalogItem> Items { get; set; }
+        public List<SdkCatalogItem> Items { get; set; } = new List<SdkCatalogItem>();
     }
 }
