@@ -15,7 +15,7 @@ namespace GingerMintSoft.VersionParser
     {
         private HtmlWeb Web { get; }
 
-        private HtmlDocument? Document { get; set; }
+        private HtmlDocument Document { get; set; } = new HtmlDocument();
 
         public string BaseUri { get; set; } = "https://dotnet.microsoft.com";
 
