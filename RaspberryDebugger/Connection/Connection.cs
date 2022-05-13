@@ -443,7 +443,7 @@ namespace RaspberryDebugger.Connection
                                      .Select(sdk => sdk.Trim()))
                         {
                             var sdkCatalogItem = PackageHelper.SdkCatalog.Items
-                                .SingleOrDefault(item => item.Name == sdkName && item.Architecture == osBitness);
+                                .SingleOrDefault(item => item.Link.Contains(sdkName) && item.Architecture == osBitness);
 
                             if (sdkCatalogItem != null)
                             {
