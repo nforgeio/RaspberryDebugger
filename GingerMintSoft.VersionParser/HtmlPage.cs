@@ -1,9 +1,9 @@
-﻿using HtmlAgilityPack;
-
-using System.Linq;
+﻿using System.Linq;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+
+using HtmlAgilityPack;
 
 using GingerMintSoft.VersionParser.Architecture;
 using GingerMintSoft.VersionParser.Extensions;
@@ -15,7 +15,9 @@ namespace GingerMintSoft.VersionParser
     {
         private HtmlWeb Web { get; }
 
-        private HtmlDocument Document { get; set; } = new HtmlDocument();
+        private HtmlDocument Document { get; set; } = new();
+
+        private string PageUri { get; set; } = string.Empty;
 
         public string BaseUri { get; set; } = "https://dotnet.microsoft.com";
 
@@ -48,9 +50,13 @@ namespace GingerMintSoft.VersionParser
         /// </summary>
         /// <param name="htmlPage">Load this page</param>
         /// <returns>Html document</returns>
-        private HtmlDocument? Load(string htmlPage)
+        private HtmlDocument Load(string htmlPage)
         {
-            Document = Web.Load(htmlPage);
+            Document = htmlPage.Equals(PageUri) 
+                ? Document 
+                : Web.Load(htmlPage);
+
+            PageUri = htmlPage;
 
             return Document;
         }
@@ -65,15 +71,15 @@ namespace GingerMintSoft.VersionParser
         {
             // Get ARM bitness architecture for SDK
             var sdk = architecture == Sdk.Arm32 
-                ? Sdk.Arm32.GetAttributeOfType<EnumMemberAttribute>()?.Value 
-                : Sdk.Arm64.GetAttributeOfType<EnumMemberAttribute>()?.Value;
+                ? Sdk.Arm32.GetAttributeOfType<EnumMemberAttribute>().Value 
+                : Sdk.Arm64.GetAttributeOfType<EnumMemberAttribute>().Value;
 
             // Get .NET main version: 3.1/5.0/6.0/etc.
-            var actual = version.GetAttributeOfType<EnumMemberAttribute>()?.Value;
+            var actual = version.GetAttributeOfType<EnumMemberAttribute>().Value;
             var htmlPage = new HtmlPage(BaseUri).Load($"{DotNetUri}/{actual}");
 
             // Filter for Linux .NET SDK
-            var downLoads = htmlPage?.DocumentNode
+            var downLoads = htmlPage.DocumentNode
                 .SelectNodes($"//a[contains(text(), '{sdk}')]")
                 .Select(x => x.GetAttributeValue("href", string.Empty))
                 .ToList();
@@ -135,18 +141,18 @@ namespace GingerMintSoft.VersionParser
         /// </summary>
         /// <param name="uri">Uri to download SDK page</param>
         /// <returns>Download SDK uri and checksum</returns>
-        public (string? downLoadLink, string? checkSum) ReadDownloadUriAndChecksum(string uri)
+        public (string downLoadLink, string? checkSum) ReadDownloadUriAndChecksum(string uri)
         {
             // load page content from uri
             var htmlPage = new HtmlPage(BaseUri).Load($"{uri}");
 
             // .NET SDK download link and checksum
             return 
-                (htmlPage?.DocumentNode
+                (htmlPage.DocumentNode
                 .SelectNodes("//a[@id='directLink']")
                 .Select(x => x.GetAttributeValue("href", string.Empty))
                 .First(), 
-                htmlPage?.DocumentNode
+                htmlPage.DocumentNode
                 .SelectNodes("//input[@id='checksum']")
                 .Select(x => x.GetAttributeValue("value", string.Empty))
                 .First());
