@@ -528,6 +528,7 @@ namespace RaspberryDebugger
                     MessageBoxIcon.Error);
 
                 connection.Dispose();
+
                 return null;
             }
            
@@ -543,6 +544,7 @@ namespace RaspberryDebugger
                     MessageBoxIcon.Error);
 
                 connection.Dispose();
+
                 return null;
             }
 
@@ -558,6 +560,7 @@ namespace RaspberryDebugger
                     MessageBoxIcon.Error);
 
                 connection.Dispose();
+
                 return null;
             }
 
@@ -566,6 +569,7 @@ namespace RaspberryDebugger
                     projectProperties?.Name, 
                     projectProperties?.AssemblyName,
                     projectProperties?.PublishFolder)) 
+
                 return connection;
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -577,8 +581,8 @@ namespace RaspberryDebugger
                 MessageBoxIcon.Error);
 
             connection.Dispose();
-            return null;
 
+            return null;
         }
     }
 }
