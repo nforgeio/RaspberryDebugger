@@ -46,7 +46,9 @@ namespace GingerMintSoft.VersionParser
         }
 
         /// <summary>
-        /// Load Html page as content
+        /// Load Html page as content:
+        /// If same instance is used the PageUri gets
+        /// checked and the loaded Document gets fetched
         /// </summary>
         /// <param name="htmlPage">Load this page</param>
         /// <returns>Html document</returns>
@@ -75,8 +77,8 @@ namespace GingerMintSoft.VersionParser
                 : Sdk.Arm64.GetAttributeOfType<EnumMemberAttribute>().Value;
 
             // Get .NET main version: 3.1/5.0/6.0/etc.
-            var actual = version.GetAttributeOfType<EnumMemberAttribute>().Value;
-            var htmlPage = new HtmlPage(BaseUri).Load($"{DotNetUri}/{actual}");
+            var actualVersion = version.GetAttributeOfType<EnumMemberAttribute>().Value;
+            var htmlPage = new HtmlPage().Load($"{DotNetUri}/{actualVersion}");
 
             // Filter for Linux .NET SDK
             var downLoads = htmlPage.DocumentNode
@@ -133,7 +135,7 @@ namespace GingerMintSoft.VersionParser
         /// </summary>
         /// <param name="uri">Uri to download SDK page</param>
         /// <returns>Download SDK uri and checksum</returns>
-        public (string downLoadLink, string? checkSum) ReadDownloadUriAndChecksum(string uri)
+        public (string downLoadLink, string checkSum) ReadDownloadUriAndChecksum(string uri)
         {
             // load page content from uri
             var htmlPage = new HtmlPage(BaseUri).Load($"{uri}");
