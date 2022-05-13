@@ -28,19 +28,19 @@ namespace RaspberryDebugger.Models.Sdk
         /// <summary>
         /// 32-bit ARM
         /// </summary>
-        [EnumMember(Value = "ARM32")]
+        [EnumMember(Value = "Arm32")]
         Arm32,
 
         /// <summary>
         /// 64-bit ARM
         /// </summary>
-        [EnumMember(Value = "ARM64")]
+        [EnumMember(Value = "Arm64")]
         Arm64,
 
         /// <summary>
         /// unknown 
         /// </summary>
-        [EnumMember(Value = "UNKNOWN")]
+        [EnumMember(Value = "Unknown")]
         Unknown
     }
 

@@ -17,7 +17,13 @@ namespace GingerMintSoft.VersionParser.Architecture
         /// 64-bit ARM
         /// </summary>
         [EnumMember(Value = "Arm64")]
-        Arm64
+        Arm64,
+
+        /// <summary>
+        /// unknown 
+        /// </summary>
+        [EnumMember(Value = "Unknown")]
+        Unknown
     }
 
     /// <summary>
