@@ -156,14 +156,14 @@ namespace SdkCatalogChecker
                 .WaitAndRetryAsync(3, _ => timeOut);      // retry 3 times
 
             foreach (var item in catalog.Items
-                         .OrderByDescending(item => SemanticVersion.Parse(item.Version))
+                         .OrderByDescending(item => SemanticVersion.Parse(item.Name))
                          .ThenBy(item => item.Name)
                          .ThenBy(item => item.Architecture))
             {
                 Console.WriteLine();
                 Console.WriteLine("----------------------------------------");
                 Console.WriteLine();
-                Console.WriteLine($"SDK:    {item.Name}/{item.Architecture} (v{item.Version})");
+                Console.WriteLine($"SDK:    {item.Name}/{item.Architecture} (v{item.Name})");
                 Console.WriteLine($"Link:   {item.Link}");
 
                 var binary = (byte[])null;
