@@ -74,7 +74,10 @@ namespace RaspberryDebugger.Commands
         /// <summary>
         /// Returns the command instance.
         /// </summary>
-        public static DebugStartCommand Instance { get; private set; }
+#pragma warning disable IDE0052 // Remove unread private members
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        private static DebugStartCommand Instance { get; set; }
+#pragma warning restore IDE0052 // Remove unread private members
 
         /// <summary>
         /// Initializes the singleton instance of the command.
