@@ -80,18 +80,20 @@ namespace GingerMintSoft.VersionParser
             var actualVersion = version.GetAttributeOfType<EnumMemberAttribute>().Value;
             var htmlPage = new HtmlPage().Load($"{DotNetUri}/{actualVersion}");
 
-            // Filter for Linux .NET SDK
+            // Filter only for Linux .NET released SDKs
             var downLoads = htmlPage.DocumentNode
                 .SelectNodes($"//a[contains(text(), '{sdk}')]")
-                .Select(row => row.GetAttributeValue("href", string.Empty))
-                .Where(href => !href.Contains("alpine") && 
-                               !href.Contains("x32") && 
-                               !href.Contains("x64") && 
-                               !href.Contains("macos") && 
-                               !href.Contains("windows") && 
-                               !href.Contains("runtime") && 
-                               !href.Contains("rc") && 
-                               !href.Contains("preview"))
+                .Select(row => 
+                    row.GetAttributeValue("href", string.Empty))
+                .Where(href => 
+                    !href.Contains("alpine") && 
+                    !href.Contains("x32") && 
+                    !href.Contains("x64") && 
+                    !href.Contains("macos") && 
+                    !href.Contains("windows") && 
+                    !href.Contains("runtime") && 
+                    !href.Contains("rc") && 
+                    !href.Contains("preview"))
                 .ToList();
 
             // reverse version number ordering -> the actual is on top
