@@ -14,7 +14,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-using System.ComponentModel;
 using Newtonsoft.Json;
 
 namespace RaspberryDebugger.Models.Sdk
@@ -29,12 +28,6 @@ namespace RaspberryDebugger.Models.Sdk
         /// </summary>
         [JsonProperty(PropertyName = "Name", Required = Required.Always)]
         public string Name { get; set; }
-
-        /// <summary>
-        /// The SDK Version (like "3.1.8").
-        /// </summary>
-        [JsonProperty(PropertyName = "Version", Required = Required.Always)]
-        public string Version { get; set; }
 
         /// <summary>
         /// Specifies the 32-bit or 64-bit version of the SDK.
