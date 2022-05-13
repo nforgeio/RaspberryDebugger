@@ -14,6 +14,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// ReSharper disable UnusedAutoPropertyAccessor.Local
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -106,7 +107,7 @@ namespace RaspberryDebugger.Models.VisualStudio
 
             foreach (var sdkItem in PackageHelper.SdkCatalog.Items)
             {
-                var sdkVersion = SemanticVersion.Parse(sdkItem.Version);
+                var sdkVersion = SemanticVersion.Parse(sdkItem.Name);
 
                 if (sdkVersion.Major != netVersion.Major ||
                     sdkVersion.Minor != netVersion.Minor) 
@@ -117,7 +118,7 @@ namespace RaspberryDebugger.Models.VisualStudio
                     continue;
 
                 targetSdkVersion = sdkVersion;
-                targetSdk        = new RaspberryDebugger.Connection.Sdk(sdkItem.Name, sdkItem.Version, sdkItem.Architecture);
+                targetSdk        = new RaspberryDebugger.Connection.Sdk(sdkItem.Name, sdkItem.Architecture);
             }
 
             var sdkName = targetSdk?.Name;
@@ -284,7 +285,7 @@ namespace RaspberryDebugger.Models.VisualStudio
                 Guid                  = projectGuid,
                 Configuration         = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
                 IsNetCore             = isNetCore,
-                SdkVersion            = sdk?.Version,
+                SdkVersion            = sdk?.Name,
                 OutputFolder          = Path.Combine(projectFolder, project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString()),
                 OutputFileName        = (string)project.Properties.Item("OutputFileName").Value,
                 IsExecutable          = outputType == 1,     // 1=EXE
@@ -438,7 +439,7 @@ namespace RaspberryDebugger.Models.VisualStudio
         /// <summary>
         /// Returns the project's GUID.
         /// </summary>
-        public Guid Guid { get; private set; }
+        private Guid Guid { get; set; }
 
         /// <summary>
         /// Indicates that the project targets .NET Core rather than the .NET Framework.
@@ -496,12 +497,12 @@ namespace RaspberryDebugger.Models.VisualStudio
         /// <summary>
         /// Returns the name of the output binary file.
         /// </summary>
-        public string OutputFileName { get; private set; }
+        private string OutputFileName { get; set; }
 
         /// <summary>
         /// Indicates whether Raspberry debugging is enabled for this project.
         /// </summary>
-        public bool DebugEnabled { get; private set; }
+        private bool DebugEnabled { get; set; }
 
         /// <summary>
         /// Returns the connection name identifying the target Raspberry or <c>null</c>

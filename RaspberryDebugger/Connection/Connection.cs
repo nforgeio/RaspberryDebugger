@@ -438,13 +438,16 @@ namespace RaspberryDebugger.Connection
                         // Convert the comma separated SDK names into a [PiSdk] list.
                         var sdks = new List<Sdk>();
 
-                        foreach (var sdkName in sdkLine.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(sdk => sdk.Trim()))
+                        foreach (var sdkName in sdkLine
+                                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                     .Select(sdk => sdk.Trim()))
                         {
-                            var sdkCatalogItem = PackageHelper.SdkCatalog.Items.SingleOrDefault(item => item.Name == sdkName && item.Architecture == osBitness);
+                            var sdkCatalogItem = PackageHelper.SdkCatalog.Items
+                                .SingleOrDefault(item => item.Name == sdkName && item.Architecture == osBitness);
 
                             if (sdkCatalogItem != null)
                             {
-                                sdks.Add(new Sdk(sdkName, sdkCatalogItem.Version, osBitness));
+                                sdks.Add(new Sdk(sdkName, osBitness));
                             }
                             else
                             {
@@ -551,10 +554,10 @@ namespace RaspberryDebugger.Connection
         public async Task<bool> InstallSdkAsync()
         {
             var sdkOnPi = PiStatus.InstalledSdks.FirstOrDefault();
-            var sdkOnPiVersion = sdkOnPi?.Version ?? string.Empty;
+            var sdkOnPiVersion = sdkOnPi?.Name ?? string.Empty;
             var sdkOnPiArchitecture = sdkOnPi?.Architecture ?? PiStatus.Architecture;
 
-            if (PiStatus.InstalledSdks.Any(sdk => sdk.Version == sdkOnPiVersion && 
+            if (PiStatus.InstalledSdks.Any(sdk => sdk.Name == sdkOnPiVersion && 
                                                   sdk.Architecture == sdkOnPiArchitecture))
             {
                 return await Task.FromResult(true);    // Already installed
@@ -563,7 +566,7 @@ namespace RaspberryDebugger.Connection
             // Locate the standalone SDK for the request .NET version.
             // Figure out the latest SDK version - Microsoft versioning: the highest number
             var targetSdk = PackageHelper.SdkCatalog.Items
-                .OrderByDescending(item => item.Version)
+                .OrderByDescending(item => item.Name)
                 .FirstOrDefault(item => item.Architecture == PiStatus.Architecture);
 
             if (targetSdk == null)
@@ -576,14 +579,14 @@ namespace RaspberryDebugger.Connection
             }
             else
             {
-                LogInfo($".NET Core SDK [v{targetSdk.Version}] is not installed.");
+                LogInfo($".NET Core SDK [v{targetSdk.Name}] is not installed.");
             }
 
             // Install the SDK.
-            LogInfo($"Installing SDK v{targetSdk.Version}");
+            LogInfo($"Installing SDK v{targetSdk.Name}");
             
             var installSdkInfo = 
-                $"Download and install SDK for .NET v{targetSdk.Version} " +
+                $"Download and install SDK for .NET v{targetSdk.Name} " +
                 $"({targetSdk.Architecture.GetAttributeOfType<EnumMemberAttribute>().Value}) on Raspberry...";
 
             return await PackageHelper.ExecuteWithProgressAsync(installSdkInfo,
@@ -659,7 +662,7 @@ namespace RaspberryDebugger.Connection
                         {
                             // Add the newly installed SDK to the list of installed SDKs.
 
-                            PiStatus.InstalledSdks.Add(new Sdk(targetSdk.Name, targetSdk.Version, targetSdk.Architecture));
+                            PiStatus.InstalledSdks.Add(new Sdk(targetSdk.Name, targetSdk.Architecture));
                             return await Task.FromResult(true);
                         }
                         else

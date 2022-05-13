@@ -29,14 +29,12 @@ namespace RaspberryDebugger.Connection
         /// Constructor.
         /// </summary>
         /// <param name="name">The SDK name.</param>
-        /// <param name="version">The SDK version.</param>
         /// <param name="architecture">The SDK bitness architecture.</param>
-        public Sdk(string name, string version, SdkArchitecture architecture = SdkArchitecture.Arm32)
+        public Sdk(string name, SdkArchitecture architecture = SdkArchitecture.Arm32)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(name), nameof(name));
 
             this.Name    = name;
-            this.Version = version;
             this.Architecture = architecture;
         }
 
@@ -46,10 +44,8 @@ namespace RaspberryDebugger.Connection
         public string Name { get; }
 
         /// <summary>
-        /// Returns the version of the SDK (like <b>3.1.8</b>).
+        /// The rasypberry pi architecture
         /// </summary>
-        public string Version { get; }
-
         public SdkArchitecture Architecture { get; }
     }
 }
