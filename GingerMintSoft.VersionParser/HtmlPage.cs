@@ -95,6 +95,11 @@ namespace GingerMintSoft.VersionParser
                 downLoads?.RemoveAt(i--);
             }
 
+            for (var i = 0; i < downLoads?.Count; i++)
+            {
+                if (downLoads != null) downLoads[i] = $"{BaseUri}{downLoads[i]}";
+            }
+
             // reverse version number ordering -> the actual is on top
             downLoads?.Sort();
             downLoads?.Reverse();
