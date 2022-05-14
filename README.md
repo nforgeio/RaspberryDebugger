@@ -2,7 +2,7 @@
 _A Visual Studio Extension for debugging .NET Core applications remotely on a Raspberry Pi_
 
 ---
-**IMPORTANT:** .NET 6.0 starting with the SDK 6.0.100 works now and can be ONLY used in Visual Studio 2022 for the first!
+**IMPORTANT:** .NET 6.0 starting with the SDK 6.0.100 is working now and can be ONLY used in Visual Studio 2022!
 
 For Asp.NET debugging set the runtime identifier project property to:
 
