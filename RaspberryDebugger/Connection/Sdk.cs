@@ -44,7 +44,7 @@ namespace RaspberryDebugger.Connection
         public string Name { get; }
 
         /// <summary>
-        /// The rasypberry pi architecture
+        /// The raspberry pi architecture
         /// </summary>
         public SdkArchitecture Architecture { get; }
     }
