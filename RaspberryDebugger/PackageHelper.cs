@@ -130,6 +130,8 @@ namespace RaspberryDebugger
 
                         var page = new HtmlPage();
 
+                        // Html page scraping is costly
+                        // TODO -> have to optimize a lot! ;)
                         foreach (var sdk in _cachedSdkScrapingCatalog.Sdks)
                         {
                             Parallel.ForEach(page.ReadDownloadPages(sdk.Version, sdk.Family), 
