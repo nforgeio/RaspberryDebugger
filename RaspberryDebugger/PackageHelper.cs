@@ -132,26 +132,32 @@ namespace RaspberryDebugger
 
                         // Html page scraping is costly
                         // TODO -> have to optimize a lot! ;)
-                        foreach (var sdk in _cachedSdkScrapingCatalog.Sdks)
-                        {
-                            Parallel.ForEach(page.ReadDownloadPages(sdk.Version, sdk.Family), 
-                                new ParallelOptions
-                                {
-                                    MaxDegreeOfParallelism = Environment.ProcessorCount
-                                }, 
-                                (downloadPageLink) =>
+                        Parallel.ForEach(_cachedSdkScrapingCatalog.Sdks,
+                            new ParallelOptions
                             {
-                                var (downLoadLink, checkSum) = page.ReadDownloadUriAndChecksum(downloadPageLink);
+                                MaxDegreeOfParallelism = Environment.ProcessorCount
+                            },
+                            (sdk) =>
+                            {
+                                Parallel.ForEach(page.ReadDownloadPages(sdk.Version, sdk.Family),
+                                    new ParallelOptions
+                                    {
+                                        MaxDegreeOfParallelism = Environment.ProcessorCount
+                                    },
+                                    (downloadPageLink) =>
+                                    {
+                                        var (downLoadLink, checkSum) =
+                                            page.ReadDownloadUriAndChecksum(downloadPageLink);
 
-                                _cachedSdkCatalog.Items.Add(new SdkCatalogItem
-                                {
-                                    Name = sdk.Version.GetAttributeOfType<EnumMemberAttribute>().Value,
-                                    Architecture = (SdkArchitecture)sdk.Family,
-                                    Link = downLoadLink,
-                                    Sha512 = checkSum
-                                });
+                                        _cachedSdkCatalog.Items.Add(new SdkCatalogItem
+                                        {
+                                            Name = sdk.Version.GetAttributeOfType<EnumMemberAttribute>().Value,
+                                            Architecture = (SdkArchitecture)sdk.Family,
+                                            Link = downLoadLink,
+                                            Sha512 = checkSum
+                                        });
+                                    });
                             });
-                        }
                     }
 
                     return _cachedSdkCatalog;
