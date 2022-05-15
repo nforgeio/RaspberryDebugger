@@ -827,28 +827,5 @@ namespace RaspberryDebugger.Connection
                 return await Task.FromResult(false);
             }
         }
-
-        /// <summary>
-        /// Simple internet check
-        /// </summary>
-        /// <returns><c>true</c> on success.</returns>
-        // ReSharper disable once UnusedMember.Global
-        public async Task<bool> CheckAsync()
-        {
-            const string google = "http://google.com/generate_204";
-
-            try
-            {
-                using var client = new HttpClient();
-                using (await client.GetAsync(google))
-                {
-                    return true;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
     }
 }
