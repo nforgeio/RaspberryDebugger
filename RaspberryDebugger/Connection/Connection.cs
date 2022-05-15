@@ -20,6 +20,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Neon.IO;
@@ -824,6 +825,26 @@ namespace RaspberryDebugger.Connection
             {
                 LogException(e);
                 return await Task.FromResult(false);
+            }
+        }
+
+        /// <summary>
+        /// Simple internet check
+        /// </summary>
+        /// <returns><c>true</c> on success.</returns>
+        public async Task<bool> CheckAsync()
+        {
+            try
+            {
+                using var client = new HttpClient();
+                using (await client.GetAsync("http://google.com/generate_204"))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
     }
