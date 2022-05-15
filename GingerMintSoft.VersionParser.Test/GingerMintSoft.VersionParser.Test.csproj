@@ -54,6 +54,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CheckInternetConnection.cs" />
     <Compile Include="Core31VersionParser.cs" />
     <Compile Include="Core5VersionParser.cs" />
     <Compile Include="Core6VersionParser.cs" />
