@@ -46,25 +46,6 @@ namespace GingerMintSoft.VersionParser
         }
 
         /// <summary>
-        /// Load Html page as content:
-        /// If same instance is used the PageUri gets
-        /// checked and the loaded Document gets fetched
-        /// </summary>
-        /// <param name="htmlPage">Load this page</param>
-        /// <returns>Html document</returns>
-        private HtmlDocument Load(string htmlPage)
-        {
-            Document = htmlPage.Equals(PageUri) 
-                ? Document 
-                : Web.Load(htmlPage) 
-                  ?? new HtmlDocument();
-
-            PageUri = htmlPage;
-
-            return Document;
-        }
-
-        /// <summary>
         /// Load Html page as content
         /// </summary>
         /// <param name="htmlPage">Load this page</param>
@@ -87,7 +68,7 @@ namespace GingerMintSoft.VersionParser
         /// <param name="version">Search for this .NET version</param>
         /// <param name="architecture">Search for this architecture/bitness</param>
         /// <returns>List of partially version download uris</returns>
-        public List<string> ReadDownloadPages(Version version, Sdk architecture)
+        public async Task<List<string>> ReadDownloadPagesAsync(Version version, Sdk architecture)
         {
             // Get ARM bitness architecture for SDK
             var sdk = architecture == Sdk.Arm32 
@@ -95,53 +76,7 @@ namespace GingerMintSoft.VersionParser
                 : Sdk.Arm64.GetAttributeOfType<EnumMemberAttribute>().Value;
 
             // Get .NET main version: 3.1/5.0/6.0/etc.
-            var actualVersion = version.GetAttributeOfType<EnumMemberAttribute>().Value;
-            var htmlPage = new HtmlPage().Load($"{DotNetUri}/{actualVersion}");
-
-            // Filter only for Linux .NET released SDKs
-            var downLoads = htmlPage.DocumentNode
-                .SelectNodes($"//a[contains(text(), '{sdk}')]")
-                .Select(row => 
-                    row.GetAttributeValue("href", string.Empty))
-                .Where(href => 
-                    !href.Contains("alpine") && 
-                    !href.Contains("x32") && 
-                    !href.Contains("x64") && 
-                    !href.Contains("macos") && 
-                    !href.Contains("windows") && 
-                    !href.Contains("runtime") && 
-                    !href.Contains("rc") && 
-                    !href.Contains("preview"))
-                .ToList();
-
-            // reverse version number ordering -> the actual is on top
-            downLoads.Sort();
-            downLoads.Reverse();
-
-            for (var i = 0; i < downLoads?.Count; i++)
-            {
-                // build complete download uri
-                if (downLoads != null) downLoads[i] = $"{BaseUri}{downLoads[i]}";
-            }
-
-            return downLoads ?? new List<string>();
-        }
-
-        /// <summary>
-        /// Read download .NET versions at given page
-        /// </summary>
-        /// <param name="version">Search for this .NET version</param>
-        /// <param name="architecture">Search for this architecture/bitness</param>
-        /// <returns>List of partially version download uris</returns>
-        public async Task<List<string>> ReadDownloadPagesAsync(Version version, Sdk architecture)
-        {
-            // Get ARM bitness architecture for SDK
-            var sdk = architecture == Sdk.Arm32 
-                ? Sdk.Arm32.GetAttributeOfType<EnumMemberAttribute>()?.Value 
-                : Sdk.Arm64.GetAttributeOfType<EnumMemberAttribute>()?.Value;
-
-            // Get .NET main version: 3.1/5.0/6.0/etc.
-            var actual = version.GetAttributeOfType<EnumMemberAttribute>()?.Value;
+            var actual = version.GetAttributeOfType<EnumMemberAttribute>().Value;
             var htmlPage = await new HtmlPage().LoadAsync($"{DotNetUri}/{actual}");
 
             // Filter only for Linux .NET released SDKs
@@ -179,34 +114,11 @@ namespace GingerMintSoft.VersionParser
         /// <param name="version">Search for this .NET version</param>
         /// <param name="architecture">Search for this architecture/bitness</param>
         /// <returns>Partial version download uri</returns>
-        public string ReadActualDownloadPage(Version version, Sdk architecture)
-        {
-            return ReadDownloadPages(version, architecture).First();
-        }
-
-        /// <summary>
-        /// Read actual download partial uri for .NET version and bitness
-        /// </summary>
-        /// <param name="version">Search for this .NET version</param>
-        /// <param name="architecture">Search for this architecture/bitness</param>
-        /// <returns>Partial version download uri</returns>
         public async Task<string> ReadActualDownloadPageAsync(Version version, Sdk architecture)
         {
             var pages =  await ReadDownloadPagesAsync(version, architecture);
 
             return pages.First();
-        }
-
-        /// <summary>
-        /// Read download partial uri for .NET version, bitness and a specific SDK version
-        /// </summary>
-        /// <param name="version">Search for this .NET version</param>
-        /// <param name="specificVersion">Search for this .NET SDK version</param>
-        /// <param name="architecture">Search for this architecture/bitness</param>
-        /// <returns>Partial version download uri</returns>
-        public string ReadDownloadPageForVersion(Version version, string specificVersion, Sdk architecture)
-        {
-            return ReadDownloadPages(version, architecture).First(x => x.Contains(specificVersion));
         }
 
         /// <summary>
@@ -228,29 +140,7 @@ namespace GingerMintSoft.VersionParser
         /// </summary>
         /// <param name="uri">Uri to download SDK page</param>
         /// <returns>Download SDK uri and checksum</returns>
-        public (string downLoadLink, string checkSum) ReadDownloadUriAndChecksum(string uri)
-        {
-            // load page content from uri
-            var htmlPage = new HtmlPage(BaseUri).Load($"{uri}");
-
-            // .NET SDK download link and checksum
-            return 
-                (htmlPage.DocumentNode
-                .SelectNodes("//a[@id='directLink']")
-                .Select(x => x.GetAttributeValue("href", string.Empty))
-                .First(), 
-                htmlPage.DocumentNode
-                .SelectNodes("//input[@id='checksum']")
-                .Select(x => x.GetAttributeValue("value", string.Empty))
-                .First());
-        }
-
-        /// <summary>
-        /// Read .NET download uri with related checksum
-        /// </summary>
-        /// <param name="uri">Uri to download SDK page</param>
-        /// <returns>Download SDK uri and checksum</returns>
-        public async Task<(string? downLoadLink, string? checkSum)> ReadDownloadUriAndChecksumAsync(string uri)
+        public async Task<(string downLoadLink, string checkSum)> ReadDownloadUriAndChecksumAsync(string uri)
         {
             // load page content from uri
             var htmlPage = await new HtmlPage(BaseUri).LoadAsync($"{uri}");
