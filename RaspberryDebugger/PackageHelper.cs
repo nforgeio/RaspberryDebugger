@@ -48,8 +48,7 @@ namespace RaspberryDebugger
     /// </summary>
     internal static class PackageHelper
     {
-        private static readonly object  SyncLock = new object();
-        private static SdkCatalog         _cachedSdkCatalog;
+        private static SdkCatalog _cachedSdkCatalog;
         private static SdkScrapingCatalog _cachedSdkScrapingCatalog;
 
         /// <summary>
@@ -107,61 +106,49 @@ namespace RaspberryDebugger
         {
             get
             {
-                lock (SyncLock)
+                var assembly = Assembly.GetExecutingAssembly();
+
+                if (_cachedSdkCatalog != null) return _cachedSdkCatalog;
+                else _cachedSdkCatalog = new SdkCatalog();
+
+                using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json"))
                 {
-                    var assembly = Assembly.GetExecutingAssembly();
+                    if (catalogStream == null) return _cachedSdkCatalog;
 
-                    if (_cachedSdkCatalog != null) return _cachedSdkCatalog;
-                    else _cachedSdkCatalog = new SdkCatalog();
+                    var jsonSerializerSettings = new JsonSerializerSettings();
+                    jsonSerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
 
-                    using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json"))
-                    {
-                        if (catalogStream == null) return _cachedSdkCatalog;
+                    _cachedSdkScrapingCatalog =
+                        JsonConvert.DeserializeObject<SdkScrapingCatalog>(
+                            new StreamReader(catalogStream).ReadToEnd(), 
+                            jsonSerializerSettings);
 
-                        var jsonSerializerSettings = new JsonSerializerSettings();
-                        jsonSerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                    if (_cachedSdkScrapingCatalog?.Sdks == null) return _cachedSdkCatalog;
 
-                        _cachedSdkScrapingCatalog =
-                            JsonConvert.DeserializeObject<SdkScrapingCatalog>(
-                                new StreamReader(catalogStream).ReadToEnd(), 
-                                jsonSerializerSettings);
+                    var page = new HtmlPage();
 
-                        if (_cachedSdkScrapingCatalog?.Sdks == null) return _cachedSdkCatalog;
+                    // Html page scraping is costly
+                    foreach (var sdk in _cachedSdkScrapingCatalog.Sdks)
+                    { 
+                        var downloadPageLinks = Task.Run(() => page.ReadDownloadPagesAsync(sdk.Version, sdk.Family)).Result;
 
-                        var page = new HtmlPage();
+                        foreach (var downloadPageLink in downloadPageLinks)
+                        {
+                            var (downLoadLink, checkSum) =
+                                Task.Run(() => page.ReadDownloadUriAndChecksumAsync(downloadPageLink)).Result;
 
-                        // Html page scraping is costly
-                        // TODO -> have to optimize a lot! ;)
-                        Parallel.ForEach(_cachedSdkScrapingCatalog.Sdks,
-                            new ParallelOptions
+                            _cachedSdkCatalog.Items.Add(new SdkCatalogItem
                             {
-                                MaxDegreeOfParallelism = Environment.ProcessorCount
-                            },
-                            (sdk) =>
-                            {
-                                Parallel.ForEach(page.ReadDownloadPages(sdk.Version, sdk.Family),
-                                    new ParallelOptions
-                                    {
-                                        MaxDegreeOfParallelism = Environment.ProcessorCount
-                                    },
-                                    (downloadPageLink) =>
-                                    {
-                                        var (downLoadLink, checkSum) =
-                                            page.ReadDownloadUriAndChecksum(downloadPageLink);
-
-                                        _cachedSdkCatalog.Items.Add(new SdkCatalogItem
-                                        {
-                                            Name = sdk.Version.GetAttributeOfType<EnumMemberAttribute>().Value,
-                                            Architecture = (SdkArchitecture)sdk.Family,
-                                            Link = downLoadLink,
-                                            Sha512 = checkSum
-                                        });
-                                    });
+                                Name = sdk.Version.GetAttributeOfType<EnumMemberAttribute>().Value,
+                                Architecture = (SdkArchitecture)sdk.Family,
+                                Link = downLoadLink,
+                                Sha512 = checkSum
                             });
+                        }
                     }
-
-                    return _cachedSdkCatalog;
                 }
+
+                return _cachedSdkCatalog;
             }
         }
 
@@ -244,7 +231,7 @@ namespace RaspberryDebugger
 
             try
             {
-                connections = connections ?? new List<ConnectionInfo>();
+                connections ??= new List<ConnectionInfo>();
 
                 // Ensure that at least one connection is marked as default.  We'll
                 // select the first one as sorted by name if necessary.
