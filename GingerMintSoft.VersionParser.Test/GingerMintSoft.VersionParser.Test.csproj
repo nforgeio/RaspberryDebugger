@@ -56,10 +56,15 @@
   <ItemGroup>
     <Compile Include="CheckInternetConnection.cs" />
     <Compile Include="Core31VersionParser.cs" />
+    <Compile Include="Core31VersionParserAsync.cs" />
     <Compile Include="Core5VersionParser.cs" />
+    <Compile Include="Core5VersionParserAsync.cs" />
     <Compile Include="Core6VersionParser.cs" />
+    <Compile Include="Core6VersionParserAsync.cs" />
     <Compile Include="ReadAllRelevantVersions.cs" />
+    <Compile Include="ReadAllRelevantVersionsAsync.cs" />
     <Compile Include="ReadDownloadLinkAndChecksum.cs" />
+    <Compile Include="ReadDownloadLinkAndChecksumAsync.cs" />
     <Compile Include="SerializeDeserializeScrapingContent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
