@@ -1,12 +1,14 @@
 ﻿using System.Linq;
 using System.Globalization;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 using GingerMintSoft.VersionParser.Architecture;
 using GingerMintSoft.VersionParser.Extensions;
+using Newtonsoft.Json;
 using Version = GingerMintSoft.VersionParser.Architecture.Version;
 
 namespace GingerMintSoft.VersionParser
@@ -155,6 +157,35 @@ namespace GingerMintSoft.VersionParser
                         .SelectNodes("//input[@id='checksum']")
                         .Select(x => x.GetAttributeValue("value", string.Empty))
                         .First());
+        }
+
+        /// <summary>
+        /// Read .NET download uri with related checksum
+        /// </summary>
+        /// <param name="uri">Uri to download SDK page</param>
+        /// <returns>Download SDK uri and checksum</returns>
+        public async Task<T> ReadDownloadUriAndChecksumExtendedAsync<T>(string uri)
+        {
+            // load page content from uri
+            var htmlPage = await new HtmlPage(BaseUri).LoadAsync($"{uri}");
+
+            dynamic sdkCatalog = new ExpandoObject();
+
+            sdkCatalog.Name = "6.0";
+            sdkCatalog.Architecture = Sdk.Arm64.ToString();
+
+            // .NET SDK download link and checksum
+            sdkCatalog.Link = htmlPage.DocumentNode
+                .SelectNodes("//a[@id='directLink']")
+                .Select(x => x.GetAttributeValue("href", string.Empty))
+                .First(); 
+
+            sdkCatalog.Sha512 = htmlPage.DocumentNode
+                        .SelectNodes("//input[@id='checksum']")
+                        .Select(x => x.GetAttributeValue("value", string.Empty))
+                        .First();
+
+            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(sdkCatalog));
         }
     }
 }
