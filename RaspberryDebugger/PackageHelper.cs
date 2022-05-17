@@ -130,12 +130,16 @@ namespace RaspberryDebugger
                     // Html page scraping is costly
                     foreach (var sdk in _cachedSdkScrapingCatalog.Sdks)
                     { 
-                        var downloadPageLinks = Task.Run(() => page.ReadDownloadPagesAsync(sdk.Version, sdk.Family)).Result;
-
+                        var downloadPageLinks = Task.Run(async () => await page.ReadDownloadPagesAsync(sdk.Version, sdk.Family))
+                            .GetAwaiter()
+                            .GetResult();
+                        
                         foreach (var downloadPageLink in downloadPageLinks)
                         {
-                            var (downLoadLink, checkSum) =
-                                Task.Run(() => page.ReadDownloadUriAndChecksumAsync(downloadPageLink)).Result;
+                            var (downLoadLink, checkSum) = 
+                                Task.Run(async () => await page.ReadDownloadUriAndChecksumAsync(downloadPageLink))
+                                .GetAwaiter()
+                                .GetResult();
 
                             _cachedSdkCatalog.Items.Add(new SdkCatalogItem
                             {
