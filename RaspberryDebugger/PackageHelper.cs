@@ -125,15 +125,36 @@ namespace RaspberryDebugger
 
                     if (_cachedSdkScrapingCatalog?.Sdks == null) return _cachedSdkCatalog;
 
-                    var scrapeHtmlPage = new HtmlPage();
+                    var scrapeHtml = new HtmlPage();
 
                     var downloadPageLinks = Task.WhenAll(_cachedSdkScrapingCatalog.Sdks.Select(sdk => Task.Run(() => 
-                        scrapeHtmlPage.ReadDownloadPagesAsync(sdk.Version, sdk.Family)))).Result;
+                        scrapeHtml.ReadDownloadPagesAsync(sdk.Version, sdk.Family)))).Result;
                     
-                    dynamic catalogJson = Task.Run(() => scrapeHtmlPage.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks)).Result;
+                    var rawLinkCatalog = Task.Run(() => 
+                        scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks)).Result;
+
+                    FillCachedSdkCatalog(rawLinkCatalog);
                 }
 
                 return _cachedSdkCatalog;
+            }
+        }
+
+        private static void FillCachedSdkCatalog(IEnumerable<(string, string)> rawLinkCatalog)
+        {
+            foreach (var (downLoadLink, checkSum) in rawLinkCatalog)
+            {
+                var linkParts = downLoadLink.Split('/')[7].Split('-');
+                var version = $"{linkParts[2].Split('.')[0]}.{linkParts[2].Split('.')[1]}";
+                var sdk = linkParts[4].Contains("64") 
+                    ? SdkArchitecture.Arm64 
+                    : SdkArchitecture.Arm32;
+
+                _cachedSdkCatalog.Items.Add(new SdkCatalogItem(
+                    version, 
+                    sdk,
+                    downLoadLink,
+                    checkSum));
             }
         }
 
