@@ -20,7 +20,6 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Neon.IO;
@@ -404,6 +403,7 @@ namespace RaspberryDebugger.Connection
 
                     response = ThrowOnError(SudoCommand(CommandBundle.FromScript(statusScript)));
 
+                    // ReSharper disable once ConvertToUsingDeclaration
                     using (var reader = new StringReader(response.OutputText))
                     {
                         var processor    = await reader.ReadLineAsync();
