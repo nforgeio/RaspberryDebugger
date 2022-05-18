@@ -21,7 +21,6 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -35,7 +34,6 @@ using GingerMintSoft.VersionParser;
 using GingerMintSoft.VersionParser.Models;
 using Neon.Common;
 using Neon.IO;
-using RaspberryDebugger.Extensions;
 using RaspberryDebugger.Models.Connection;
 using RaspberryDebugger.Models.Project;
 using RaspberryDebugger.Models.Sdk;
@@ -99,9 +97,11 @@ namespace RaspberryDebugger
             return LinuxPath.Combine("/", "home", username, "vsdbg");
         }
 
+
         /// <summary>
         /// Returns information about the all good .NET Core SDKs, including the unusable ones.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Otherwise I get nuts! ;)>")]
         public static SdkCatalog SdkCatalog
         {
             get
@@ -125,31 +125,12 @@ namespace RaspberryDebugger
 
                     if (_cachedSdkScrapingCatalog?.Sdks == null) return _cachedSdkCatalog;
 
-                    var page = new HtmlPage();
+                    var scrapeHtmlPage = new HtmlPage();
 
-                    // Html page scraping is costly
-                    foreach (var sdk in _cachedSdkScrapingCatalog.Sdks)
-                    { 
-                        var downloadPageLinks = Task.Run(async () => await page.ReadDownloadPagesAsync(sdk.Version, sdk.Family))
-                            .GetAwaiter()
-                            .GetResult();
-                        
-                        foreach (var downloadPageLink in downloadPageLinks)
-                        {
-                            var (downLoadLink, checkSum) = 
-                                Task.Run(async () => await page.ReadDownloadUriAndChecksumAsync(downloadPageLink))
-                                .GetAwaiter()
-                                .GetResult();
-
-                            _cachedSdkCatalog.Items.Add(new SdkCatalogItem
-                            {
-                                Name = sdk.Version.GetAttributeOfType<EnumMemberAttribute>().Value,
-                                Architecture = (SdkArchitecture)sdk.Family,
-                                Link = downLoadLink,
-                                Sha512 = checkSum
-                            });
-                        }
-                    }
+                    var downloadPageLinks = Task.WhenAll(_cachedSdkScrapingCatalog.Sdks.Select(sdk => Task.Run(() => 
+                        scrapeHtmlPage.ReadDownloadPagesAsync(sdk.Version, sdk.Family)))).Result;
+                    
+                    dynamic catalogJson = Task.Run(() => scrapeHtmlPage.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks)).Result;
                 }
 
                 return _cachedSdkCatalog;
