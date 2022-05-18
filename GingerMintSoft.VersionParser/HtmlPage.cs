@@ -1,14 +1,12 @@
 ﻿using System.Linq;
 using System.Globalization;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 using GingerMintSoft.VersionParser.Architecture;
 using GingerMintSoft.VersionParser.Extensions;
-using Newtonsoft.Json;
 using Version = GingerMintSoft.VersionParser.Architecture.Version;
 
 namespace GingerMintSoft.VersionParser
@@ -148,8 +146,7 @@ namespace GingerMintSoft.VersionParser
             var htmlPage = await new HtmlPage(BaseUri).LoadAsync($"{uri}");
 
             // .NET SDK download link and checksum
-            return 
-                (htmlPage.DocumentNode
+            return (htmlPage.DocumentNode
                         .SelectNodes("//a[@id='directLink']")
                         .Select(x => x.GetAttributeValue("href", string.Empty))
                         .First(), 
@@ -162,30 +159,17 @@ namespace GingerMintSoft.VersionParser
         /// <summary>
         /// Read .NET download uri with related checksum
         /// </summary>
-        /// <param name="uri">Uri to download SDK page</param>
+        /// <param name="uris">Uri array list pointing to the downloading SDK pages</param>
         /// <returns>Download SDK uri and checksum</returns>
-        public async Task<T> ReadDownloadUriAndChecksumExtendedAsync<T>(string uri)
+        public Task<(string downLoadLink, string checkSum)[]> ReadDownloadUriAndChecksumBulkAsync(IEnumerable<List<string>> uris)
         {
-            // load page content from uri
-            var htmlPage = await new HtmlPage(BaseUri).LoadAsync($"{uri}");
+            var page = new HtmlPage();
 
-            dynamic sdkCatalog = new ExpandoObject();
-
-            sdkCatalog.Name = "6.0";
-            sdkCatalog.Architecture = Sdk.Arm64.ToString();
-
-            // .NET SDK download link and checksum
-            sdkCatalog.Link = htmlPage.DocumentNode
-                .SelectNodes("//a[@id='directLink']")
-                .Select(x => x.GetAttributeValue("href", string.Empty))
-                .First(); 
-
-            sdkCatalog.Sha512 = htmlPage.DocumentNode
-                        .SelectNodes("//input[@id='checksum']")
-                        .Select(x => x.GetAttributeValue("value", string.Empty))
-                        .First();
-
-            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(sdkCatalog));
+            return Task
+                .WhenAll(uris
+                    .SelectMany(sdkArea => sdkArea)
+                    .Select(downloadPageLink => Task.Run(async () => 
+                        await page.ReadDownloadUriAndChecksumAsync(downloadPageLink))));
         }
     }
 }
