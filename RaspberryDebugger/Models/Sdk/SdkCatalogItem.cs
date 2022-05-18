@@ -46,5 +46,20 @@ namespace RaspberryDebugger.Models.Sdk
         /// </summary>
         [JsonProperty(PropertyName = "SHA512", Required = Required.Always)]
         public string Sha512 { get; set; }
+
+        /// <summary>
+        /// SdkCatalog Item Constructor
+        /// </summary>
+        /// <param name="name">SDK Name </param>
+        /// <param name="sdk">SDK type</param>
+        /// <param name="link">Link for download</param>
+        /// <param name="sha512">Checksum for download</param>
+        public SdkCatalogItem(string name, SdkArchitecture sdk, string link, string sha512)
+        {
+            Name = name;
+            Architecture = sdk;
+            Link = link;
+            Sha512 = sha512;
+        }
     }
 }
