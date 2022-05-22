@@ -34,6 +34,8 @@ using GingerMintSoft.VersionParser;
 using GingerMintSoft.VersionParser.Models;
 using Neon.Common;
 using Neon.IO;
+using RaspberryDebugger.Dialogs;
+using RaspberryDebugger.Extensions;
 using RaspberryDebugger.Models.Connection;
 using RaspberryDebugger.Models.Project;
 using RaspberryDebugger.Models.Sdk;
@@ -97,8 +99,6 @@ namespace RaspberryDebugger
             return LinuxPath.Combine("/", "home", username, "vsdbg");
         }
 
-        public static bool SdkCatalogPresent { get; private set; }
-
         /// <summary>
         /// Returns information about the all good .NET Core SDKs, including the unusable ones.
         /// </summary>
@@ -108,7 +108,22 @@ namespace RaspberryDebugger
             {
                 if (_cachedSdkCatalog != null) return _cachedSdkCatalog;
 
-                ReadSdkCatalogToCache();
+                MessageBoxEx.Show(
+                    "Preload SDK download links for later usage from: https://dotnet.microsoft.com/en-us/download/dotnet\r\n\r\n" +
+                    "This will take some seconds and is dependant on your local internet download rate ...",
+                    "Preload SDK download links",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                // if no SDKs present show a message
+                if(!ReadSdkCatalogToCache())
+                {
+                    MessageBoxEx.Show(
+                        "Cannot find any SDK on page: https://dotnet.microsoft.com/en-us/download/dotnet",
+                        "No SDK found",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
 
                 return _cachedSdkCatalog;
             }
@@ -117,39 +132,43 @@ namespace RaspberryDebugger
         /// <summary>
         /// Read SDK links from Microsoft download pages
         /// </summary>
-        private static void ReadSdkCatalogToCache()
+        /// <returns>true if SDKs present</returns>
+        private static bool ReadSdkCatalogToCache()
         {
-            _cachedSdkCatalog = new SdkCatalog();
-
-            using var catalogStream = Assembly
-                .GetExecutingAssembly()
-                .GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json");
-
-            if (catalogStream == null) return;
-
-            var jsonSerializerSettings = new JsonSerializerSettings();
-            jsonSerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-
-            _cachedSdkScrapingCatalog =
-                JsonConvert.DeserializeObject<SdkScrapingCatalog>(
-                    new StreamReader(catalogStream).ReadToEnd(),
-                    jsonSerializerSettings);
-
-            if (_cachedSdkScrapingCatalog?.Sdks == null) return;
-
-            var scrapeHtml = new HtmlPage();
-
-            var downloadPageLinks = ThreadHelper.JoinableTaskFactory.Run(delegate
+            using (new CursorWait())
             {
-                return Task.WhenAll(_cachedSdkScrapingCatalog.Sdks.Select(sdk => Task.Run(() =>
-                    scrapeHtml.ReadDownloadPagesAsync(sdk.Version, sdk.Family))));
-            });
-            
-            var rawLinkCatalog = ThreadHelper.JoinableTaskFactory
-                .Run<IEnumerable<(string, string)>>(async () => 
-                    await scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks));
+                _cachedSdkCatalog = new SdkCatalog();
 
-            SdkCatalogPresent = FillCachedSdkCatalog(rawLinkCatalog);
+                using var catalogStream = Assembly
+                    .GetExecutingAssembly()
+                    .GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json");
+
+                if (catalogStream == null) return false;
+
+                var jsonSerializerSettings = new JsonSerializerSettings();
+                jsonSerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+
+                _cachedSdkScrapingCatalog =
+                    JsonConvert.DeserializeObject<SdkScrapingCatalog>(
+                        new StreamReader(catalogStream).ReadToEnd(),
+                        jsonSerializerSettings);
+
+                if (_cachedSdkScrapingCatalog?.Sdks == null) return false;
+
+                var scrapeHtml = new HtmlPage();
+
+                var downloadPageLinks = ThreadHelper.JoinableTaskFactory.Run(delegate
+                {
+                    return Task.WhenAll(_cachedSdkScrapingCatalog.Sdks.Select(sdk => Task.Run(() =>
+                        scrapeHtml.ReadDownloadPagesAsync(sdk.Version, sdk.Family))));
+                });
+
+                var rawLinkCatalog = ThreadHelper.JoinableTaskFactory
+                    .Run<IEnumerable<(string, string)>>(async () =>
+                        await scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks));
+
+                return FillCachedSdkCatalog(rawLinkCatalog);
+            }
         }
 
         /// <summary>
