@@ -172,7 +172,8 @@ namespace RaspberryDebugger.Commands
         private static bool PreloadSdks()
         {
             MessageBoxEx.Show(
-                "Preload SDK download links for later usage from: https://dotnet.microsoft.com/en-us/download/dotnet\r\nThis will take some seconds...",
+                "Preload SDK download links for later usage from: https://dotnet.microsoft.com/en-us/download/dotnet\r\n" +
+                "This will take some seconds and is dependant on your local internet download rate ...",
                 "Preload SDK download links",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
