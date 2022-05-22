@@ -45,6 +45,24 @@ namespace RaspberryDebugger.Models.Sdk
     }
 
     /// <summary>
+    /// Enumerates the supported architecture bitness.
+    /// </summary>
+    public enum Platform
+    {
+        /// <summary>
+        /// 32-bit ARM
+        /// </summary>
+        [EnumMember(Value = "32")]
+        Bitness32,
+
+        /// <summary>
+        /// 64-bit ARM
+        /// </summary>
+        [EnumMember(Value = "64")]
+        Bitness64
+    }
+
+    /// <summary>
     /// OperatingSystem bitness
     /// </summary>
     public static class OperatingSystem
