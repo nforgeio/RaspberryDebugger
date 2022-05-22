@@ -46,7 +46,6 @@ namespace RaspberryDebugger
     /// </summary>
     internal static class PackageHelper
     {
-        private static bool _cachedSdkCatalogPresent;
         private static SdkCatalog _cachedSdkCatalog;
         private static SdkScrapingCatalog _cachedSdkScrapingCatalog;
 
@@ -98,8 +97,7 @@ namespace RaspberryDebugger
             return LinuxPath.Combine("/", "home", username, "vsdbg");
         }
 
-
-        public static bool SdkCatalogPresent => _cachedSdkCatalogPresent;
+        public static bool SdkCatalogPresent { get; private set; }
 
         /// <summary>
         /// Returns information about the all good .NET Core SDKs, including the unusable ones.
@@ -135,7 +133,7 @@ namespace RaspberryDebugger
                     var rawLinkCatalog = Task.Run(() => 
                         scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks)).Result;
 
-                    _cachedSdkCatalogPresent = FillCachedSdkCatalog(rawLinkCatalog);
+                    SdkCatalogPresent = FillCachedSdkCatalog(rawLinkCatalog);
                 }
 
                 return _cachedSdkCatalog;
