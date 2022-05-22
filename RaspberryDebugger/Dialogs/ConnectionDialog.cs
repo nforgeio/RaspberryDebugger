@@ -71,7 +71,7 @@ namespace RaspberryDebugger.Dialogs
         /// <summary>
         /// Returns the connection being created or edited.
         /// </summary>
-        internal ConnectionInfo ConnectionInfo { get; }
+        private ConnectionInfo ConnectionInfo { get; }
 
         /// <summary>
         /// Handles the OK button.
