@@ -165,11 +165,10 @@ namespace GingerMintSoft.VersionParser
         {
             var page = new HtmlPage();
 
-            return Task
-                .WhenAll(uris
-                    .SelectMany(sdkArea => sdkArea)
-                    .Select(downloadPageLink => Task.Run(async () => 
-                        await page.ReadDownloadUriAndChecksumAsync(downloadPageLink))));
+            return Task.WhenAll(uris
+                .SelectMany(sdkArea => sdkArea)
+                .Select(downloadPageLink => Task.Run(async () => 
+                    await page.ReadDownloadUriAndChecksumAsync(downloadPageLink))));
         }
     }
 }
