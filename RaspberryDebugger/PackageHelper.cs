@@ -179,8 +179,6 @@ namespace RaspberryDebugger
         /// <param name="rawLinkCatalog">Raw catalog data: (link, checkSum)</param>
         private static bool FillCachedSdkCatalog(IEnumerable<(string, string)> rawLinkCatalog)
         {
-            const string bit64 = "64";
-            
             foreach (var (downLoadLink, checkSum) in rawLinkCatalog)
             {
                 var dotNetPart = downLoadLink.Split('/')[7].Split('-');                 // read .NET part from download uri
@@ -188,7 +186,7 @@ namespace RaspberryDebugger
                 // fill to cached catalog
                 _cachedSdkCatalog.Items.Add(new SdkCatalogItem(
                     $"{dotNetPart[2].Split('.')[0]}.{dotNetPart[2].Split('.')[1]}",     // extract belonging SDK version
-                    dotNetPart[4].Contains(bit64)                                       // read SDK architecture    
+                    dotNetPart[4].Contains(Platform.Bitness64.ToMemberString())         // read SDK architecture    
                         ? SdkArchitecture.Arm64                                                     
                         : SdkArchitecture.Arm32,
                     downLoadLink,
