@@ -167,6 +167,8 @@ namespace RaspberryDebugger
                     .Run<IEnumerable<(string, string)>>(async () =>
                         await scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks));
 
+                Log.Info("Preload SDK download links from https://dotnet.microsoft.com/en-us/download/dotnet done.");
+
                 return FillCachedSdkCatalog(rawLinkCatalog);
             }
         }
