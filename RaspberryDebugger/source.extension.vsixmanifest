@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="Raspberry Debugger.ad3c23b5-73d1-4502-9ae1-0b0539b6505b" Version="2.1" Language="en-US" Publisher="GingerMintSoft" />
+        <Identity Id="Raspberry Debugger.ad3c23b5-73d1-4502-9ae1-0b0539b6505b" Version="3.0" Language="en-US" Publisher="GingerMintSoft" />
         <DisplayName>Raspberry Debugger</DisplayName>
         <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug applications on a real Raspberry Pi using Visual Studio 2022.
+Supporting 32 and 64 bit raspbian operating system versions.
 Raspberry Debugger forked from nforgeio/RaspberryDebugger</Description>
         <MoreInfo>https://github.com/StanDeMan/RaspberryDebugger</MoreInfo>
         <License>license.txt</License>
