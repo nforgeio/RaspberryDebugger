@@ -16,8 +16,10 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Windows.Forms;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
@@ -25,6 +27,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Neon.Common;
 using RaspberryDebugger.Dialogs;
 using System.Threading.Tasks;
+using RaspberryDebugger.Extensions;
+using RaspberryDebugger.Models.Sdk;
 
 namespace RaspberryDebugger.Commands
 {
@@ -36,12 +40,12 @@ namespace RaspberryDebugger.Commands
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandId = RaspberryDebuggerPackage.SettingsCommandId;
+        private const int CommandId = RaspberryDebuggerPackage.SettingsCommandId;
 
         /// <summary>
         /// Package command set ID.
         /// </summary>
-        public static readonly Guid CommandSet = RaspberryDebuggerPackage.CommandSet;
+        private static readonly Guid CommandSet = RaspberryDebuggerPackage.CommandSet;
 
         private readonly DTE2 dte;
 
@@ -77,7 +81,8 @@ namespace RaspberryDebugger.Commands
         /// <summary>
         /// Gets the instance of the command.
         /// </summary>
-        public static SettingsCommand Instance { get; private set; }
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        private static SettingsCommand Instance { get; set; }
 
         /// <summary>
         /// Initializes the singleton instance of the command.
@@ -108,6 +113,11 @@ namespace RaspberryDebugger.Commands
             if (dte.Solution == null)
             {
                 return;
+            }
+
+            if(!PackageHelper.SdkCatalogPresent)
+            {
+                if (!PreloadSdks()) return;
             }
 
             var project = PackageHelper.GetStartupProject(dte.Solution);
@@ -151,6 +161,38 @@ namespace RaspberryDebugger.Commands
             {
                 PackageHelper.WriteRaspberryProjects(dte.Solution, raspberryProjects);
             }
+        }
+
+        /// <summary>
+        /// Preload SDK links for later usage: 
+        /// A SDK can later be installed via this
+        /// download links to raspberry pi
+        /// </summary>
+        /// <returns>true if links loaded</returns>
+        private static bool PreloadSdks()
+        {
+            MessageBoxEx.Show(
+                "Preload SDK download links for later usage from: https://dotnet.microsoft.com/en-us/download/dotnet\r\nThis will take some seconds...",
+                "Preload SDK download links",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+
+            List<SdkCatalogItem> sdks;
+
+            using (new CursorWait())
+            {
+                sdks = PackageHelper.SdkCatalog.Items;
+            }
+
+            if (sdks.Any()) return true;
+
+            MessageBoxEx.Show(
+                "Cannot find any SDK on page: https://dotnet.microsoft.com/en-us/download/dotnet",
+                "No SDK found",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+
+            return false;
         }
     }
 }
