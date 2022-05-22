@@ -67,7 +67,8 @@ namespace RaspberryDebugger.Connection
                 {
                     Log($"DNS lookup for: {connectionInfo?.Host}");
 
-                    address = (await Dns.GetHostAddressesAsync(connectionInfo?.Host)).FirstOrDefault();
+                    var hosts = (await Dns.GetHostAddressesAsync(connectionInfo?.Host));
+                    address = hosts?.FirstOrDefault();
                 }
 
                 if (address == null)
@@ -152,7 +153,6 @@ namespace RaspberryDebugger.Connection
                 catch (Exception e2)
                 {
                     // We've done all we can.
-
                     RaspberryDebugger.Log.Exception(e2, $"[{connectionInfo.Host}]");
                     throw;
                 }
@@ -160,7 +160,9 @@ namespace RaspberryDebugger.Connection
             catch (Exception e)
             {
                 RaspberryDebugger.Log.Exception(e, $"[{connectionInfo?.Host}]");
-                throw;
+                Log($"[{connectionInfo?.Host}]: Cannot reach device.");
+
+                return null;
             }
         }
 

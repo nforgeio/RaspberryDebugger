@@ -515,6 +515,9 @@ namespace RaspberryDebugger
 
             var connection = await Connection.Connection.ConnectAsync(connectionInfo, projectSettings: projectSettings);
 
+            // device not found
+            if(connection == null) return null;
+
             // .NET Core only supports Raspberry models 3 and 4.
             if (!connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 3 Model") &&
                 !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 4 Model") &&
@@ -533,7 +536,7 @@ namespace RaspberryDebugger
 
                 return null;
             }
-           
+
             // Ensure that the SDK is installed.
             if (!await connection.InstallSdkAsync())
             {
