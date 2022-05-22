@@ -8,7 +8,10 @@ namespace RaspberryDebugger.Extensions
         public CursorWait(bool appStarting = false, bool applicationCursor = false)
         {
             // Wait
-            Cursor.Current = appStarting ? Cursors.AppStarting : Cursors.WaitCursor;
+            Cursor.Current = appStarting 
+                ? Cursors.AppStarting 
+                : Cursors.WaitCursor;
+
             if (applicationCursor) Application.UseWaitCursor = true;
         }
 
