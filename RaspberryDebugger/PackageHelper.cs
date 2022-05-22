@@ -106,12 +106,12 @@ namespace RaspberryDebugger
         {
             get
             {
-                var assembly = Assembly.GetExecutingAssembly();
-
                 if (_cachedSdkCatalog != null) return _cachedSdkCatalog;
                 else _cachedSdkCatalog = new SdkCatalog();
 
-                using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json"))
+                using (var catalogStream = Assembly
+                           .GetExecutingAssembly()
+                           .GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json"))
                 {
                     if (catalogStream == null) return _cachedSdkCatalog;
 
