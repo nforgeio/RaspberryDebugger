@@ -107,37 +107,49 @@ namespace RaspberryDebugger
             get
             {
                 if (_cachedSdkCatalog != null) return _cachedSdkCatalog;
-                else _cachedSdkCatalog = new SdkCatalog();
 
-                using (var catalogStream = Assembly
-                           .GetExecutingAssembly()
-                           .GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json"))
-                {
-                    if (catalogStream == null) return _cachedSdkCatalog;
-
-                    var jsonSerializerSettings = new JsonSerializerSettings();
-                    jsonSerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-
-                    _cachedSdkScrapingCatalog =
-                        JsonConvert.DeserializeObject<SdkScrapingCatalog>(
-                            new StreamReader(catalogStream).ReadToEnd(), 
-                            jsonSerializerSettings);
-
-                    if (_cachedSdkScrapingCatalog?.Sdks == null) return _cachedSdkCatalog;
-
-                    var scrapeHtml = new HtmlPage();
-
-                    var downloadPageLinks = Task.WhenAll(_cachedSdkScrapingCatalog.Sdks.Select(sdk => Task.Run(() => 
-                        scrapeHtml.ReadDownloadPagesAsync(sdk.Version, sdk.Family)))).Result;
-                    
-                    var rawLinkCatalog = Task.Run(() => 
-                        scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks)).Result;
-
-                    SdkCatalogPresent = FillCachedSdkCatalog(rawLinkCatalog);
-                }
+                ReadSdkCatalogToCache();
 
                 return _cachedSdkCatalog;
             }
+        }
+
+        /// <summary>
+        /// Read SDK links from Microsoft download pages
+        /// </summary>
+        private static void ReadSdkCatalogToCache()
+        {
+            _cachedSdkCatalog = new SdkCatalog();
+
+            using var catalogStream = Assembly
+                .GetExecutingAssembly()
+                .GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json");
+
+            if (catalogStream == null) return;
+
+            var jsonSerializerSettings = new JsonSerializerSettings();
+            jsonSerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+
+            _cachedSdkScrapingCatalog =
+                JsonConvert.DeserializeObject<SdkScrapingCatalog>(
+                    new StreamReader(catalogStream).ReadToEnd(),
+                    jsonSerializerSettings);
+
+            if (_cachedSdkScrapingCatalog?.Sdks == null) return;
+
+            var scrapeHtml = new HtmlPage();
+
+            var downloadPageLinks = ThreadHelper.JoinableTaskFactory.Run(delegate
+            {
+                return Task.WhenAll(_cachedSdkScrapingCatalog.Sdks.Select(sdk => Task.Run(() =>
+                    scrapeHtml.ReadDownloadPagesAsync(sdk.Version, sdk.Family))));
+            });
+            
+            var rawLinkCatalog = ThreadHelper.JoinableTaskFactory
+                .Run<IEnumerable<(string, string)>>(async () => 
+                    await scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks));
+
+            SdkCatalogPresent = FillCachedSdkCatalog(rawLinkCatalog);
         }
 
         /// <summary>
