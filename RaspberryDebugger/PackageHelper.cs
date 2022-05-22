@@ -46,6 +46,7 @@ namespace RaspberryDebugger
     /// </summary>
     internal static class PackageHelper
     {
+        private static bool _cachedSdkCatalogPresent;
         private static SdkCatalog _cachedSdkCatalog;
         private static SdkScrapingCatalog _cachedSdkScrapingCatalog;
 
@@ -98,10 +99,15 @@ namespace RaspberryDebugger
         }
 
 
+        public static bool SdkCatalogPresent
+        {
+            get => _cachedSdkCatalogPresent;
+        }
+
         /// <summary>
         /// Returns information about the all good .NET Core SDKs, including the unusable ones.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Otherwise I get nuts! ;)>")]
+        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Otherwise I get nuts! ;)>")]
         public static SdkCatalog SdkCatalog
         {
             get
@@ -133,7 +139,7 @@ namespace RaspberryDebugger
                     var rawLinkCatalog = Task.Run(() => 
                         scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks)).Result;
 
-                    FillCachedSdkCatalog(rawLinkCatalog);
+                    _cachedSdkCatalogPresent = FillCachedSdkCatalog(rawLinkCatalog);
                 }
 
                 return _cachedSdkCatalog;
@@ -146,7 +152,7 @@ namespace RaspberryDebugger
         /// -> than no need to load again...
         /// </summary>
         /// <param name="rawLinkCatalog">Raw catalog data: (link, checkSum)</param>
-        private static void FillCachedSdkCatalog(IEnumerable<(string, string)> rawLinkCatalog)
+        private static bool FillCachedSdkCatalog(IEnumerable<(string, string)> rawLinkCatalog)
         {
             const string bit64 = "64";
             
@@ -163,6 +169,8 @@ namespace RaspberryDebugger
                     downLoadLink,
                     checkSum));
             }
+
+            return _cachedSdkCatalog.Items.Any();
         }
 
         /// <summary>
