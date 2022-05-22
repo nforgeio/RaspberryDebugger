@@ -16,10 +16,8 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using System.Windows.Forms;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
@@ -27,8 +25,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Neon.Common;
 using RaspberryDebugger.Dialogs;
 using System.Threading.Tasks;
-using RaspberryDebugger.Extensions;
-using RaspberryDebugger.Models.Sdk;
 
 namespace RaspberryDebugger.Commands
 {
@@ -115,11 +111,6 @@ namespace RaspberryDebugger.Commands
                 return;
             }
 
-            if(!PackageHelper.SdkCatalogPresent)
-            {
-                if (!PreloadSdks()) return;
-            }
-
             var project = PackageHelper.GetStartupProject(dte.Solution);
 
             if (project == null)
@@ -161,39 +152,6 @@ namespace RaspberryDebugger.Commands
             {
                 PackageHelper.WriteRaspberryProjects(dte.Solution, raspberryProjects);
             }
-        }
-
-        /// <summary>
-        /// Preload SDK links for later usage: 
-        /// A SDK can later be installed via this
-        /// download links to raspberry pi
-        /// </summary>
-        /// <returns>true if links loaded</returns>
-        private static bool PreloadSdks()
-        {
-            MessageBoxEx.Show(
-                "Preload SDK download links for later usage from: https://dotnet.microsoft.com/en-us/download/dotnet\r\n" +
-                "This will take some seconds and is dependant on your local internet download rate ...",
-                "Preload SDK download links",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
-
-            List<SdkCatalogItem> sdks;
-
-            using (new CursorWait())
-            {
-                sdks = PackageHelper.SdkCatalog.Items;
-            }
-
-            if (sdks.Any()) return true;
-
-            MessageBoxEx.Show(
-                "Cannot find any SDK on page: https://dotnet.microsoft.com/en-us/download/dotnet",
-                "No SDK found",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
-
-            return false;
         }
     }
 }
