@@ -99,15 +99,11 @@ namespace RaspberryDebugger
         }
 
 
-        public static bool SdkCatalogPresent
-        {
-            get => _cachedSdkCatalogPresent;
-        }
+        public static bool SdkCatalogPresent => _cachedSdkCatalogPresent;
 
         /// <summary>
         /// Returns information about the all good .NET Core SDKs, including the unusable ones.
         /// </summary>
-        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Otherwise I get nuts! ;)>")]
         public static SdkCatalog SdkCatalog
         {
             get
