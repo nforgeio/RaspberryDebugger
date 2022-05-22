@@ -149,12 +149,10 @@ namespace GingerMintSoft.VersionParser
             return (htmlPage.DocumentNode
                         .SelectNodes("//a[@id='directLink']")
                         .Select(x => x.GetAttributeValue("href", string.Empty))
-                        .AsParallel()
                         .First(), 
                     htmlPage.DocumentNode
                         .SelectNodes("//input[@id='checksum']")
                         .Select(x => x.GetAttributeValue("value", string.Empty))
-                        .AsParallel()
                         .First());
         }
 
@@ -171,8 +169,7 @@ namespace GingerMintSoft.VersionParser
                 .WhenAll(uris
                     .SelectMany(sdkArea => sdkArea)
                     .Select(downloadPageLink => Task.Run(async () => 
-                        await page.ReadDownloadUriAndChecksumAsync(downloadPageLink)))
-                    .AsParallel());
+                        await page.ReadDownloadUriAndChecksumAsync(downloadPageLink))));
         }
     }
 }
