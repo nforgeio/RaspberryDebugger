@@ -8,7 +8,7 @@ namespace GingerMintSoft.VersionParser.Test
     public class CheckInternetConnection
     {
         [TestMethod]
-        public async Task CheckTest()
+        public async Task CheckTestAsync()
         {
             var ok = await Internet.CheckAsync();
             Assert.IsTrue(ok);

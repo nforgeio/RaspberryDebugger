@@ -10,7 +10,7 @@ namespace GingerMintSoft.VersionParser.Test
     public class Core31VersionParserAsync
     {
         [TestMethod]
-        public async Task FindCore31Arm64AsyncTestMethod()
+        public async Task FindCore31Arm64TestMethodAsync()
         {
             var page = new HtmlPage();
             Assert.IsNotNull(page);
@@ -25,7 +25,7 @@ namespace GingerMintSoft.VersionParser.Test
         }
 
         [TestMethod]
-        public async Task FindCore31Arm32AsyncTestMethod()
+        public async Task FindCore31Arm32TestMethodAsync()
         {
             var page = new HtmlPage();
             Assert.IsNotNull(page);

@@ -11,7 +11,7 @@ namespace GingerMintSoft.VersionParser.Test
     public class AllRelevantVersionsAsync
     {
         [TestMethod]
-        public async Task FindAllCoreVersionsAsyncTestMethod()
+        public async Task FindAllCoreVersionsTestMethodAsync()
         {
             var downloadLinks = new List<string>();
 
