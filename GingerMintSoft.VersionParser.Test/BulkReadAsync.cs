@@ -15,7 +15,7 @@ namespace GingerMintSoft.VersionParser.Test
         private static SdkScrapingCatalog _cachedSdkScrapingCatalog;
 
         [TestMethod]
-        public void BulkReadTest()
+        public async Task BulkReadTestAsync()
         {
             var scrapeHtml = new HtmlPage();
 
@@ -30,25 +30,15 @@ namespace GingerMintSoft.VersionParser.Test
 
             _cachedSdkScrapingCatalog =
                 JsonConvert.DeserializeObject<SdkScrapingCatalog>(
-                    new StreamReader(catalogStream).ReadToEnd(),
+                    await new StreamReader(catalogStream).ReadToEndAsync(),
                     jsonSerializerSettings);
 
             if (_cachedSdkScrapingCatalog?.Sdks == null) return;
 
-            var downloadPageLinks = Task.WhenAll(_cachedSdkScrapingCatalog.Sdks.Select(sdk => Task.Run(() =>
-                scrapeHtml.ReadDownloadPagesAsync(sdk.Version, sdk.Family)))).Result;
+            var downloadPageLinks = await Task.WhenAll(_cachedSdkScrapingCatalog.Sdks.Select(sdk => Task.Run(() => 
+                scrapeHtml.ReadDownloadPagesAsync(sdk.Version, sdk.Family))));
 
-            //var downloadPageLinks = ThreadHelper.JoinableTaskFactory.Run(delegate
-            //{
-            //    return Task.WhenAll(_cachedSdkScrapingCatalog.Sdks.Select(sdk => Task.Run(() =>
-            //        scrapeHtml.ReadDownloadPagesAsync(sdk.Version, sdk.Family))));
-            //});
-
-            var rawLinkCatalog = scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks).Result;
-
-            //var rawLinkCatalog = ThreadHelper.JoinableTaskFactory
-            //    .Run<IEnumerable<(string, string)>>(async () =>
-            //        await scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks));
+            var rawLinkCatalog = await scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks);
 
             foreach (var catalogItem in rawLinkCatalog)
             {
