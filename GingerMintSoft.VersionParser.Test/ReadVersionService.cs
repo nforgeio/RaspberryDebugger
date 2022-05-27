@@ -16,9 +16,15 @@ namespace GingerMintSoft.VersionParser.Test
         public async Task ReadVersionServiceAsync()
         {
             const string uri = @"https://dotnetverionfeed.azurewebsites.net/version";
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             var ret = await new Request().ReadVersionFeedService(uri);
 
+            stopwatch.Stop();
             Assert.IsNotNull(ret);
+            Debug.Print($"Milliseconds: {stopwatch.ElapsedMilliseconds}");
             Debug.Print(ret);
         }
     }
