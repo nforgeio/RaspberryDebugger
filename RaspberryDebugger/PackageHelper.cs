@@ -115,9 +115,10 @@ namespace RaspberryDebugger
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
 
-                // if no SDKs present show a message
+                // read newest .net sdks
                 if(!ReadSdkCatalogToCache())
                 {
+                    // if no SDKs present show a message
                     MessageBoxEx.Show(
                         "Cannot find any SDK on page: https://dotnet.microsoft.com/en-us/download/dotnet",
                         "No SDK found",
