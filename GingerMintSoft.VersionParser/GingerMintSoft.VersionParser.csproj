@@ -60,6 +60,7 @@
     <Compile Include="Models\SdkScraper.cs" />
     <Compile Include="Models\SdkScrapingCatalog.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Web\Request.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
