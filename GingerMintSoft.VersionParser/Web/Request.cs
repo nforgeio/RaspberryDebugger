@@ -2,27 +2,28 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace GingerMintSoft.VersionParser.Web
+namespace GingerMintSoft.VersionParser.Web;
+
+public class Request
 {
-    public class Request
+    public async Task<string> ReadVersionFeedService(string? uri = null)
     {
-        public async Task<string> ReadVersionFeedService(string uri)
+        string responseBody;
+
+        if (string.IsNullOrEmpty(uri)) uri = new HtmlPage().VersionFeedUri;
+
+        try
         {
-            string responseBody;
+            var response = await new HttpClient().GetAsync(uri);
+            response.EnsureSuccessStatusCode();
 
-            try
-            {
-                var response = await new HttpClient().GetAsync(uri);
-                response.EnsureSuccessStatusCode();
-
-                responseBody = await response.Content.ReadAsStringAsync();
-            }
-            catch (Exception)
-            {
-                responseBody = string.Empty;
-            }
-
-            return responseBody;
+            responseBody = await response.Content.ReadAsStringAsync();
         }
+        catch (Exception)
+        {
+            responseBody = string.Empty;
+        }
+
+        return responseBody;
     }
 }

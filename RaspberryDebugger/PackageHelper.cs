@@ -108,13 +108,6 @@ namespace RaspberryDebugger
             {
                 if (_cachedSdkCatalog != null) return _cachedSdkCatalog;
 
-                MessageBoxEx.Show(
-                    "Preload SDK download links for later usage from: https://dotnet.microsoft.com/en-us/download/dotnet\r\n\r\n" +
-                    "This will take some seconds and is dependant on your local internet download rate ...",
-                    "Preload SDK download links",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
-
                 // read newest .net sdks
                 if(!ReadSdkCatalogToCache())
                 {
@@ -138,8 +131,28 @@ namespace RaspberryDebugger
         {
             using (new CursorWait())
             {
-                _cachedSdkCatalog = new SdkCatalog();
+                // try to get the catalog thru version feed service
+                var scrapeHtml = new HtmlPage();
 
+                _cachedSdkCatalog = JsonConvert.DeserializeObject<SdkCatalog>(
+                    ThreadHelper.JoinableTaskFactory.Run(async () =>
+                        await scrapeHtml.Request.ReadVersionFeedService(scrapeHtml.VersionFeedUri)));
+
+                if (_cachedSdkCatalog == null || !_cachedSdkCatalog.Items.Any())
+                {
+                    MessageBoxEx.Show(
+                        "Preload SDK download links for later usage from: https://dotnet.microsoft.com/en-us/download/dotnet\r\n\r\n" +
+                        "This will take some seconds and is dependant on your local internet download rate ...",
+                        "Preload SDK download links",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    return true;
+                }
+
+                // try to get the catalog thru own fetch
                 using var catalogStream = Assembly
                     .GetExecutingAssembly()
                     .GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json");
@@ -155,8 +168,6 @@ namespace RaspberryDebugger
                         jsonSerializerSettings);
 
                 if (_cachedSdkScrapingCatalog?.Sdks == null) return false;
-
-                var scrapeHtml = new HtmlPage();
 
                 var downloadPageLinks = ThreadHelper.JoinableTaskFactory.Run(delegate
                 {
@@ -182,6 +193,8 @@ namespace RaspberryDebugger
         /// <param name="rawLinkCatalog">Raw catalog data: (link, checkSum)</param>
         private static bool FillCachedSdkCatalog(IEnumerable<(string, string)> rawLinkCatalog)
         {
+            _cachedSdkCatalog = new SdkCatalog();
+
             foreach (var (downLoadLink, checkSum) in rawLinkCatalog)
             {
                 var dotNetPart = downLoadLink.Split('/')[7].Split('-');                 // read .NET part from download uri

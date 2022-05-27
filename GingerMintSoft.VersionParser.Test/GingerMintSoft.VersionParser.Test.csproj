@@ -91,7 +91,7 @@
     <Compile Include="Core6VersionParserAsync.cs" />
     <Compile Include="ReadAllRelevantVersionsAsync.cs" />
     <Compile Include="ReadDownloadLinkAndChecksumAsync.cs" />
-    <Compile Include="ReadVersionService.cs" />
+    <Compile Include="ReadVersionFeedService.cs" />
     <Compile Include="SerializeDeserializeScrapingContent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

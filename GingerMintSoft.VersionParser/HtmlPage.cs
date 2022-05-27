@@ -7,6 +7,7 @@ using HtmlAgilityPack;
 
 using GingerMintSoft.VersionParser.Architecture;
 using GingerMintSoft.VersionParser.Extensions;
+using GingerMintSoft.VersionParser.Web;
 using Version = GingerMintSoft.VersionParser.Architecture.Version;
 
 namespace GingerMintSoft.VersionParser
@@ -21,9 +22,13 @@ namespace GingerMintSoft.VersionParser
 
         public string BaseUri { get; set; } = "https://dotnet.microsoft.com";
 
+        public string? VersionFeedUri { get; set; } = "https://dotnetverionfeed.azurewebsites.net/version";
+
         public string DownloadUri { get; } = "download/dotnet";
 
         public string DotNetUri { get; }
+
+        public Request Request { get; } = new Request();
 
         public CultureInfo CultureInfo { get; set; } = CultureInfo.CreateSpecificCulture("en-us");
 
