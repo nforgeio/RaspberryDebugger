@@ -2,7 +2,7 @@
 _A Visual Studio Extension for debugging .NET Core applications remotely on a Raspberry Pi_
 
 ---
-**IMPORTANT:** .NET 6.0 starting with the SDK 6.0.100 is working now and can be ONLY used in Visual Studio 2022!
+**IMPORTANT:** Can be ONLY used in Visual Studio 2022! Actually the LTS .NET versions (3.1 amd 6) are supported.
 
 For Asp.NET debugging set the runtime identifier project property to:
 
@@ -26,14 +26,14 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 
 * Windows 10/11
 * Visual Studio 2022 Community Edition (or better)
-* Raspberry Pi running 32-bit and soon as Beta 64-bit Raspberry Pi OS - grab this source and feel free to test, please
+* Raspberry Pi running 32-bit or 64-bit Raspberry Pi OS - grab this source and feel free to test, please
 * Raspberry user allowed to `sudo`
 * [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed automatically when required)
 
 ### Features
 
 * Supports Raspberry Pi 3+ devices and Zero 2 W
-* Raspberry Pi OS 32-bit/64-bit (raspbian)
+* Raspberry Pi OS 32/64-bit (raspbian)
 * Console and ASPNET .NET applications supported
 * Configures SSH 2048-bit RSA key pair automatically
 * **F5/Run** debugging
@@ -182,8 +182,8 @@ The **Project/Raspberry Debug Settings** menu persists the settings to the new `
 ### Limitations
 
 * .NET Core is not supported on Raspberry 1, 2, or Zero cards
-* 64-bit Raspberry Pi OS (Raspbian) is supported now in a Beta stage
-* .NET Core SDKs older than 3.1 are not supported
+* 64-bit Raspberry Pi OS (Raspbian) is supported now
+* Only LTS .NET Core SDKs supported: 3.1 and 6 (5 is not supported anymore)
 * **Start Without Debugging** or **Attach to Process...** are not supported (yet)
 * Raspberry debugging uses the default project debugging profile
 * HTTPS is not currently supported for ASPNET debugging
