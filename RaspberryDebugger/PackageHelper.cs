@@ -136,7 +136,7 @@ namespace RaspberryDebugger
 
                 _cachedSdkCatalog = JsonConvert.DeserializeObject<SdkCatalog>(
                     ThreadHelper.JoinableTaskFactory.Run(async () =>
-                        await scrapeHtml.Request.ReadVersionFeedService(scrapeHtml.VersionFeedUri)));
+                        await scrapeHtml.Request.ReadVersionFeedService(scrapeHtml.VersionsFeedUri)));
 
                 if (_cachedSdkCatalog == null || !_cachedSdkCatalog.Items.Any())
                 {

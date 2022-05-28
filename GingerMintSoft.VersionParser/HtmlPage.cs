@@ -22,7 +22,7 @@ namespace GingerMintSoft.VersionParser
 
         public string BaseUri { get; set; } = "https://dotnet.microsoft.com";
 
-        public string? VersionFeedUri { get; set; } = "https://dotnetverionfeed.azurewebsites.net/version";
+        public string? VersionsFeedUri { get; set; } = "https://dotnetversionfeed.azurewebsites.net/versions";
 
         public string DownloadUri { get; } = "download/dotnet";
 

@@ -10,7 +10,7 @@ public class Request
     {
         string responseBody;
 
-        if (string.IsNullOrEmpty(uri)) uri = new HtmlPage().VersionFeedUri;
+        if (string.IsNullOrEmpty(uri)) uri = new HtmlPage().VersionsFeedUri;
 
         try
         {
