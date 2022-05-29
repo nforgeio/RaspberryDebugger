@@ -43,10 +43,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blinkie", "Blinkie", "{C7EA
 		Test\Blinkie\Blinkie.sln = Test\Blinkie\Blinkie.sln
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GingerMintSoft.VersionParser", "GingerMintSoft.VersionParser\GingerMintSoft.VersionParser.csproj", "{8C0521E1-8F0F-4F62-A25C-BB1F271507B5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GingerMintSoft.VersionParser.Test", "GingerMintSoft.VersionParser.Test\GingerMintSoft.VersionParser.Test.csproj", "{21B71F1C-2464-458B-88FD-E500F841DBB4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,14 +53,6 @@ Global
 		{80D6A0E0-A145-488C-976D-CE34A16D8533}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80D6A0E0-A145-488C-976D-CE34A16D8533}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{80D6A0E0-A145-488C-976D-CE34A16D8533}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C0521E1-8F0F-4F62-A25C-BB1F271507B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C0521E1-8F0F-4F62-A25C-BB1F271507B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C0521E1-8F0F-4F62-A25C-BB1F271507B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C0521E1-8F0F-4F62-A25C-BB1F271507B5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{21B71F1C-2464-458B-88FD-E500F841DBB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{21B71F1C-2464-458B-88FD-E500F841DBB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{21B71F1C-2464-458B-88FD-E500F841DBB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{21B71F1C-2464-458B-88FD-E500F841DBB4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

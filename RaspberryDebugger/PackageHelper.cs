@@ -15,31 +15,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows.Forms;
-
-using Newtonsoft.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+
 using EnvDTE;
 using EnvDTE80;
-using GingerMintSoft.VersionParser;
-using GingerMintSoft.VersionParser.Models;
-using Neon.Common;
+using Microsoft.VisualStudio.Threading;
 using Neon.IO;
+using Neon.Common;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
 using RaspberryDebugger.Dialogs;
 using RaspberryDebugger.Extensions;
+using RaspberryDebugger.Models.Sdk;
 using RaspberryDebugger.Models.Connection;
 using RaspberryDebugger.Models.Project;
-using RaspberryDebugger.Models.Sdk;
 using RaspberryDebugger.Models.VisualStudio;
+using VersionsService = RaspberryDebugger.Web;
 
 namespace RaspberryDebugger
 {
@@ -49,7 +52,6 @@ namespace RaspberryDebugger
     internal static class PackageHelper
     {
         private static SdkCatalog _cachedSdkCatalog;
-        private static SdkScrapingCatalog _cachedSdkScrapingCatalog;
 
         /// <summary>
         /// The path to the folder holding the Raspberry SSH private keys.
@@ -132,84 +134,39 @@ namespace RaspberryDebugger
             using (new CursorWait())
             {
                 // try to get the catalog thru version feed service
-                var scrapeHtml = new HtmlPage();
-
                 _cachedSdkCatalog = JsonConvert.DeserializeObject<SdkCatalog>(
-                    ThreadHelper.JoinableTaskFactory.Run(async () =>
-                        await scrapeHtml.Request.ReadVersionFeedService(scrapeHtml.VersionsFeedUri)));
+                        ThreadHelper.JoinableTaskFactory.Run(async () =>
+                        await new VersionsService.Request()
+                            .ReadVersionFeedServiceAsync()
+                            .WithTimeout(TimeSpan.FromSeconds(5))));
 
-                if (_cachedSdkCatalog == null || !_cachedSdkCatalog.Items.Any())
-                {
-                    MessageBoxEx.Show(
-                        "Preload SDK download links for later usage from: https://dotnet.microsoft.com/en-us/download/dotnet\r\n\r\n" +
-                        "This will take some seconds and is dependant on your local internet download rate ...",
-                        "Preload SDK download links",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-                }
-                else
-                {
-                    return true;
-                }
+                if (_cachedSdkCatalog?.Items.Any() == true) return true;
 
-                // try to get the catalog thru own fetch
-                using var catalogStream = Assembly
-                    .GetExecutingAssembly()
-                    .GetManifestResourceStream("RaspberryDebugger.sdk-parser-catalog.json");
-
-                if (catalogStream == null) return false;
-
-                var jsonSerializerSettings = new JsonSerializerSettings();
-                jsonSerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
-
-                _cachedSdkScrapingCatalog =
-                    JsonConvert.DeserializeObject<SdkScrapingCatalog>(
-                        new StreamReader(catalogStream).ReadToEnd(),
-                        jsonSerializerSettings);
-
-                if (_cachedSdkScrapingCatalog?.Sdks == null) return false;
-
-                var downloadPageLinks = ThreadHelper.JoinableTaskFactory.Run(delegate
-                {
-                    return Task.WhenAll(_cachedSdkScrapingCatalog.Sdks.Select(sdk => Task.Run(() =>
-                        scrapeHtml.ReadDownloadPagesAsync(sdk.Version, sdk.Family))));
-                });
-
-                var rawLinkCatalog = ThreadHelper.JoinableTaskFactory
-                    .Run<IEnumerable<(string, string)>>(async () =>
-                        await scrapeHtml.ReadDownloadUriAndChecksumBulkAsync(downloadPageLinks));
-
-                Log.Info("Preload SDK download links from https://dotnet.microsoft.com/en-us/download/dotnet done.");
-
-                return FillCachedSdkCatalog(rawLinkCatalog);
+                _cachedSdkCatalog = ReadIntegratedCatalog();
             }
+
+            return true;
         }
 
         /// <summary>
-        /// Fill the _cachedSdkCatalog for selected raspberry pi
-        /// Only filled once for selected raspberry pi
-        /// -> than no need to load again...
+        /// Read assembly integrated catalog json
         /// </summary>
-        /// <param name="rawLinkCatalog">Raw catalog data: (link, checkSum)</param>
-        private static bool FillCachedSdkCatalog(IEnumerable<(string, string)> rawLinkCatalog)
+        /// <returns>SdkCatalog with SDK items</returns>
+        private static SdkCatalog ReadIntegratedCatalog()
         {
             _cachedSdkCatalog = new SdkCatalog();
 
-            foreach (var (downLoadLink, checkSum) in rawLinkCatalog)
-            {
-                var dotNetPart = downLoadLink.Split('/')[7].Split('-');                 // read .NET part from download uri
+            // try to get the catalog thru own fetch
+            using var catalogStream = Assembly
+                .GetExecutingAssembly()
+                .GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json");
 
-                // fill to cached catalog
-                _cachedSdkCatalog.Items.Add(new SdkCatalogItem(
-                    $"{dotNetPart[2].Split('.')[0]}.{dotNetPart[2].Split('.')[1]}",     // extract belonging SDK version
-                    dotNetPart[4].Contains(Platform.Bitness64.ToMemberString())         // read SDK architecture    
-                        ? SdkArchitecture.Arm64                                                     
-                        : SdkArchitecture.Arm32,
-                    downLoadLink,
-                    checkSum));
-            }
+            var jsonSerializerSettings = new JsonSerializerSettings();
+            jsonSerializerSettings.Converters.Add(new StringEnumConverter());
 
-            return _cachedSdkCatalog.Items.Any();
+            return JsonConvert.DeserializeObject<SdkCatalog>(
+                new StreamReader(catalogStream!).ReadToEnd(),
+                jsonSerializerSettings);
         }
 
         /// <summary>
