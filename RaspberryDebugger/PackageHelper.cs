@@ -232,7 +232,9 @@ namespace RaspberryDebugger
                 // select the first one as sorted by name if necessary.
                 if (connections.Count > 0 && !connections.Any(connection => connection.IsDefault))
                 {
-                    connections.OrderBy(connection => connection.Name.ToLowerInvariant()).Single().IsDefault = true;
+                    connections.OrderBy(connection => connection.Name
+                        .ToLowerInvariant())
+                        .Single().IsDefault = true;
                 }
                 
                 return connections;
