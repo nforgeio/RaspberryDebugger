@@ -154,19 +154,26 @@ namespace RaspberryDebugger
         /// <returns>SdkCatalog with SDK items</returns>
         private static SdkCatalog ReadIntegratedCatalog()
         {
-            _cachedSdkCatalog = new SdkCatalog();
+            try
+            {
+                // try to get the catalog thru own fetch
+                using var catalogStream = Assembly
+                    .GetExecutingAssembly()
+                    .GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json");
 
-            // try to get the catalog thru own fetch
-            using var catalogStream = Assembly
-                .GetExecutingAssembly()
-                .GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json");
+                var jsonSerializerSettings = new JsonSerializerSettings();
+                jsonSerializerSettings.Converters.Add(new StringEnumConverter());
 
-            var jsonSerializerSettings = new JsonSerializerSettings();
-            jsonSerializerSettings.Converters.Add(new StringEnumConverter());
+                return JsonConvert.DeserializeObject<SdkCatalog>(
+                    new StreamReader(catalogStream!).ReadToEnd(),
+                    jsonSerializerSettings);
+            }
+            catch (Exception)
+            {
+                _cachedSdkCatalog = new SdkCatalog();
+            }
 
-            return JsonConvert.DeserializeObject<SdkCatalog>(
-                new StreamReader(catalogStream!).ReadToEnd(),
-                jsonSerializerSettings);
+            return _cachedSdkCatalog;
         }
 
         /// <summary>
