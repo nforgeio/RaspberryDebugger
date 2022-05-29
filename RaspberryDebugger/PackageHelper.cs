@@ -225,7 +225,7 @@ namespace RaspberryDebugger
                     return new List<ConnectionInfo>();
                 }
 
-                var connections = NeonHelper.JsonDeserialize<List<ConnectionInfo>>(File.ReadAllText(ConnectionsPath)) ??
+                var connections = NeonHelper.JsonDeserialize<List<ConnectionInfo>>(File.ReadAllText(ConnectionsPath)) ?? 
                                   new List<ConnectionInfo>();
 
                 // Ensure that at least one connection is marked as default.  We'll
@@ -346,7 +346,7 @@ namespace RaspberryDebugger
 
             var activeSolutionProjects = (Array)dte?.ActiveSolutionProjects;
 
-            return activeSolutionProjects != null && activeSolutionProjects.Length > 0
+            return activeSolutionProjects is { Length: > 0 }
                 ? (Project)activeSolutionProjects.GetValue(0)
                 : null;
         }
@@ -555,7 +555,7 @@ namespace RaspberryDebugger
         private const string ProgressCaption = "Raspberry Debugger";
 
         private static IVsThreadedWaitDialog2 _progressDialog;
-        private static readonly Stack<string> OperationStack = new Stack<string>();
+        private static readonly Stack<string> OperationStack = new();
         private static string                 _rootDescription;
 
         /// <summary>
