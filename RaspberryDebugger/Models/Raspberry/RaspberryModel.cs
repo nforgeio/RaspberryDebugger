@@ -19,7 +19,8 @@ using Newtonsoft.Json;
 namespace RaspberryDebugger.Models.Raspberry
 {
     /// <summary>
-    /// Describes a specific Raspberry board as described <a href="https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md">here</a>.
+    /// Describes a specific Raspberry board as described
+    /// <a href="https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md">here</a>.
     /// </summary>
     internal class RaspberryModel
     {
