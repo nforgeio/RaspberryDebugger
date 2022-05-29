@@ -133,13 +133,20 @@ namespace RaspberryDebugger
         {
             using (new CursorWait())
             {
-                // try to get the catalog thru version feed service
-                _cachedSdkCatalog = JsonConvert.DeserializeObject<SdkCatalog>(
+                try
+                {
+                    // try to get the catalog thru version feed service
+                    _cachedSdkCatalog = JsonConvert.DeserializeObject<SdkCatalog>(
                         ThreadHelper.JoinableTaskFactory.Run(async () =>
-                        await new VersionsService.Request()
-                            .ReadVersionFeedServiceAsync()
-                            .WithTimeout(TimeSpan.FromSeconds(5))));
-
+                            await new VersionsService.Request()
+                                .ReadVersionFeedServiceAsync()
+                                .WithTimeout(TimeSpan.FromSeconds(5))));
+                }
+                catch (Exception)
+                {
+                    _cachedSdkCatalog = new SdkCatalog();
+                }
+                
                 if (_cachedSdkCatalog?.Items.Any() == true) return true;
 
                 _cachedSdkCatalog = ReadIntegratedCatalog();
