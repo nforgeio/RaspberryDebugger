@@ -317,10 +317,8 @@ namespace RaspberryDebugger.Commands
 
             var tempFile = new TempFile(".launch.json");
 
-            using (var stream = new FileStream(tempFile.Path, FileMode.CreateNew, FileAccess.ReadWrite))
-            {
-                await stream.WriteAsync(Encoding.UTF8.GetBytes(settings.ToString()));
-            }
+            using var stream = new FileStream(tempFile.Path, FileMode.CreateNew, FileAccess.ReadWrite);
+            await stream.WriteAsync(Encoding.UTF8.GetBytes(settings.ToString()));
 
             return tempFile;
         }
