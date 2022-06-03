@@ -126,7 +126,8 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Read SDK links from Microsoft download pages
+        /// Read SDK links from hosted service
+        /// with fallback to sdk-catalog.json entries
         /// </summary>
         /// <returns>true if SDKs present</returns>
         private static bool ReadSdkCatalogToCache()
@@ -140,7 +141,7 @@ namespace RaspberryDebugger
                         ThreadHelper.JoinableTaskFactory.Run(async () =>
                             await new VersionsService.Request()
                                 .ReadVersionFeedServiceAsync()
-                                .WithTimeout(TimeSpan.FromSeconds(5))));
+                                .WithTimeout(TimeSpan.FromSeconds(2))));
                 }
                 catch (Exception)
                 {
