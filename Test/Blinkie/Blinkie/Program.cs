@@ -5,31 +5,31 @@ using System.Threading;
 
 namespace Blinkie
 {
-    class Program
+    static class Program
     {
-        static void Main(string[] args)
+        private static void Main()
         {
             Debugger.Break();
 
             var var = Environment.GetEnvironmentVariable("TEST");
+            Debug.Print($"Environment variable: {var}");
 
-            using (var gpio = new GpioController(PinNumberingScheme.Logical))
+            using var gpio = new GpioController(PinNumberingScheme.Logical);
+            var interval = TimeSpan.FromSeconds(0.5);
+            var pin = 5;
+
+            gpio.OpenPin(pin, PinMode.Output);
+
+            while (true)
             {
-                var interval = TimeSpan.FromSeconds(0.5);
-                var pin = 5;
+                Console.WriteLine("Hello World!");
 
-                gpio.OpenPin(pin, PinMode.Output);
-
-                while (true)
-                {
-                    Console.WriteLine("Hello World!");
-
-                    gpio.Write(pin, PinValue.High);
-                    Thread.Sleep(interval);
-                    gpio.Write(pin, PinValue.Low);
-                    Thread.Sleep(interval);
-                }
+                gpio.Write(pin, PinValue.High);
+                Thread.Sleep(interval);
+                gpio.Write(pin, PinValue.Low);
+                Thread.Sleep(interval);
             }
+            // ReSharper disable once FunctionNeverReturns
         }
     }
 }
