@@ -550,31 +550,26 @@ namespace RaspberryDebugger.Connection
         }
 
         /// <summary>
-        /// Installs the .NET Core SDK on the Raspberry if it's not already installed.
+        /// Download and install actual (latest) SDK
+        /// </summary>
+        /// <returns>true if successful</returns>
+        public async Task<bool> SetupSdkAsync()
+        {
+            if (IsSdkPresent()) return true;
+
+            var targetSdk = ReadActualSdkCatalogItem();
+
+            return await DownloadSdkAsync(targetSdk) && 
+                   await InstallSdkAsync(targetSdk);
+        }
+
+        /// <summary>
+        /// Downloads the .NET Core SDK on the Raspberry.
         /// The Raspberry architecture is driving the installation - the newest .NET Core version is taken
         /// </summary>
         /// <returns><c>true</c> on success.</returns>
-        public async Task<bool> InstallSdkAsync()
+        private async Task<bool> DownloadSdkAsync(SdkCatalogItem targetSdk)
         {
-            var sdkOnPi = PiStatus.InstalledSdks
-                .OrderByDescending(name => name.Name)
-                .FirstOrDefault();
-
-            var sdkOnPiVersion = sdkOnPi?.Name ?? string.Empty;
-            var sdkOnPiArchitecture = sdkOnPi?.Architecture ?? PiStatus.Architecture;
-
-            if (PiStatus.InstalledSdks.Any(sdk => sdk.Name == sdkOnPiVersion && 
-                                                  sdk.Architecture == sdkOnPiArchitecture))
-            {
-                return await Task.FromResult(true);    // Already installed
-            }
-         
-            // Locate the standalone SDK for the request .NET version.
-            // Figure out the latest SDK version - Microsoft versioning: the highest number
-            var targetSdk = PackageHelper.SdkCatalog.Items
-                .OrderByDescending(item => item.Name)
-                .FirstOrDefault(item => item.Architecture == PiStatus.Architecture);
-
             if (targetSdk == null)
             {
                 LogError("RasberryDebug is unaware of .NET Core SDK.");
@@ -585,14 +580,79 @@ namespace RaspberryDebugger.Connection
             }
             else
             {
-                LogInfo($".NET Core SDK [v{targetSdk.Name}] is not installed.");
+                LogInfo($".NET Core SDK [v{targetSdk.Release}] is not installed.");
             }
 
             // Install the SDK.
-            LogInfo($"Installing SDK v{targetSdk.Name}");
+            LogInfo($"Downlaoding SDK v{targetSdk.Release}");
+            
+            var downloadSdkInfo = 
+                $"Download SDK for .NET v{targetSdk.Release} " +
+                $"({targetSdk.Architecture.GetAttributeOfType<EnumMemberAttribute>().Value}) on Raspberry...";
+
+            return await PackageHelper.ExecuteWithProgressAsync(downloadSdkInfo,
+                async () =>
+                {
+                    var downloadScript =
+                        $@"
+                        # Ensure that the packages required by .NET Core are installed:
+                        # https://docs.microsoft.com/en-us/dotnet/core/install/linux-debian#dependencies
+                        if ! apt-get update ; then
+                            exit 1
+                        fi
+
+                        if ! apt-get install -yq libc6 libgcc1 libgssapi-krb5-2 libicu-dev libssl1.1 libstdc++6 zlib1g libgdiplus ; then
+                            exit 1
+                        fi
+
+                        # Remove any existing SDK download.  This might be 
+                        # present if a previous installation attempt failed.
+                        if ! rm -f /tmp/dotnet-sdk.tar.gz ; then
+                            exit 1
+                        fi
+
+                        # Download the SDK installation file to a temporary file.
+                        if ! wget --quiet -O /tmp/dotnet-sdk.tar.gz {targetSdk.Link} ; then
+                            exit 1
+                        fi
+
+                        exit 0
+                        ";
+
+                    try
+                    {
+                        var response = SudoCommand(CommandBundle.FromScript(downloadScript));
+
+                        if (response.ExitCode == 0)
+                        {
+                            return await Task.FromResult(true);
+                        }
+                        else
+                        {
+                            LogError(response.AllText);
+                            return await Task.FromResult(false);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        LogException(e);
+                        return await Task.FromResult(false);
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Installs the .NET Core SDK on the Raspberry if it's not already installed.
+        /// The Raspberry architecture is driving the installation - the newest .NET Core version is taken
+        /// </summary>
+        /// <returns><c>true</c> on success.</returns>
+        private async Task<bool> InstallSdkAsync(SdkCatalogItem targetSdk)
+        {
+            // Install the SDK.
+            LogInfo($"Installing SDK v{targetSdk.Release}");
             
             var installSdkInfo = 
-                $"Download and install SDK for .NET v{targetSdk.Name} " +
+                $"Install SDK for .NET v{targetSdk.Release} " +
                 $"({targetSdk.Architecture.GetAttributeOfType<EnumMemberAttribute>().Value}) on Raspberry...";
 
             return await PackageHelper.ExecuteWithProgressAsync(installSdkInfo,
@@ -602,33 +662,7 @@ namespace RaspberryDebugger.Connection
                         $@"
                         export DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
 
-                        # Ensure that the packages required by .NET Core are installed:
-                        #
-                        #       https://docs.microsoft.com/en-us/dotnet/core/install/linux-debian#dependencies
-
-                        if ! apt-get update ; then
-                            exit 1
-                        fi
-
-                        if ! apt-get install -yq libc6 libgcc1 libgssapi-krb5-2 libicu-dev libssl1.1 libstdc++6 zlib1g libgdiplus ; then
-                            exit 1
-                        fi
-
-                        # Remove any existing SDK download.  This might be present if a
-                        # previous installation attempt failed.
-
-                        if ! rm -f /tmp/dotnet-sdk.tar.gz ; then
-                            exit 1
-                        fi
-
-                        # Download the SDK installation file to a temporary file.
-
-                        if ! wget --quiet -O /tmp/dotnet-sdk.tar.gz {targetSdk.Link} ; then
-                            exit 1
-                        fi
-
                         # Verify the SHA512.
-
                         orgDir=$cwd
                         cd /tmp
 
@@ -640,13 +674,11 @@ namespace RaspberryDebugger.Connection
                         cd $orgDir
 
                         # Make sure the installation directory exists.
-
                         if ! mkdir -p $DOTNET_ROOT ; then
                             exit 1
                         fi
 
                         # Unpack the SDK to the installation directory.
-
                         if ! tar -zxf /tmp/dotnet-sdk.tar.gz -C $DOTNET_ROOT --no-same-owner ; then
                             exit 1
                         fi
@@ -667,7 +699,6 @@ namespace RaspberryDebugger.Connection
                         if (response.ExitCode == 0)
                         {
                             // Add the newly installed SDK to the list of installed SDKs.
-
                             PiStatus.InstalledSdks.Add(new Sdk(targetSdk.Name, targetSdk.Architecture));
                             return await Task.FromResult(true);
                         }
@@ -686,10 +717,43 @@ namespace RaspberryDebugger.Connection
         }
 
         /// <summary>
+        /// Is any .NET Core SDK installed on the Raspberry Pi.
+        /// The Raspberry architecture is driving the installation - the newest .NET Core version is taken
+        /// </summary>
+        /// <returns><c>true</c> on success.</returns>
+        private bool IsSdkPresent()
+        {
+            var sdkOnPi = PiStatus.InstalledSdks
+                .OrderByDescending(name => name.Name)
+                .FirstOrDefault();
+
+            var sdkOnPiVersion = sdkOnPi?.Name ?? string.Empty;
+            var sdkOnPiArchitecture = sdkOnPi?.Architecture ?? PiStatus.Architecture;
+
+            return PiStatus.InstalledSdks.Any(sdk => sdk.Name == sdkOnPiVersion && 
+                                                     sdk.Architecture == sdkOnPiArchitecture);
+        }
+
+        /// <summary>
+        /// Read actual (latest) SDK from catalog
+        /// </summary>
+        /// <returns>Latest target SDK</returns>
+        private SdkCatalogItem ReadActualSdkCatalogItem()
+        {
+            // Locate the standalone SDK for the request .NET version.
+            // Figure out the latest SDK version - Microsoft versioning: the highest number
+            var targetSdk = PackageHelper.SdkCatalog.Items
+                .OrderByDescending(item => item.Name)
+                .FirstOrDefault(item => item.Architecture == PiStatus.Architecture);
+
+            return targetSdk;
+        }
+
+        /// <summary>
         /// Installs the <b>vsdbg</b> debugger on the Raspberry if it's not already installed.
         /// </summary>
         /// <returns><c>true</c> on success.</returns>
-        public async Task<bool> InstallDebuggerAsync()
+        public async Task<bool> SetupDebuggerAsync()
         {
             if (PiStatus.HasDebugger)
             {
