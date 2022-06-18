@@ -38,9 +38,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToolBin", "ToolBin", "{15A5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{21D869D2-B357-485A-89C0-6A18B8886432}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blinkie", "Blinkie", "{C7EA532F-BE47-4993-9599-66168340E980}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blinky", "Blinky", "{C7EA532F-BE47-4993-9599-66168340E980}"
 	ProjectSection(SolutionItems) = preProject
-		Test\Blinkie\Blinkie.sln = Test\Blinkie\Blinkie.sln
+		Test\Blinkie\Blinky.sln = Test\Blinkie\Blinky.sln
 	EndProjectSection
 EndProject
 Global
