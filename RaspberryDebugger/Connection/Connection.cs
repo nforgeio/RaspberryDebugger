@@ -632,7 +632,7 @@ namespace RaspberryDebugger.Connection
                         orgDir=$cwd
                         cd /tmp
 
-                        if ! echo '{targetSdk.Sha512}  dotnet-sdk.tar.gz' | sha512sum --check - ; then
+                        if ! echo '{targetSdk.Sha512} dotnet-sdk.tar.gz' | sha512sum --check - ; then
                             cd $orgDir
                             exit 1
                         fi
