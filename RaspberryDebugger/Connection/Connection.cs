@@ -294,7 +294,6 @@ namespace RaspberryDebugger.Connection
 #endif
                     // We need to ensure that [unzip] is installed so that [LinuxSshProxy] command
                     // bundles will work.
-
                     Log($"[{Name}]: Checking for: [unzip]");
 
                     var response = SudoCommand("which unzip");
@@ -308,7 +307,6 @@ namespace RaspberryDebugger.Connection
                     }
 
                     // We're going to execute a script the gathers everything in a single operation for speed.
-
                     Log($"[{Name}]: Retrieving status");
 
                     var statusScript =
@@ -334,15 +332,12 @@ namespace RaspberryDebugger.Connection
                         DEBUGFOLDER={PackageHelper.RemoteDebuggerFolder}
 
                         # Get the chip architecture
-
                         uname -m
 
                         # Get the current PATH
-
                         echo $PATH
 
                         # Detect whether [unzip] is installed.
-
                         if which unzip &> /dev/nul ; then
                             echo 'unzip'
                         else
@@ -350,7 +345,6 @@ namespace RaspberryDebugger.Connection
                         fi
 
                         # Detect whether the [vsdbg] debugger is installed.
-
                         if [ -d $DEBUGFOLDER ] ; then
                             echo 'debugger-installed'
                         else
@@ -361,7 +355,6 @@ namespace RaspberryDebugger.Connection
                         # corresponding SDK name.  We'll list the files on one line
                         # with the SDK names separated by commas.  We'll return a blank
                         # line if the SDK directory doesn't exist.
-
                         if [ -d $DOTNET_ROOT/sdk ] ; then
                             ls -m $DOTNET_ROOT/sdk
                         else
@@ -369,29 +362,23 @@ namespace RaspberryDebugger.Connection
                         fi
 
                         # Output the Raspberry board model.
-
                         cat /proc/cpuinfo | grep '^Model\s' | grep -o 'Raspberry.*$'
 
                         # Output the Raspberry board revision.
-
                         cat /proc/cpuinfo | grep 'Revision\s' | grep -o '[0-9a-fA-F]*$'
 
                         # Ensure that the [/lib/dotnet] folder exists, that it's on the
                         # PATH and that DOTNET_ROOT are defined.
-
                         mkdir -p /lib/dotnet
                         chown root:root /lib/dotnet
                         chmod 755 /lib/dotnet
 
                         # Set these for the current session:
-
                         export DOTNET_ROOT={PackageHelper.RemoteDotnetFolder}
                         export PATH=$PATH:$DOTNET_ROOT
 
                         # and for future sessions too:
-
                         if ! grep --quiet DOTNET_ROOT /etc/profile ; then
-
                             echo """"                                >> /etc/profile
                             echo ""#------------------------------"" >> /etc/profile
                             echo ""# Raspberry Debugger:""           >> /etc/profile
@@ -495,13 +482,11 @@ namespace RaspberryDebugger.Connection
                             var createKeyScript =
                                 $@"
                                 # Create the key pair
-
                                 if ! ssh-keygen -t rsa -b 2048 -P '' -C '{workstationUser}@{workstationName}' -f {tempPrivateKeyPath} -m pem ; then
                                     exit 1
                                 fi
 
                                 # Append the public key to the user's [authorized_keys] file to enable it.
-
                                 mkdir -p {homeFolder}/.ssh
                                 touch {homeFolder}/.ssh/authorized_keys
                                 cat {tempPublicKeyPath} >> {homeFolder}/.ssh/authorized_keys
@@ -684,7 +669,6 @@ namespace RaspberryDebugger.Connection
                         fi
 
                         # Remove the temporary installation file.
-
                         if ! rm /tmp/dotnet-sdk.tar.gz ; then
                             exit 1
                         fi
@@ -826,9 +810,8 @@ namespace RaspberryDebugger.Connection
             {
                 groupScript =
                     $@"
-                    # Add the program assembly to the user specified target group (if any).  This
-                    # defaults to [gpio] so users will be able to access the GPIO pins.
-
+                    # Add the program assembly to the user specified target group (if any).
+                    # This defaults to [gpio] so users will be able to access the GPIO pins.
                     if ! chgrp {projectSettings.TargetGroup} {debugFolder}/{assemblyName} ; then
                         exit 1
                     fi
@@ -837,27 +820,22 @@ namespace RaspberryDebugger.Connection
 
             var uploadScript =
                 $@"
-
                 # Ensure that the debug folder exists.
-
                 if ! mkdir -p {debugFolder} ; then
                     exit 1
                 fi
 
                 # Clear all existing program files.
-
                 if ! rm -rf {debugFolder}/* ; then
                     exit 1
                 fi
 
                 # Unzip the binary and other files to the debug folder.
-
                 if ! unzip program.zip -d {debugFolder} ; then
                     exit 1
                 fi
 
                 # The program assembly needs execute permissions.
-
                 if ! chmod 770 {debugFolder}/{assemblyName} ; then
                     exit 1
                 fi
