@@ -9,6 +9,8 @@ namespace Blinkie
     {
         private static void Main()
         {
+            Console.WriteLine("Hello World!");
+
             Debugger.Break();
 
             var var = Environment.GetEnvironmentVariable("TEST");
@@ -16,14 +18,12 @@ namespace Blinkie
 
             using var gpio = new GpioController(PinNumberingScheme.Logical);
             var interval = TimeSpan.FromSeconds(0.5);
-            var pin = 5;
+            var pin = 14;
 
             gpio.OpenPin(pin, PinMode.Output);
 
             while (true)
             {
-                Console.WriteLine("Hello World!");
-
                 gpio.Write(pin, PinValue.High);
                 Thread.Sleep(interval);
                 gpio.Write(pin, PinValue.Low);
