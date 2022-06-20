@@ -19,9 +19,6 @@ You can use Visual Studio Code to develop and debug .NET Core applications eithe
 
 The new **Raspberry Debugger** Visual Studio extension allows you to code your application on a Windows workstation and then build and debug it on a Raspberry by just pressing **F5 - Start Debugging**.
 
-### Known Issues
-* Only one project in an solution gets transferred to Raspberry Pi
-
 ### Requirements
 
 * Windows 10/11
