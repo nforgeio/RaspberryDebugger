@@ -212,7 +212,10 @@ namespace RaspberryDebugger.Commands
 
                 if (launchReady)
                 {
-                    NeonHelper.OpenBrowser($"{baseUri}{projectProperties.AspRelativeBrowserUri}");
+                    NeonHelper.OpenBrowser(
+                        string.IsNullOrEmpty(projectProperties.AspRelativeBrowserUri) 
+                            ? $"{baseUri}" 
+                            : $"{baseUri}/{projectProperties.AspRelativeBrowserUri}");
                 }
             }
         }
