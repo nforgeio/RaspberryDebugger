@@ -19,6 +19,7 @@ using System;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using EnvDTE;
@@ -142,7 +143,10 @@ namespace RaspberryDebugger.Commands
             }
 
             // Establish a Raspberry connection to handle some things before we start the debugger.
-            var connection = await DebugHelper.InitializeConnectionAsync(connectionInfo, projectProperties, PackageHelper.GetProjectSettings(dte.Solution, project));
+            var connection = await DebugHelper.InitializeConnectionAsync(
+                connectionInfo, 
+                projectProperties, 
+                PackageHelper.GetProjectSettings(dte.Solution, project));
 
             if (connection == null)
             {
@@ -205,22 +209,26 @@ namespace RaspberryDebugger.Commands
 
                 if (!launchReady) return;
 
+                var relativeBrowserUri = projectProperties.AspRelativeBrowserUri.FirstOrDefault() == '/' 
+                    ? projectProperties.AspRelativeBrowserUri 
+                    : $"/{projectProperties.AspRelativeBrowserUri}";
+
                 switch (foundWebServer)
                 {
                     case WebServer.Other:
                         NeonHelper.OpenBrowser(
-                            string.IsNullOrEmpty(projectProperties.AspRelativeBrowserUri) 
+                            string.IsNullOrEmpty(relativeBrowserUri) 
                                 ? $"{baseUri}" 
                                 : $"{baseUri}" +
-                                  $"{projectProperties.AspRelativeBrowserUri}");
+                                  $"{relativeBrowserUri}");
                         break;
 
                     case WebServer.Kestrel:
                         NeonHelper.OpenBrowser(
-                                string.IsNullOrEmpty(projectProperties.AspRelativeBrowserUri) 
+                                string.IsNullOrEmpty(relativeBrowserUri) 
                                     ? $"{baseUri}:{projectProperties.AspPort}" 
                                     : $"{baseUri}:{projectProperties.AspPort}" +
-                                      $"/{projectProperties.AspRelativeBrowserUri}");
+                                      $"{relativeBrowserUri}");
 
                         break;
 
@@ -237,7 +245,9 @@ namespace RaspberryDebugger.Commands
         /// <param name="projectProperties">ProjectProperties</param>
         /// <param name="connection">LinuxSshProxy</param>
         /// <returns>true if running</returns>
-        private static async Task<(bool, WebServer)> SearchForRunningWebServerAsync(ProjectProperties projectProperties, LinuxSshProxy connection)
+        private static async Task<(bool, WebServer)> SearchForRunningWebServerAsync(
+            ProjectProperties projectProperties, 
+            LinuxSshProxy connection)
         {
             // Wait just a bit longer to give the application a chance to
             // perform any additional initialization.
@@ -255,7 +265,7 @@ namespace RaspberryDebugger.Commands
 
             var retryPolicy = Policy
                 .HandleResult<CommandResponse>(b => b.ExitCode != 0)
-                .WaitAndRetry(3, _ => TimeSpan.FromMilliseconds(250));
+                .WaitAndRetry(3, _ => TimeSpan.FromMilliseconds(200));
 
             var response = retryPolicy.Execute(() =>
                 connection.SudoCommand(CommandBundle.FromScript(appWebServerListeningScript)));
