@@ -29,12 +29,20 @@ using Neon.Common;
 using Neon.IO;
 using Neon.SSH;
 using Newtonsoft.Json.Linq;
+using Polly;
 using RaspberryDebugger.Models.Connection;
 using RaspberryDebugger.Models.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger.Commands
 {
+    internal enum WebServer
+    {
+        None,
+        Kestrel,
+        Other
+    }
+
     /// <summary>
     /// Handles the <b>Start Debugging</b> command for Raspberry enabled projects.
     /// </summary>
@@ -165,41 +173,26 @@ namespace RaspberryDebugger.Commands
                 
                 var baseUri     = $"http://{connection.Name}.local";
                 var launchReady = false;
+                var foundWebServer = WebServer.None;
 
                 await NeonHelper.WaitForAsync(
                     async () =>
                     {
-                        if (dte.Mode != vsIDEMode.vsIDEModeDebug)
-                        {
-                            // The developer must have stopped debugging before the ASPNET
-                            // application was able to begin servicing requests.
-                            return true;
-                        }
+                        // The developer must have stopped debugging before the 
+                        // ASPNET application was able to begin servicing requests.
+                        if (dte.Mode != vsIDEMode.vsIDEModeDebug) return true;
 
                         try
-                        {
-                            var appListeningScript =
-                                $@"
-                                    if lsof -i -P -n | grep --quiet 'TCP 127.0.0.1:{projectProperties.AspPort}' ; then
-                                        exit 0
-                                    else
-                                        exit 1
-                                    fi
-                                    ";
+                        { 
+                            var (found, webServer) = await SearchForRunningWebServerAsync(projectProperties, connection);
 
-                            var response = connection.SudoCommand(CommandBundle.FromScript(appListeningScript));
+                            // web server not found
+                            if (!found) return false;
 
-                            if (response.ExitCode != 0)
-                            {
-                                return false;
-                            }
-
-                            // Wait just a bit longer to give the application a chance to
-                            // perform any additional initialization.
-
-                            await Task.Delay(TimeSpan.FromSeconds(1));
-
+                            // take the found web server
+                            foundWebServer = webServer;
                             launchReady = true;
+
                             return true;
                         }
                         catch
@@ -210,14 +203,81 @@ namespace RaspberryDebugger.Commands
                     timeout: TimeSpan.FromSeconds(60),
                     pollInterval: TimeSpan.FromSeconds(0.5));
 
-                if (launchReady)
+                if (!launchReady) return;
+
+                switch (foundWebServer)
                 {
-                    NeonHelper.OpenBrowser(
-                        string.IsNullOrEmpty(projectProperties.AspRelativeBrowserUri) 
-                            ? $"{baseUri}" 
-                            : $"{baseUri}/{projectProperties.AspRelativeBrowserUri}");
+                    case WebServer.Other:
+                        NeonHelper.OpenBrowser(
+                            string.IsNullOrEmpty(projectProperties.AspRelativeBrowserUri) 
+                                ? $"{baseUri}" 
+                                : $"{baseUri}" +
+                                  $"{projectProperties.AspRelativeBrowserUri}");
+                        break;
+
+                    case WebServer.Kestrel:
+                        NeonHelper.OpenBrowser(
+                                string.IsNullOrEmpty(projectProperties.AspRelativeBrowserUri) 
+                                    ? $"{baseUri}:{projectProperties.AspPort}" 
+                                    : $"{baseUri}:{projectProperties.AspPort}" +
+                                      $"/{projectProperties.AspRelativeBrowserUri}");
+
+                        break;
+
+                    case WebServer.None:
+                    default:
+                        break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Search for running web server
+        /// </summary>
+        /// <param name="projectProperties">ProjectProperties</param>
+        /// <param name="connection">LinuxSshProxy</param>
+        /// <returns>true if running</returns>
+        private static async Task<(bool, WebServer)> SearchForRunningWebServerAsync(ProjectProperties projectProperties, LinuxSshProxy connection)
+        {
+            // Wait just a bit longer to give the application a chance to
+            // perform any additional initialization.
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
+            // search for web server running as reverse proxy
+            var appWebServerListeningScript =
+                $@"
+                    if lsof -i -P -n | grep --quiet 'TCP 127.0.0.1:{projectProperties.AspPort}' ; then
+                        exit 0
+                    else
+                        exit 1
+                    fi
+                ";
+
+            var retryPolicy = Policy
+                .HandleResult<CommandResponse>(b => b.ExitCode != 0)
+                .WaitAndRetry(3, _ => TimeSpan.FromMilliseconds(250));
+
+            var response = retryPolicy.Execute(() =>
+                connection.SudoCommand(CommandBundle.FromScript(appWebServerListeningScript)));
+
+            if (response.ExitCode == 0) {return (true, WebServer.Other);}
+            
+            // search for dotnet kestrel web server
+            var appKestrelListeningScript =
+                $@"
+                    if lsof -i -P -n | grep --quiet 'dotnet\|TCP\|:{projectProperties.AspPort}' ; then
+                        exit 0
+                    else
+                        exit 1
+                    fi
+                ";
+
+            response = retryPolicy.Execute(() =>
+                response = connection.SudoCommand(CommandBundle.FromScript(appKestrelListeningScript)));
+
+            return response.ExitCode == 0 
+                ? (true, WebServer.Kestrel) 
+                : (false, WebServer.None);
         }
 
         /// <summary>

@@ -165,7 +165,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Utilities.Internal">
       <Version>16.3.36</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.1.4057">
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.3.2088">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -184,8 +184,11 @@
     <PackageReference Include="ObjectListView.Official">
       <Version>2.9.1</Version>
     </PackageReference>
+    <PackageReference Include="Polly">
+      <Version>7.2.3</Version>
+    </PackageReference>
     <PackageReference Include="SSH.NET">
-      <Version>2020.0.1</Version>
+      <Version>2020.0.2</Version>
     </PackageReference>
     <PackageReference Include="StreamJsonRpc">
       <Version>2.11.35</Version>
