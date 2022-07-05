@@ -9,6 +9,7 @@ For Asp.NET debugging set the runtime identifier project property to:
 ```
 <PropertyGroup>
    ...
+   <PlatformTarget>AnyCPU</PlatformTarget>
    <RuntimeIdentifier>linux-arm</RuntimeIdentifier>
 </PropertyGroup>
 ```
