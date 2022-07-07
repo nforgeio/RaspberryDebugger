@@ -156,7 +156,6 @@ namespace RaspberryDebugger.Commands
             using (connection)
             {
                 // Generate a temporary [launch.json] file and launch the debugger.
-
                 using (var tempFile = await CreateLaunchSettingsAsync(connectionInfo, projectProperties))
                 {
                     try
@@ -337,7 +336,6 @@ namespace RaspberryDebugger.Commands
             //
             // This means that we need add [program.dll] as the first argument, followed 
             // by the program arguments.
-
             var args = new JArray
             {
                 LinuxPath.Combine(debugFolder, projectProperties?.AssemblyName + ".dll")
@@ -365,7 +363,6 @@ namespace RaspberryDebugger.Commands
             // to [http://0.0.0.0:PORT] so that the app running on the Raspberry will
             // be reachable from the development workstation.  Note that we don't
             // support HTTPS at this time.
-
             if (projectProperties?.IsAspNet == true)
             {
                 environmentVariables["ASPNETCORE_URLS"] = $"http://127.0.0.1:{projectProperties.AspPort}";
