@@ -285,7 +285,10 @@ namespace RaspberryDebugger.Commands
             var response = retryPolicy.Execute(() =>
                 connection.SudoCommand(CommandBundle.FromScript(appWebServerListeningScript)));
 
-            if (response.ExitCode == 0) {return (true, WebServer.Other);}
+            if (response.ExitCode == 0)
+            {
+                return (true, WebServer.Other);
+            }
             
             // search for dotnet kestrel web server
             var appKestrelListeningScript =
