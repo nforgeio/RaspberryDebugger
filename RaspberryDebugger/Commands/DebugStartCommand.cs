@@ -264,9 +264,9 @@ namespace RaspberryDebugger.Commands
             ProjectProperties projectProperties, 
             LinuxSshProxy connection)
         {
-            // Wait just a bit longer to give the application a chance to
-            // perform any additional initialization.
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            // Wait just a bit longer to give the application a 
+            // chance to perform any additional initialization.
+            await Task.Delay(TimeSpan.FromMilliseconds(125));
 
             // search for web server running as reverse proxy
             var appWebServerListeningScript =
