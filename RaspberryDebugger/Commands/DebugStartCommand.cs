@@ -175,7 +175,6 @@ namespace RaspberryDebugger.Commands
                 if (!projectProperties.IsAspNet || !projectProperties.AspLaunchBrowser)
                     return;
                 
-                var baseUri     = $"http://{connection.Name}.local";
                 var launchReady = false;
                 var foundWebServer = WebServer.None;
 
@@ -209,33 +208,49 @@ namespace RaspberryDebugger.Commands
 
                 if (!launchReady) return;
 
-                var relativeBrowserUri = projectProperties.AspRelativeBrowserUri.FirstOrDefault() == '/' 
-                    ? projectProperties.AspRelativeBrowserUri 
-                    : $"/{projectProperties.AspRelativeBrowserUri}";
+                OpenWebBrowser(projectProperties, foundWebServer, connection);
+            }
+        }
 
-                switch (foundWebServer)
-                {
-                    case WebServer.Other:
-                        NeonHelper.OpenBrowser(
-                            string.IsNullOrEmpty(relativeBrowserUri) 
-                                ? $"{baseUri}" 
-                                : $"{baseUri}" +
-                                  $"{relativeBrowserUri}");
-                        break;
+        /// <summary>
+        /// Open web browser for debugging
+        /// </summary>
+        /// <param name="projectProperties">Related project properties</param>
+        /// <param name="foundWebServer">Active WebServer: Kestrel or Other (NGiNX, Apache, etc.)</param>
+        /// <param name="connection">LinuxSshProxy connection</param>
+        private static void OpenWebBrowser(
+            ProjectProperties projectProperties, 
+            WebServer foundWebServer, 
+            LinuxSshProxy connection)
+        {
+            // only '/' present or full relative uri
+            const int fullRelativeUri = 2;
+            var baseUri = $"http://{connection.Name}.local";
 
-                    case WebServer.Kestrel:
-                        NeonHelper.OpenBrowser(
-                                string.IsNullOrEmpty(relativeBrowserUri) 
-                                    ? $"{baseUri}:{projectProperties.AspPort}" 
-                                    : $"{baseUri}:{projectProperties.AspPort}" +
-                                      $"{relativeBrowserUri}");
+            var relativeBrowserUri = projectProperties.AspRelativeBrowserUri.FirstOrDefault() == '/'
+                ? projectProperties.AspRelativeBrowserUri
+                : $"/{projectProperties.AspRelativeBrowserUri}";
 
-                        break;
+            var port = projectProperties.AspPort;
 
-                    case WebServer.None:
-                    default:
-                        break;
-                }
+            switch (foundWebServer)
+            {
+                // Apache, NGiNX, Kestrel and more... 
+                case WebServer.Other:
+                case WebServer.Kestrel:
+                    NeonHelper.OpenBrowser(relativeBrowserUri.Length < fullRelativeUri 
+                        ? foundWebServer == WebServer.Kestrel 
+                            ? $"{baseUri}:{port}" 
+                            : $"{baseUri}"
+                        : foundWebServer == WebServer.Kestrel 
+                            ? $"{baseUri}:{port}{relativeBrowserUri}" 
+                            : $"{baseUri}{relativeBrowserUri}");
+                    break;
+
+                // no running web server found
+                case WebServer.None:
+                default:
+                    break;
             }
         }
 
