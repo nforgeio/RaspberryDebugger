@@ -32,9 +32,8 @@ namespace RaspberryDebugger.Commands
     /// </summary>
     internal sealed class DebugAttachToProcessCommand
     {
-#pragma warning disable IDE0052 // Remove unread private members
+        // ReSharper disable once NotAccessedField.Local
         private readonly DTE2 dte;
-#pragma warning restore IDE0052 // Remove unread private members
 
         /// <summary>
         /// Command ID.
@@ -70,20 +69,20 @@ namespace RaspberryDebugger.Commands
             var menuCommandId = new CommandID(CommandSet, CommandId);
             var menuItem      = new MenuCommand(this.Execute, menuCommandId);
              
-            commandService.AddCommand(menuItem);
+            commandService?.AddCommand(menuItem);
         }
 
         /// <summary>
         /// Returns the command instance.
         /// </summary>
-        public static DebugAttachToProcessCommand Instance { get; private set; }
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        private static DebugAttachToProcessCommand Instance { get; set; }
 
         /// <summary>
         /// Gets the service provider from the owner package.
         /// </summary>
-#pragma warning disable IDE0051 // Remove unused private members
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider => this.package;
-#pragma warning restore IDE0051 // Remove unused private members
+        // ReSharper disable once UnusedMember.Local
+        private IAsyncServiceProvider ServiceProvider => this.package;
 
         /// <summary>
         /// Initializes the singleton instance of the command.
@@ -92,9 +91,7 @@ namespace RaspberryDebugger.Commands
         public static async Task InitializeAsync(AsyncPackage package)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
-
             var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-
             DebugAttachToProcessCommand.Instance = new DebugAttachToProcessCommand(package, commandService);
         }
 
