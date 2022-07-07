@@ -545,6 +545,6 @@ namespace RaspberryDebugger.Models.VisualStudio
         /// Returns the relative URI to be displayed in the browser when
         /// <see cref="AspLaunchBrowser"/> is <c>true</c>.
         /// </summary>
-        public string AspRelativeBrowserUri { get; private set; }
+        public string AspRelativeBrowserUri { get; private set; } = string.Empty;
     }
 }
