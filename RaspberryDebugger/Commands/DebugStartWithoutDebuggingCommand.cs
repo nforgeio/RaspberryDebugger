@@ -32,6 +32,7 @@ namespace RaspberryDebugger.Commands
     /// </summary>
     internal sealed class DebugStartWithoutDebuggingCommand
     {
+        // ReSharper disable once MemberCanBePrivate.Global
         internal DTE2 Dte;
 
         /// <summary>
@@ -68,7 +69,8 @@ namespace RaspberryDebugger.Commands
         /// <summary>
         /// Returns the command instance.
         /// </summary>
-        public static DebugStartWithoutDebuggingCommand Instance { get; private set; }
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        private static DebugStartWithoutDebuggingCommand Instance { get; set; }
 
         /// <summary>
         /// Initializes the singleton instance of the command.
