@@ -64,6 +64,7 @@ namespace RaspberryDebugger.Commands
             var menuItem      = new OleMenuCommand(this.Execute, menuCommandId);
 
             menuItem.BeforeQueryStatus +=
+                // ReSharper disable once UnusedParameter.Local
                 (s, a) =>
                 {
                     var command = (OleMenuCommand)s;
@@ -116,7 +117,9 @@ namespace RaspberryDebugger.Commands
             if (project == null)
             {
                 MessageBoxEx.Show(
-                    "Please select a startup project using the Project/Set as Startup project menu or by right clicking a project in the Solution Explorer and enabling this.",
+                    "Please select a startup project using the Project/Set as " +
+                    "Startup project menu or by right clicking a project in " +
+                    "the Solution Explorer and enabling this.",
                     "Startup Project not found",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
