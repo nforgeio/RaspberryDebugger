@@ -31,6 +31,7 @@ using Neon.IO;
 using Neon.SSH;
 using Newtonsoft.Json.Linq;
 using Polly;
+using RaspberryDebugger.Extensions;
 using RaspberryDebugger.Models.Connection;
 using RaspberryDebugger.Models.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -184,22 +185,26 @@ namespace RaspberryDebugger.Commands
                         // ASPNET application was able to begin servicing requests.
                         if (dte.Mode != vsIDEMode.vsIDEModeDebug) return true;
 
-                        try
-                        { 
-                            var (found, webServer) = await SearchForRunningWebServerAsync(projectProperties, connection);
-
-                            // web server not found
-                            if (!found) return false;
-
-                            // take the found web server
-                            foundWebServer = webServer;
-                            launchReady = true;
-
-                            return true;
-                        }
-                        catch
+                        using (new CursorWait())
                         {
-                            return false;
+                            try
+                            {
+                                var (found, webServer) =
+                                    await SearchForRunningWebServerAsync(projectProperties, connection);
+
+                                // web server not found
+                                if (!found) return false;
+
+                                // take the found web server
+                                foundWebServer = webServer;
+                                launchReady = true;
+
+                                return true;
+                            }
+                            catch
+                            {
+                                return false;
+                            }
                         }
                     },
                     timeout: TimeSpan.FromSeconds(60),
