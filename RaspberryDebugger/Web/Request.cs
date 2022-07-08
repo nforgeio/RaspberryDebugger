@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace RaspberryDebugger.Web;
 
-public class Request
+public class Feed
 {
     private string VersionsFeedUri { get; } = "https://dotnetversionfeed.azurewebsites.net/versions";
 
-    public async Task<string> ReadVersionFeedServiceAsync(string uri = null)
+    public async Task<string> ReadAsync(string uri = null)
     {
         string responseBody;
 
