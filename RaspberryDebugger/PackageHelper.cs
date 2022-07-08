@@ -139,8 +139,8 @@ namespace RaspberryDebugger
                     // try to get the catalog thru version feed service
                     _cachedSdkCatalog = JsonConvert.DeserializeObject<SdkCatalog>(
                         ThreadHelper.JoinableTaskFactory.Run(async () =>
-                            await new VersionsService.Request()
-                                .ReadVersionFeedServiceAsync()
+                            await new VersionsService.Feed()
+                                .ReadAsync()
                                 .WithTimeout(TimeSpan.FromSeconds(2))));
                 }
                 catch (Exception)
