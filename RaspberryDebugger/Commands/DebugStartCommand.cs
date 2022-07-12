@@ -33,6 +33,7 @@ using Newtonsoft.Json.Linq;
 using Polly;
 using RaspberryDebugger.Extensions;
 using RaspberryDebugger.Models.Connection;
+using RaspberryDebugger.Models.Project;
 using RaspberryDebugger.Models.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -143,11 +144,12 @@ namespace RaspberryDebugger.Commands
                 return;
             }
 
+            var projectSettings = PackageHelper.GetProjectSettings(dte.Solution, project);
             // Establish a Raspberry connection to handle some things before we start the debugger.
             var connection = await DebugHelper.InitializeConnectionAsync(
                 connectionInfo, 
                 projectProperties, 
-                PackageHelper.GetProjectSettings(dte.Solution, project));
+                projectSettings);
 
             if (connection == null)
             {
@@ -157,7 +159,7 @@ namespace RaspberryDebugger.Commands
             using (connection)
             {
                 // Generate a temporary [launch.json] file and launch the debugger.
-                using (var tempFile = await CreateLaunchSettingsAsync(connectionInfo, projectProperties))
+                using (var tempFile = await CreateLaunchSettingsAsync(connectionInfo, projectProperties, projectSettings))
                 {
                     try
                     {
@@ -178,8 +180,7 @@ namespace RaspberryDebugger.Commands
                 var launchReady = false;
                 var foundWebServer = WebServer.None;
 
-                await NeonHelper.WaitForAsync(
-                    async () =>
+                await NeonHelper.WaitForAsync(async () =>
                     {
                         // The developer must have stopped debugging before the 
                         // ASPNET application was able to begin servicing requests.
@@ -190,7 +191,7 @@ namespace RaspberryDebugger.Commands
                             try
                             {
                                 var (found, webServer) =
-                                    await SearchForRunningWebServerAsync(projectProperties, connection);
+                                    await SearchForRunningWebServerAsync(projectProperties, projectSettings, connection);
 
                                 // web server not found
                                 if (!found) return false;
@@ -262,19 +263,26 @@ namespace RaspberryDebugger.Commands
         /// Search for running web server
         /// </summary>
         /// <param name="projectProperties">ProjectProperties</param>
+        /// <param name="projectSettings"></param>
         /// <param name="connection">LinuxSshProxy</param>
         /// <returns>true if running</returns>
-        private static async Task<(bool, WebServer)> SearchForRunningWebServerAsync(
-            ProjectProperties projectProperties, 
+        private static async Task<(bool, WebServer)> SearchForRunningWebServerAsync(ProjectProperties projectProperties,
+            ProjectSettings projectSettings,
             LinuxSshProxy connection)
         {
             // Wait just a bit longer to give the application a 
             // chance to perform any additional initialization.
             await Task.Delay(TimeSpan.FromMilliseconds(125));
+            CommandResponse response;
+            var retryPolicy = Policy
+                .HandleResult<CommandResponse>(b => b.ExitCode != 0)
+                .WaitAndRetry(3, _ => TimeSpan.FromMilliseconds(200));
 
-            // search for web server running as reverse proxy
-            var appWebServerListeningScript =
-                $@"
+            if (projectSettings.UseInternalProxy)
+            {
+                // search for web server running as reverse proxy
+                var appWebServerListeningScript =
+                    $@"
                     if lsof -i -P -n | grep --quiet 'TCP 127.0.0.1:{projectProperties.AspPort}' ; then
                         exit 0
                     else
@@ -282,21 +290,18 @@ namespace RaspberryDebugger.Commands
                     fi
                 ";
 
-            var retryPolicy = Policy
-                .HandleResult<CommandResponse>(b => b.ExitCode != 0)
-                .WaitAndRetry(3, _ => TimeSpan.FromMilliseconds(200));
+                response = retryPolicy.Execute(() =>
+                    connection.SudoCommand(CommandBundle.FromScript(appWebServerListeningScript)));
 
-            var response = retryPolicy.Execute(() =>
-                connection.SudoCommand(CommandBundle.FromScript(appWebServerListeningScript)));
-
-            if (response.ExitCode == 0)
-            {
-                return (true, WebServer.Other);
+                return response.ExitCode == 0
+                    ? (true, WebServer.Other)
+                    : (false, WebServer.None);
             }
-            
-            // search for dotnet kestrel web server
-            var appKestrelListeningScript =
-                $@"
+            else
+            {
+                // search for dotnet kestrel web server
+                var appKestrelListeningScript =
+                    $@"
                     if lsof -i -P -n | grep --quiet 'dotnet\|TCP\|:{projectProperties.AspPort}' ; then
                         exit 0
                     else
@@ -304,12 +309,15 @@ namespace RaspberryDebugger.Commands
                     fi
                 ";
 
-            response = retryPolicy.Execute(() =>
-                response = connection.SudoCommand(CommandBundle.FromScript(appKestrelListeningScript)));
+                response = retryPolicy.Execute(() =>
+                    connection.SudoCommand(CommandBundle.FromScript(appKestrelListeningScript)));
 
-            return response.ExitCode == 0 
-                ? (true, WebServer.Kestrel) 
-                : (false, WebServer.None);
+                return response.ExitCode == 0
+                    ? (true, WebServer.Kestrel)
+                    : (false, WebServer.None);
+            }
+            
+            
         }
 
         /// <summary>
@@ -318,8 +326,10 @@ namespace RaspberryDebugger.Commands
         /// </summary>
         /// <param name="connectionInfo">The connection information.</param>
         /// <param name="projectProperties">The project properties.</param>
+        /// <param name="projectSettings"></param>
         /// <returns>The <see cref="TempFile"/> referencing the created launch file.</returns>
-        private async Task<TempFile> CreateLaunchSettingsAsync(ConnectionInfo connectionInfo, ProjectProperties projectProperties)
+        private async Task<TempFile> CreateLaunchSettingsAsync(ConnectionInfo connectionInfo,
+            ProjectProperties projectProperties, ProjectSettings projectSettings)
         {
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
             Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
@@ -370,7 +380,14 @@ namespace RaspberryDebugger.Commands
             // support HTTPS at this time.
             if (projectProperties?.IsAspNet == true)
             {
-                environmentVariables["ASPNETCORE_URLS"] = $"http://127.0.0.1:{projectProperties.AspPort}";
+                if (projectSettings.UseInternalProxy)
+                {
+                    environmentVariables["ASPNETCORE_URLS"] = $"http://127.0.0.1:{projectProperties.AspPort}";
+                }
+                else
+                {
+                    environmentVariables["ASPNETCORE_URLS"] = $"http://0.0.0.0:{projectProperties.AspPort}";
+                }
             }
 
             // Construct the debug launch JSON file.

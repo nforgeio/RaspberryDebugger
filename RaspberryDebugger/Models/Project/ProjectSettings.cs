@@ -14,8 +14,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-using System.ComponentModel;
 using Newtonsoft.Json;
+using System.ComponentModel;
 
 namespace RaspberryDebugger.Models.Project
 {
@@ -32,7 +32,7 @@ namespace RaspberryDebugger.Models.Project
         /// <summary>
         /// Connection combo box item indicating that the default Raspberry connection should be used.
         /// </summary>
-        public const string DefaultConnectionName  = "[DEFAULT]";
+        public const string DefaultConnectionName = "[DEFAULT]";
 
         /// <summary>
         /// Default constructor that returns settings with remote debugging disabled.
@@ -40,7 +40,8 @@ namespace RaspberryDebugger.Models.Project
         public ProjectSettings()
         {
             EnableRemoteDebugging = false;
-            RemoteDebugTarget     = null;
+            RemoteDebugTarget = null;
+            UseInternalProxy = true;
         }
 
         /// <summary>
@@ -63,5 +64,9 @@ namespace RaspberryDebugger.Models.Project
         [JsonProperty(PropertyName = "TargetGroup", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [DefaultValue("gpio")]
         public string TargetGroup { get; set; } = "gpio";
+
+        [JsonProperty(PropertyName = "UseInternalProxy", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(true)]
+        public bool UseInternalProxy { get; set; }
     }
 }
