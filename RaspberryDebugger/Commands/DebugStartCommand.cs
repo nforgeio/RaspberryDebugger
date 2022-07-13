@@ -273,51 +273,76 @@ namespace RaspberryDebugger.Commands
             // Wait just a bit longer to give the application a 
             // chance to perform any additional initialization.
             await Task.Delay(TimeSpan.FromMilliseconds(125));
-            CommandResponse response;
+
+            return projectSettings.UseInternalProxy 
+                ? ListenForReverseProxy(projectProperties.AspPort, connection) 
+                : ListenForKrestel(projectProperties.AspPort, connection);
+        }
+
+        /// <summary>
+        /// Listen for Krestel
+        /// </summary>
+        /// <param name="aspPort">Given ASP Port number</param>
+        /// <param name="connection">SSH proxy connection</param>
+        /// <returns>true if found and which one detected</returns>
+        private static (bool, WebServer) ListenForKrestel(int aspPort, LinuxSshProxy connection)
+        {
+            // search for dotnet kestrel web server
+            var appKestrelListeningScript =
+                $@"
+                    if lsof -i -P -n | grep --quiet 'dotnet\|TCP\|:{aspPort}' ; then
+                        exit 0
+                    else
+                        exit 1
+                    fi
+                ";
+
+            var response = ExecSudoCmd(appKestrelListeningScript, connection);
+
+            return response.ExitCode == 0
+                ? (true, WebServer.Kestrel)
+                : (false, WebServer.None);
+        }
+
+        /// <summary>
+        /// Listen for reverse proxy: Apache, NGiNX, etc.
+        /// </summary>
+        /// <param name="aspPort">Given ASP port number</param>
+        /// <param name="connection">SSH proxy connection</param>
+        /// <returns>true if found and which one detected</returns>
+        private static (bool, WebServer) ListenForReverseProxy(int aspPort, LinuxSshProxy connection)
+        {
+            // search for web server running as reverse proxy
+            var appWebServerListeningScript =
+                $@"
+                    if lsof -i -P -n | grep --quiet 'TCP 127.0.0.1:{aspPort}' ; then
+                        exit 0
+                    else
+                        exit 1
+                    fi
+                ";
+
+            var response = ExecSudoCmd(appWebServerListeningScript, connection);
+
+            return response.ExitCode == 0
+                ? (true, WebServer.Other)
+                : (false, WebServer.None);
+        }
+
+        /// <summary>
+        /// Execute command with sudo and retries
+        /// </summary>
+        /// <param name="cmd">Execute this command</param>
+        /// <param name="connection">Linux ssh</param>
+        /// <returns>Command response</returns>
+        private static CommandResponse ExecSudoCmd(string cmd, LinuxSshProxy connection)
+        {
             var retryPolicy = Policy
-                .HandleResult<CommandResponse>(b => b.ExitCode != 0)
+                .HandleResult<CommandResponse>(ret => ret.ExitCode != 0)
                 .WaitAndRetry(3, _ => TimeSpan.FromMilliseconds(200));
 
-            if (projectSettings.UseInternalProxy)
-            {
-                // search for web server running as reverse proxy
-                var appWebServerListeningScript =
-                    $@"
-                    if lsof -i -P -n | grep --quiet 'TCP 127.0.0.1:{projectProperties.AspPort}' ; then
-                        exit 0
-                    else
-                        exit 1
-                    fi
-                ";
-
-                response = retryPolicy.Execute(() =>
-                    connection.SudoCommand(CommandBundle.FromScript(appWebServerListeningScript)));
-
-                return response.ExitCode == 0
-                    ? (true, WebServer.Other)
-                    : (false, WebServer.None);
-            }
-            else
-            {
-                // search for dotnet kestrel web server
-                var appKestrelListeningScript =
-                    $@"
-                    if lsof -i -P -n | grep --quiet 'dotnet\|TCP\|:{projectProperties.AspPort}' ; then
-                        exit 0
-                    else
-                        exit 1
-                    fi
-                ";
-
-                response = retryPolicy.Execute(() =>
-                    connection.SudoCommand(CommandBundle.FromScript(appKestrelListeningScript)));
-
-                return response.ExitCode == 0
-                    ? (true, WebServer.Kestrel)
-                    : (false, WebServer.None);
-            }
-            
-            
+            return retryPolicy.Execute(() =>
+                connection.SudoCommand(CommandBundle.FromScript(cmd)));
         }
 
         /// <summary>
