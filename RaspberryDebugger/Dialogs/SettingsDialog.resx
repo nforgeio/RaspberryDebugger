@@ -120,6 +120,9 @@
   <data name="instructionsTextBox.Text" xml:space="preserve">
     <value>Raspberry connections are managed via [Tools/Options] on the [Raspberry Debugger] page.\r\n\r\nTo disable Raspberry debugging, select [debugging disabled] above otherwise, select [default connection] or the specific connection you want to use.</value>
   </data>
+  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
