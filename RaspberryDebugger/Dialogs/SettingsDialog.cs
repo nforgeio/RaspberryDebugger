@@ -14,13 +14,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+using RaspberryDebugger.Models.Project;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using RaspberryDebugger.Models.Project;
 
 namespace RaspberryDebugger.Dialogs
 {
@@ -51,7 +51,7 @@ namespace RaspberryDebugger.Dialogs
             var connectionNameToIndex = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
 
             var connections = PackageHelper.ReadConnections(disableLogging: true);
-            var index       = 0;
+            var index = 0;
 
             targetComboBox.Items.Clear();
 
@@ -67,7 +67,7 @@ namespace RaspberryDebugger.Dialogs
                 connectionNameToIndex.Add(connection.Name, index++);
             }
 
-            if (projectSettings != null && !projectSettings.EnableRemoteDebugging)
+            if (projectSettings is { EnableRemoteDebugging: false })
             {
                 targetComboBox.SelectedIndex = connectionNameToIndex[ProjectSettings.DisabledConnectionName];
             }
@@ -75,7 +75,7 @@ namespace RaspberryDebugger.Dialogs
             {
                 // If the connection named in the settings exists select it,
                 // otherwise select the default.
-                var selectedConnection = connections.FirstOrDefault(connection => projectSettings != null 
+                var selectedConnection = connections.FirstOrDefault(connection => projectSettings != null
                     && connection.Name.Equals(projectSettings.RemoteDebugTarget, StringComparison.InvariantCultureIgnoreCase));
 
                 if (projectSettings != null && (projectSettings.RemoteDebugTarget == null || selectedConnection == null))
@@ -91,7 +91,11 @@ namespace RaspberryDebugger.Dialogs
                 }
             }
 
-            if (projectSettings != null) targetGroup.Text = projectSettings.TargetGroup;
+            if (projectSettings != null)
+            {
+                targetGroup.Text = projectSettings.TargetGroup;
+                internalProxyCheck.Checked = projectSettings.UseInternalProxy;
+            }
         }
 
         /// <summary>
@@ -113,13 +117,13 @@ namespace RaspberryDebugger.Dialogs
                 case ProjectSettings.DefaultConnectionName:
 
                     projectSettings.EnableRemoteDebugging = true;
-                    projectSettings.RemoteDebugTarget     = null;   // NULL means default
+                    projectSettings.RemoteDebugTarget = null;   // NULL means default
                     break;
 
                 default:
 
                     projectSettings.EnableRemoteDebugging = true;
-                    projectSettings.RemoteDebugTarget     = selectedItem;
+                    projectSettings.RemoteDebugTarget = selectedItem;
                     break;
             }
 
@@ -140,6 +144,7 @@ namespace RaspberryDebugger.Dialogs
             }
 
             projectSettings.TargetGroup = targetGroup.Text;
+            projectSettings.UseInternalProxy = internalProxyCheck.Checked;
 
             DialogResult = DialogResult.OK;
         }

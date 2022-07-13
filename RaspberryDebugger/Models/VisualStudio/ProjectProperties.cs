@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // FILE:	    ProjectProperties.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Copyright (c) 2021 by neonFORGE, LLC.  All rights reserved.
@@ -15,21 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ReSharper disable UnusedAutoPropertyAccessor.Local
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Text.RegularExpressions;
-
 using EnvDTE;
-
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-
 using Neon.Common;
 using Neon.Net;
-
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace RaspberryDebugger.Models.VisualStudio
 {
@@ -92,7 +89,7 @@ namespace RaspberryDebugger.Models.VisualStudio
 
             // Read the properties we care about from the project.
             var targetFrameworkMonikers = (string)project.Properties.Item("TargetFrameworkMoniker").Value;
-            var outputType              = (int)project.Properties.Item("OutputType").Value;
+            var outputType = (int)project.Properties.Item("OutputType").Value;
 
             var monikers = targetFrameworkMonikers.Split(',');
 
@@ -102,7 +99,7 @@ namespace RaspberryDebugger.Models.VisualStudio
             var versionRegex = new Regex(@"(?<version>[0-9\.]+)$");
             var netVersion = SemanticVersion.Parse(versionRegex.Match(monikers[1]).Groups["version"].Value);
 
-            var targetSdk        = (RaspberryDebugger.Connection.Sdk)null;
+            var targetSdk = (RaspberryDebugger.Connection.Sdk)null;
             var targetSdkVersion = (SemanticVersion)null;
 
             foreach (var sdkItem in PackageHelper.SdkCatalog.Items)
@@ -110,15 +107,15 @@ namespace RaspberryDebugger.Models.VisualStudio
                 var sdkVersion = SemanticVersion.Parse(sdkItem.Name);
 
                 if (sdkVersion.Major != netVersion.Major ||
-                    sdkVersion.Minor != netVersion.Minor) 
+                    sdkVersion.Minor != netVersion.Minor)
                     continue;
 
-                if (targetSdkVersion != null && 
-                    sdkVersion <= targetSdkVersion) 
+                if (targetSdkVersion != null &&
+                    sdkVersion <= targetSdkVersion)
                     continue;
 
                 targetSdkVersion = sdkVersion;
-                targetSdk        = new RaspberryDebugger.Connection.Sdk(sdkItem.Name, sdkItem.Architecture);
+                targetSdk = new RaspberryDebugger.Connection.Sdk(sdkItem.Name, sdkItem.Architecture);
             }
 
             var sdkName = targetSdk?.Name;
@@ -159,7 +156,7 @@ namespace RaspberryDebugger.Models.VisualStudio
                     {
                         if (profile.Name == project.Name)
                         {
-                            var profileObject              = (JObject)profile.Value;
+                            var profileObject = (JObject)profile.Value;
                             var environmentVariablesObject = (JObject)profileObject.Property("environmentVariables")?.Value;
 
                             commandLineArgs = ParseArgs((string)profileObject.Property("commandLineArgs")?.Value);
@@ -173,8 +170,8 @@ namespace RaspberryDebugger.Models.VisualStudio
                             }
 
                             // Extract additional settings for ASPNET projects.
-                            if (settings.Property("iisSettings") == null) continue;
-                            
+                            if (!profileObject.ContainsKey("applicationUrl")) continue;
+
                             isAspNet = true;
 
                             // Note that we're going to fall back to port 5000 if there are any
@@ -187,7 +184,8 @@ namespace RaspberryDebugger.Models.VisualStudio
                             {
                                 try
                                 {
-                                    var uri = new Uri((string)jProperty.Value);
+                                    var values = ((string)jProperty.Value).Split(';');
+                                    var uri = new Uri(values.First(s => s.StartsWith("http:")));
 
                                     aspPort = uri.Port;
 
@@ -212,8 +210,10 @@ namespace RaspberryDebugger.Models.VisualStudio
                             {
                                 aspLaunchBrowser = (bool)jProperty.Value;
                             }
+
+                            aspRelativeBrowserUri = SetLaunchUrl(profileObject);
                         }
-                        else if (profile.Name == "IIS Express")
+                        else if (profile.Name == "IIS Express" && aspRelativeBrowserUri == "/")
                         {
                             // For ASPNET apps, this profile may include a "launchUrl" which
                             // specifies the absolute or relative URI to display in a debug
@@ -223,38 +223,45 @@ namespace RaspberryDebugger.Models.VisualStudio
                             // so we'll be able to launch the browser on the correct page.
 
                             var profileObject = (JObject)profile.Value;
-                            var jProperty     = profileObject.Property("launchUrl");
-
-                            if (jProperty == null || 
-                                jProperty.Value.Type != JTokenType.String) 
-                                continue;
-                            
-                            var launchUri = (string)jProperty.Value;
-
-                            if (string.IsNullOrEmpty(launchUri)) continue;
-
-                            try
-                            {
-                                var uri = new Uri(launchUri, UriKind.RelativeOrAbsolute);
-
-                                aspRelativeBrowserUri = uri.IsAbsoluteUri 
-                                    ? uri.PathAndQuery 
-                                    : launchUri;
-                            }
-                            catch
-                            {
-                                // We'll fall back to "/" for any URI parsing errors.
-                                aspRelativeBrowserUri = "/";
-                            }
+                            aspRelativeBrowserUri = SetLaunchUrl(profileObject);
                         }
+                    }
+
+                    string SetLaunchUrl(JObject profileObject)
+                    {
+                        var jProperty = profileObject.Property("launchUrl");
+
+                        if (jProperty == null ||
+                            jProperty.Value.Type != JTokenType.String)
+                            return aspRelativeBrowserUri;
+
+                        var launchUri = (string)jProperty.Value;
+
+                        if (string.IsNullOrEmpty(launchUri)) return aspRelativeBrowserUri;
+
+                        try
+                        {
+                            var uri = new Uri(launchUri, UriKind.RelativeOrAbsolute);
+
+                            aspRelativeBrowserUri = uri.IsAbsoluteUri
+                                ? uri.PathAndQuery
+                                : launchUri;
+                        }
+                        catch
+                        {
+                            // We'll fall back to "/" for any URI parsing errors.
+                            aspRelativeBrowserUri = "/";
+                        }
+
+                        return aspRelativeBrowserUri;
                     }
                 }
             }
 
             // Get the target Raspberry from the debug settings.
-            var projects            = PackageHelper.ReadRaspberryProjects(solution);
-            var projectSettings     = projects[project.UniqueName];
-            var debugEnabled        = projectSettings.EnableRemoteDebugging;
+            var projects = PackageHelper.ReadRaspberryProjects(solution);
+            var projectSettings = projects[project.UniqueName];
+            var debugEnabled = projectSettings.EnableRemoteDebugging;
             var debugConnectionName = projectSettings.RemoteDebugTarget;
 
             // Determine whether the referenced .NET Core SDK is currently supported.
