@@ -58,6 +58,7 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Commands\ProxyWebServer.cs" />
     <Compile Include="DebugHelper.cs" />
     <Compile Include="Commands\DebugStartCommand.cs" />
     <Compile Include="Commands\DebugAttachToProcessCommand.cs" />

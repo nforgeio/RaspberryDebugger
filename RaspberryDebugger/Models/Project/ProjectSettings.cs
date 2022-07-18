@@ -41,7 +41,7 @@ namespace RaspberryDebugger.Models.Project
         {
             EnableRemoteDebugging = false;
             RemoteDebugTarget = null;
-            UseInternalProxy = true;
+            UseWebServerProxy = true;
         }
 
         /// <summary>
@@ -65,8 +65,8 @@ namespace RaspberryDebugger.Models.Project
         [DefaultValue("gpio")]
         public string TargetGroup { get; set; } = "gpio";
 
-        [JsonProperty(PropertyName = "UseInternalProxy", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [JsonProperty(PropertyName = "UseWebServerProxy", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [DefaultValue(true)]
-        public bool UseInternalProxy { get; set; }
+        public bool UseWebServerProxy { get; set; }
     }
 }

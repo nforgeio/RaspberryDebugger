@@ -94,7 +94,7 @@ namespace RaspberryDebugger.Dialogs
             if (projectSettings != null)
             {
                 targetGroup.Text = projectSettings.TargetGroup;
-                internalProxyCheck.Checked = projectSettings.UseInternalProxy;
+                webServerProxyCheck.Checked = projectSettings.UseWebServerProxy;
             }
         }
 
@@ -144,7 +144,7 @@ namespace RaspberryDebugger.Dialogs
             }
 
             projectSettings.TargetGroup = targetGroup.Text;
-            projectSettings.UseInternalProxy = internalProxyCheck.Checked;
+            projectSettings.UseWebServerProxy = webServerProxyCheck.Checked;
 
             DialogResult = DialogResult.OK;
         }

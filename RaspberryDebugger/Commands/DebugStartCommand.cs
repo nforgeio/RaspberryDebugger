@@ -30,7 +30,6 @@ using Neon.Common;
 using Neon.IO;
 using Neon.SSH;
 using Newtonsoft.Json.Linq;
-using Polly;
 using RaspberryDebugger.Extensions;
 using RaspberryDebugger.Models.Connection;
 using RaspberryDebugger.Models.Project;
@@ -39,13 +38,6 @@ using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger.Commands
 {
-    internal enum WebServer
-    {
-        None,
-        Kestrel,
-        Other
-    }
-
     /// <summary>
     /// Handles the <b>Start Debugging</b> command for Raspberry enabled projects.
     /// </summary>
@@ -274,75 +266,9 @@ namespace RaspberryDebugger.Commands
             // chance to perform any additional initialization.
             await Task.Delay(TimeSpan.FromMilliseconds(125));
 
-            return projectSettings.UseInternalProxy 
-                ? ListenForReverseProxy(projectProperties.AspPort, connection) 
-                : ListenForKrestel(projectProperties.AspPort, connection);
-        }
-
-        /// <summary>
-        /// Listen for Krestel
-        /// </summary>
-        /// <param name="aspPort">Given ASP Port number</param>
-        /// <param name="connection">SSH proxy connection</param>
-        /// <returns>true if found and which one detected</returns>
-        private static (bool, WebServer) ListenForKrestel(int aspPort, LinuxSshProxy connection)
-        {
-            // search for dotnet kestrel web server
-            var appKestrelListeningScript =
-                $@"
-                    if lsof -i -P -n | grep --quiet 'dotnet\|TCP\|:{aspPort}' ; then
-                        exit 0
-                    else
-                        exit 1
-                    fi
-                ";
-
-            var response = ExecSudoCmd(appKestrelListeningScript, connection);
-
-            return response.ExitCode == 0
-                ? (true, WebServer.Kestrel)
-                : (false, WebServer.None);
-        }
-
-        /// <summary>
-        /// Listen for reverse proxy: Apache, NGiNX, etc.
-        /// </summary>
-        /// <param name="aspPort">Given ASP port number</param>
-        /// <param name="connection">SSH proxy connection</param>
-        /// <returns>true if found and which one detected</returns>
-        private static (bool, WebServer) ListenForReverseProxy(int aspPort, LinuxSshProxy connection)
-        {
-            // search for web server running as reverse proxy
-            var appWebServerListeningScript =
-                $@"
-                    if lsof -i -P -n | grep --quiet 'TCP 127.0.0.1:{aspPort}' ; then
-                        exit 0
-                    else
-                        exit 1
-                    fi
-                ";
-
-            var response = ExecSudoCmd(appWebServerListeningScript, connection);
-
-            return response.ExitCode == 0
-                ? (true, WebServer.Other)
-                : (false, WebServer.None);
-        }
-
-        /// <summary>
-        /// Execute command with sudo and retries
-        /// </summary>
-        /// <param name="cmd">Execute this command</param>
-        /// <param name="connection">Linux ssh</param>
-        /// <returns>Command response</returns>
-        private static CommandResponse ExecSudoCmd(string cmd, LinuxSshProxy connection)
-        {
-            var retryPolicy = Policy
-                .HandleResult<CommandResponse>(ret => ret.ExitCode != 0)
-                .WaitAndRetry(3, _ => TimeSpan.FromMilliseconds(200));
-
-            return retryPolicy.Execute(() =>
-                connection.SudoCommand(CommandBundle.FromScript(cmd)));
+            return projectSettings.UseWebServerProxy
+                ? ProxyWebServer.ListenFor(projectProperties.AspPort, connection, WebServer.Other)
+                : ProxyWebServer.ListenFor(projectProperties.AspPort, connection, WebServer.Kestrel);
         }
 
         /// <summary>
@@ -405,7 +331,7 @@ namespace RaspberryDebugger.Commands
             // support HTTPS at this time.
             if (projectProperties?.IsAspNet == true)
             {
-                if (projectSettings.UseInternalProxy)
+                if (projectSettings.UseWebServerProxy)
                 {
                     environmentVariables["ASPNETCORE_URLS"] = $"http://127.0.0.1:{projectProperties.AspPort}";
                 }

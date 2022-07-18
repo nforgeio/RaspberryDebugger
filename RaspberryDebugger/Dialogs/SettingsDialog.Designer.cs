@@ -37,8 +37,8 @@
             this.instructionsTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.targetGroup = new System.Windows.Forms.TextBox();
-            this.internalProxyLabel = new System.Windows.Forms.Label();
-            this.internalProxyCheck = new System.Windows.Forms.CheckBox();
+            this.webServerProxyLabel = new System.Windows.Forms.Label();
+            this.webServerProxyCheck = new System.Windows.Forms.CheckBox();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox = new System.Windows.Forms.GroupBox();
             this.SuspendLayout();
@@ -107,28 +107,28 @@
             this.targetGroup.Size = new System.Drawing.Size(100, 20);
             this.targetGroup.TabIndex = 4;
             // 
-            // internalProxyLabel
+            // webServerProxyLabel
             // 
-            this.internalProxyLabel.AutoSize = true;
-            this.internalProxyLabel.Location = new System.Drawing.Point(46, 91);
-            this.internalProxyLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.internalProxyLabel.Name = "internalProxyLabel";
-            this.internalProxyLabel.Size = new System.Drawing.Size(58, 13);
-            this.internalProxyLabel.TabIndex = 8;
-            this.internalProxyLabel.Text = "Use Proxy:";
-            this.toolTip.SetToolTip(this.internalProxyLabel, "Use an own configured proxy for Asp.NET");
+            this.webServerProxyLabel.AutoSize = true;
+            this.webServerProxyLabel.Location = new System.Drawing.Point(46, 91);
+            this.webServerProxyLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.webServerProxyLabel.Name = "webServerProxyLabel";
+            this.webServerProxyLabel.Size = new System.Drawing.Size(58, 13);
+            this.webServerProxyLabel.TabIndex = 8;
+            this.webServerProxyLabel.Text = "Use Proxy:";
+            this.toolTip.SetToolTip(this.webServerProxyLabel, "Use an own configured proxy for Asp.NET");
             // 
-            // internalProxyCheck
+            // webServerProxyCheck
             // 
-            this.internalProxyCheck.AutoSize = true;
-            this.internalProxyCheck.Location = new System.Drawing.Point(110, 92);
-            this.internalProxyCheck.Margin = new System.Windows.Forms.Padding(2);
-            this.internalProxyCheck.Name = "internalProxyCheck";
-            this.internalProxyCheck.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.internalProxyCheck.Size = new System.Drawing.Size(15, 14);
-            this.internalProxyCheck.TabIndex = 9;
-            this.toolTip.SetToolTip(this.internalProxyCheck, "Use an own configured proxy for Asp.NET");
-            this.internalProxyCheck.UseVisualStyleBackColor = true;
+            this.webServerProxyCheck.AutoSize = true;
+            this.webServerProxyCheck.Location = new System.Drawing.Point(110, 92);
+            this.webServerProxyCheck.Margin = new System.Windows.Forms.Padding(2);
+            this.webServerProxyCheck.Name = "webServerProxyCheck";
+            this.webServerProxyCheck.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.webServerProxyCheck.Size = new System.Drawing.Size(15, 14);
+            this.webServerProxyCheck.TabIndex = 9;
+            this.toolTip.SetToolTip(this.webServerProxyCheck, "Use an own configured proxy for Asp.NET");
+            this.webServerProxyCheck.UseVisualStyleBackColor = true;
             // 
             // groupBox
             // 
@@ -146,8 +146,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(482, 235);
-            this.Controls.Add(this.internalProxyCheck);
-            this.Controls.Add(this.internalProxyLabel);
+            this.Controls.Add(this.webServerProxyCheck);
+            this.Controls.Add(this.webServerProxyLabel);
             this.Controls.Add(this.targetGroup);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.instructionsTextBox);
@@ -177,8 +177,8 @@
         private System.Windows.Forms.TextBox instructionsTextBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox targetGroup;
-        private System.Windows.Forms.Label internalProxyLabel;
-        private System.Windows.Forms.CheckBox internalProxyCheck;
+        private System.Windows.Forms.Label webServerProxyLabel;
+        private System.Windows.Forms.CheckBox webServerProxyCheck;
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.GroupBox groupBox;
     }
