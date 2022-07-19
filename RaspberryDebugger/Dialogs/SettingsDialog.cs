@@ -91,11 +91,9 @@ namespace RaspberryDebugger.Dialogs
                 }
             }
 
-            if (projectSettings != null)
-            {
-                targetGroup.Text = projectSettings.TargetGroup;
-                webServerProxyCheck.Checked = projectSettings.UseWebServerProxy;
-            }
+            if (projectSettings == null) return;
+            targetGroup.Text = projectSettings.TargetGroup;
+            webServerProxyCheck.Checked = projectSettings.UseWebServerProxy;
         }
 
         /// <summary>
