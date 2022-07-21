@@ -6,7 +6,7 @@ namespace RaspberryDebugger.Web;
 
 public class Feed
 {
-    private string VersionsFeedUri { get; } = "https://dotnetversionfeed.azurewebsites.net/versions";
+    private string VersionsFeedUri { get; } = "https://dotnetversionfeedservice.azurewebsites.net/versions";
 
     public async Task<string> ReadAsync(string uri = null)
     {
