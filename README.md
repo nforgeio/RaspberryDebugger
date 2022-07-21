@@ -185,7 +185,7 @@ The **Project/Raspberry Debug Settings** menu persists the settings to the new `
 * Only LTS .NET Core SDKs supported: 3.1 and 6 (5 is not supported anymore)
 * **Start Without Debugging** or **Attach to Process...** are not supported (yet)
 * Raspberry debugging uses the default project debugging profile
-* HTTPS is not currently supported for ASPNET debugging
+* HTTPS is currently supported for ASPNET debugging (for reverse proxy and for Kestrel)
 * Program assembly names can't include spaces
 
 ### Disclosures
