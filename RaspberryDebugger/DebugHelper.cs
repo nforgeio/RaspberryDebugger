@@ -521,13 +521,14 @@ namespace RaspberryDebugger
             // .NET Core only supports Raspberry models 3 and 4.
             if (!connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 3 Model") &&
                 !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 4 Model") &&
+                !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi Compute Module 4") &&
                 !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi Zero 2"))
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 MessageBoxEx.Show(
                     $"Your [{connection.PiStatus.RaspberryModel}] is not supported." +
-                    " .NET Core requires a Raspberry Model 3 or 4 or Pi Zero 2.",
+                    " .NET Core requires a Raspberry Model 3 or 4, Pi Zero 2 or Compute Module 4.",
                     "Raspberry Not Supported",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
