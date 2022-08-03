@@ -95,6 +95,7 @@
     <Compile Include="Models\Project\ProjectSettings.cs" />
     <Compile Include="Models\Raspberry\RaspberryCatalog.cs" />
     <Compile Include="Models\Raspberry\RaspberryModel.cs" />
+    <Compile Include="Models\Raspberry\RaspberryModelCheck.cs" />
     <Compile Include="Models\Sdk\SdkArchitecture.cs" />
     <Compile Include="Models\Sdk\SdkCatalog.cs" />
     <Compile Include="Models\Sdk\SdkCatalogItem.cs" />

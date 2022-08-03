@@ -34,6 +34,7 @@ using RaspberryDebugger.Connection;
 using RaspberryDebugger.Dialogs;
 using RaspberryDebugger.Models.Connection;
 using RaspberryDebugger.Models.Project;
+using RaspberryDebugger.Models.Raspberry;
 using RaspberryDebugger.Models.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -518,17 +519,16 @@ namespace RaspberryDebugger
             // device not found
             if(connection == null) return null;
 
+            var raspberryModel = new RaspberryModelCheck();
+
             // .NET Core only supports Raspberry models 3 and 4.
-            if (!connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 3 Model") &&
-                !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi 4 Model") &&
-                !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi Compute Module 4") &&
-                !connection.PiStatus.RaspberryModel.StartsWith("Raspberry Pi Zero 2"))
+            if(raspberryModel.IsNotSupported(connection.PiStatus.RaspberryModel))
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 MessageBoxEx.Show(
-                    $"Your [{connection.PiStatus.RaspberryModel}] is not supported." +
-                    " .NET Core requires a Raspberry Model 3 or 4, Pi Zero 2 or Compute Module 4.",
+                    $"Your [{raspberryModel.ActualType}] is not supported." +
+                    $" This .NET version requires a {string.Join(" or ", raspberryModel.Supported)}.",
                     "Raspberry Not Supported",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
