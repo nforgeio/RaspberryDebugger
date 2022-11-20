@@ -4,7 +4,7 @@ _A Visual Studio Extension for debugging .NET Core applications remotely on a Ra
 ---
 **IMPORTANT:** Can be ONLY used in Visual Studio 2022! Actually the LTS .NET versions (3.1 amd 6) are supported.
 
-For Asp.NET debugging set the runtime identifier project property to:
+For debugging set the runtime identifier project property to:
 
 ```
 <PropertyGroup>
