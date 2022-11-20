@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="Raspberry Debugger.ce15e480-cd8d-4ed1-86a1-50b72a96c2ea" Version="3.2" Language="en-US" Publisher="GingerMintSoft" />
+        <Identity Id="Raspberry Debugger.ce15e480-cd8d-4ed1-86a1-50b72a96c2ea" Version="3.3" Language="en-US" Publisher="GingerMintSoft" />
         <DisplayName>Raspberry Debugger</DisplayName>
         <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug applications on a real Raspberry Pi using Visual Studio 2022.
 Supporting 32 and 64 bit raspbian operating system versions.
@@ -14,10 +14,10 @@ Raspberry Debugger forked from nforgeio/RaspberryDebugger</Description>
         <Tags>raspberry pi debugger for visual studio 2022</Tags>
     </Metadata>
     <Installation>
-        <InstallationTarget Version="[17.2,18.0)" Id="Microsoft.VisualStudio.Community">
+        <InstallationTarget Version="[17.4,18.0)" Id="Microsoft.VisualStudio.Community">
             <ProductArchitecture>amd64</ProductArchitecture>
         </InstallationTarget>
-        <InstallationTarget Version="[17.2,18.0)" Id="Microsoft.VisualStudio.Pro">
+        <InstallationTarget Version="[17.4,18.0)" Id="Microsoft.VisualStudio.Pro">
             <ProductArchitecture>amd64</ProductArchitecture>
         </InstallationTarget>
     </Installation>
@@ -25,7 +25,7 @@ Raspberry Debugger forked from nforgeio/RaspberryDebugger</Description>
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
     </Dependencies>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.2,18.0)" DisplayName="Visual Studio core editor" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.4,18.0)" DisplayName="Visual Studio core editor" />
     </Prerequisites>
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
