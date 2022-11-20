@@ -2,7 +2,7 @@
 _A Visual Studio Extension for debugging .NET Core applications remotely on a Raspberry Pi_
 
 ---
-**IMPORTANT:** Can be ONLY used in Visual Studio 2022! Actually the LTS .NET versions (3.1 amd 6) are supported.
+**IMPORTANT:** Can be ONLY used in Visual Studio 2022! Actually the LTS .NET versions (3.1 + 6.0) and the STS 7.0 (version 3.3) are supported.
 
 For debugging set the runtime identifier project property to:
 
@@ -182,7 +182,7 @@ The **Project/Raspberry Debug Settings** menu persists the settings to the new `
 
 * .NET Core is not supported on Raspberry 1, 2, or Zero cards
 * 64-bit Raspberry Pi OS (Raspbian) is supported now
-* Only LTS .NET Core SDKs supported: 3.1 and 6 (5 is not supported anymore)
+* Only LTS .NET Core SDKs supported: LTS .NET versions (3.1 + 6.0) and latest STS 7.0 (debugger version 3.3)
 * **Start Without Debugging** or **Attach to Process...** are not supported (yet)
 * Raspberry debugging uses the default project debugging profile
 * HTTPS is currently supported for ASPNET debugging (for reverse proxy and for Kestrel)
