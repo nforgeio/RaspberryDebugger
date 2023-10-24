@@ -16,30 +16,17 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-
-using EnvDTE;
-using EnvDTE80;
-
 using Neon.Common;
-using Neon.IO;
-using Neon.Windows;
+using RaspberryDebugger.Dialogs;
+using System.Threading.Tasks;
 
-using Task = System.Threading.Tasks.Task;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Commands
 {
     /// <summary>
     /// Handles the <b>Project/Raspberry Debug Settings...</b> command.
@@ -49,19 +36,14 @@ namespace RaspberryDebugger
         /// <summary>
         /// Command ID.
         /// </summary>
-        public const int CommandId = RaspberryDebuggerPackage.SettingsCommandId;
+        private const int CommandId = RaspberryDebuggerPackage.SettingsCommandId;
 
         /// <summary>
         /// Package command set ID.
         /// </summary>
-        public static readonly Guid CommandSet = RaspberryDebuggerPackage.CommandSet;
+        private static readonly Guid CommandSet = RaspberryDebuggerPackage.CommandSet;
 
-        /// <summary>
-        /// VS Package that provides this command, not null.
-        /// </summary>
-        private readonly AsyncPackage package;
-
-        private DTE2    dte;
+        private readonly DTE2 dte;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SettingsCommand"/> class.
@@ -76,13 +58,13 @@ namespace RaspberryDebugger
             
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.package = package;
             this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
-            var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem      = new OleMenuCommand(this.Execute, menuCommandID);
+            var menuCommandId = new CommandID(CommandSet, CommandId);
+            var menuItem      = new OleMenuCommand(this.Execute, menuCommandId);
 
             menuItem.BeforeQueryStatus +=
+                // ReSharper disable once UnusedParameter.Local
                 (s, a) =>
                 {
                     var command = (OleMenuCommand)s;
@@ -90,18 +72,14 @@ namespace RaspberryDebugger
                     command.Visible = PackageHelper.IsActiveProjectRaspberryCompatible(dte);
                 };
              
-            commandService.AddCommand(menuItem);
+            commandService?.AddCommand(menuItem);
         }
 
         /// <summary>
         /// Gets the instance of the command.
         /// </summary>
-        public static SettingsCommand Instance { get; private set; }
-
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider => this.package;
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        private static SettingsCommand Instance { get; set; }
 
         /// <summary>
         /// Initializes the singleton instance of the command.
@@ -139,7 +117,9 @@ namespace RaspberryDebugger
             if (project == null)
             {
                 MessageBoxEx.Show(
-                    "Please select a startup project using the Project/Set as Startup project menu or by right clicking a project in the Solution Explorer and enabling this.",
+                    "Please select a startup project using the Project/Set as " +
+                    "Startup project menu or by right clicking a project in " +
+                    "the Solution Explorer and enabling this.",
                     "Startup Project not found",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);

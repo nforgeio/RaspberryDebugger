@@ -14,15 +14,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-
 using Newtonsoft.Json;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.Sdk
 {
     /// <summary>
     /// Describes the available .NET Core SDK binary downloads for ARM.
@@ -33,6 +28,6 @@ namespace RaspberryDebugger
         /// The list of SDK catalog items.
         /// </summary>
         [JsonProperty(PropertyName = "Items", Required = Required.Always)]
-        public List<SdkCatalogItem> Items { get; set; }
+        public List<SdkCatalogItem> Items { get; set; } = new List<SdkCatalogItem>();
     }
 }

@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // FILE:	    ProjectProperties.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:   Copyright (c) 2021 by neonFORGE, LLC.  All rights reserved.
@@ -14,36 +14,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Diagnostics.Contracts;
-using System.Drawing.Imaging;
-using System.Drawing.Text;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
+// ReSharper disable UnusedAutoPropertyAccessor.Local
 using EnvDTE;
-using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-
 using Neon.Common;
 using Neon.Net;
-
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
-using Task = System.Threading.Tasks.Task;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.VisualStudio
 {
     /// <summary>
     /// The Visual Studio <see cref="Project"/> class properties can only be
@@ -64,22 +49,22 @@ namespace RaspberryDebugger
         /// <param name="solution">The current solution.</param>
         /// <param name="project">The source project.</param>
         /// <returns>The cloned <see cref="ProjectProperties"/>.</returns>
-        public static ProjectProperties CopyFrom(Solution solution, Project project)
+        public static ProjectProperties CopyFrom(Solution solution, EnvDTE.Project project)
         {
             Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
             Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (string.IsNullOrEmpty(project.FullName))
+            if (string.IsNullOrEmpty(project?.FullName))
             {
                 // We'll see this for unsupported Visual Studio projects and will just
                 // return project properties indicating this.
 
                 return new ProjectProperties()
                 {
-                    Name                  = project.Name,
-                    FullPath              = project.FullName,
+                    Name                  = project?.Name,
+                    FullPath              = project?.FullName,
                     Configuration         = null,
                     IsNetCore             = false,
                     SdkVersion            = null,
@@ -101,54 +86,39 @@ namespace RaspberryDebugger
             }
 
             var projectFolder = Path.GetDirectoryName(project.FullName);
-            var isNetCore     = true;
-            var netVersion    = (SemanticVersion)null;
-            var sdkName       = (string)null;
 
             // Read the properties we care about from the project.
-
             var targetFrameworkMonikers = (string)project.Properties.Item("TargetFrameworkMoniker").Value;
-            var outputType              = (int)project.Properties.Item("OutputType").Value;
+            var outputType = (int)project.Properties.Item("OutputType").Value;
 
             var monikers = targetFrameworkMonikers.Split(',');
 
-            isNetCore = monikers[0] == ".NETCoreApp";
+            var isNetCore = monikers[0] == ".NETCoreApp";
 
             // Extract the version from the moniker.  This looks like: "Version=v5.0"
-
             var versionRegex = new Regex(@"(?<version>[0-9\.]+)$");
+            var netVersion = SemanticVersion.Parse(versionRegex.Match(monikers[1]).Groups["version"].Value);
 
-            netVersion = SemanticVersion.Parse(versionRegex.Match(monikers[1]).Groups["version"].Value);
-
-            // The [dotnet --info] command doesn't work as I expected because it doesn't
-            // appear to examine the project file when determining the SDK version.
-            //
-            //      https://github.com/nforgeio/RaspberryDebugger/issues/16
-            //
-            // So, we're just going to use the latest known SDK from our catalog instead.
-            // This isn't ideal but should work fine for the vast majority of people.
-
-            var targetSdk        = (Sdk)null;
+            var targetSdk = (RaspberryDebugger.Connection.Sdk)null;
             var targetSdkVersion = (SemanticVersion)null;
 
-            foreach (var sdkItem in PackageHelper.SdkGoodCatalog.Items
-                .Where(item => item.IsStandalone && item.Architecture == SdkArchitecture.ARM32))
+            foreach (var sdkItem in PackageHelper.SdkCatalog.Items)
             {
-                var sdkVersion = SemanticVersion.Parse(sdkItem.Version);
+                var sdkVersion = SemanticVersion.Parse(sdkItem.Name);
 
-                if (sdkVersion.Major != netVersion.Major || sdkVersion.Minor != netVersion.Minor)
-                {
+                if (sdkVersion.Major != netVersion.Major ||
+                    sdkVersion.Minor != netVersion.Minor)
                     continue;
-                }
 
-                if (targetSdkVersion == null || sdkVersion > targetSdkVersion)
-                {
-                    targetSdkVersion = sdkVersion;
-                    targetSdk        = new Sdk(sdkItem.Name, sdkItem.Version);;
-                }
+                if (targetSdkVersion != null &&
+                    sdkVersion <= targetSdkVersion)
+                    continue;
+
+                targetSdkVersion = sdkVersion;
+                targetSdk = new RaspberryDebugger.Connection.Sdk(sdkItem.Name, sdkItem.Architecture);
             }
 
-            sdkName = targetSdk?.Name;
+            var sdkName = targetSdk?.Name;
 
             // Load [Properties/launchSettings.json] if present to obtain the command line
             // arguments and environment variables as well as the target connection.  Note
@@ -167,7 +137,7 @@ namespace RaspberryDebugger
             //
             //              ASPNETCORE_SERVER.URLS=http://0.0.0.0:<port>
 
-            var launchSettingsPath    = Path.Combine(projectFolder, "Properties", "launchSettings.json");
+            var launchSettingsPath    = Path.Combine(projectFolder ?? string.Empty, "Properties", "launchSettings.json");
             var commandLineArgs       = new List<string>();
             var environmentVariables  = new Dictionary<string, string>();
             var isAspNet              = false;
@@ -186,7 +156,7 @@ namespace RaspberryDebugger
                     {
                         if (profile.Name == project.Name)
                         {
-                            var profileObject              = (JObject)profile.Value;
+                            var profileObject = (JObject)profile.Value;
                             var environmentVariablesObject = (JObject)profileObject.Property("environmentVariables")?.Value;
 
                             commandLineArgs = ParseArgs((string)profileObject.Property("commandLineArgs")?.Value);
@@ -200,50 +170,50 @@ namespace RaspberryDebugger
                             }
 
                             // Extract additional settings for ASPNET projects.
+                            if (!profileObject.ContainsKey("applicationUrl")) continue;
 
-                            if (settings.Property("iisSettings") != null)
+                            isAspNet = true;
+
+                            // Note that we're going to fall back to port 5000 if there are any
+                            // issues parsing the application URL.
+                            const int fallbackPort = 5000;
+
+                            var jProperty = profileObject.Property("applicationUrl");
+
+                            if (jProperty != null && jProperty.Value.Type == JTokenType.String)
                             {
-                                isAspNet = true;
-
-                                // Note that we're going to fall back to port 5000 if there are any
-                                // issues parsing the application URL.
-
-                                const int fallbackPort = 5000;
-
-                                var jProperty = profileObject.Property("applicationUrl");
-
-                                if (jProperty != null && jProperty.Value.Type == JTokenType.String)
+                                try
                                 {
-                                    try
-                                    {
-                                        var uri = new Uri((string)jProperty.Value);
+                                    var values = ((string)jProperty.Value).Split(';');
+                                    var uri = new Uri(values.First(s => s.StartsWith("http:")));
 
-                                        aspPort = uri.Port;
+                                    aspPort = uri.Port;
 
-                                        if (!NetHelper.IsValidPort(aspPort))
-                                        {
-                                            aspPort = fallbackPort;
-                                        }
-                                    }
-                                    catch
+                                    if (!NetHelper.IsValidPort(aspPort))
                                     {
                                         aspPort = fallbackPort;
                                     }
                                 }
-                                else
+                                catch
                                 {
                                     aspPort = fallbackPort;
                                 }
-
-                                jProperty = profileObject.Property("launchBrowser");
-
-                                if (jProperty != null && jProperty.Value.Type == JTokenType.Boolean)
-                                {
-                                    aspLaunchBrowser = (bool)jProperty.Value;
-                                }
                             }
+                            else
+                            {
+                                aspPort = fallbackPort;
+                            }
+
+                            jProperty = profileObject.Property("launchBrowser");
+
+                            if (jProperty != null && jProperty.Value.Type == JTokenType.Boolean)
+                            {
+                                aspLaunchBrowser = (bool)jProperty.Value;
+                            }
+
+                            aspRelativeBrowserUri = SetLaunchUrl(profileObject);
                         }
-                        else if (profile.Name == "IIS Express")
+                        else if (profile.Name == "IIS Express" && aspRelativeBrowserUri == "/")
                         {
                             // For ASPNET apps, this profile may include a "launchUrl" which
                             // specifies the absolute or relative URI to display in a debug
@@ -253,68 +223,68 @@ namespace RaspberryDebugger
                             // so we'll be able to launch the browser on the correct page.
 
                             var profileObject = (JObject)profile.Value;
-                            var jProperty     = profileObject.Property("launchUrl");
-
-                            if (jProperty != null && jProperty.Value.Type == JTokenType.String)
-                            {
-                                var launchUri = (string)jProperty.Value;
-
-                                if (!string.IsNullOrEmpty(launchUri))
-                                {
-                                    try
-                                    {
-                                        var uri = new Uri(launchUri, UriKind.RelativeOrAbsolute);
-
-                                        if (uri.IsAbsoluteUri)
-                                        {
-                                            aspRelativeBrowserUri = uri.PathAndQuery;
-                                        }
-                                        else
-                                        {
-                                            aspRelativeBrowserUri = launchUri;
-                                        }
-                                    }
-                                    catch 
-                                    {
-                                        // We'll fall back to "/" for any URI parsing errors.
-
-                                        aspRelativeBrowserUri = "/";
-                                    }
-                                }
-                            }
+                            aspRelativeBrowserUri = SetLaunchUrl(profileObject);
                         }
+                    }
+
+                    string SetLaunchUrl(JObject profileObject)
+                    {
+                        var jProperty = profileObject.Property("launchUrl");
+
+                        if (jProperty == null ||
+                            jProperty.Value.Type != JTokenType.String)
+                            return aspRelativeBrowserUri;
+
+                        var launchUri = (string)jProperty.Value;
+
+                        if (string.IsNullOrEmpty(launchUri)) return aspRelativeBrowserUri;
+
+                        try
+                        {
+                            var uri = new Uri(launchUri, UriKind.RelativeOrAbsolute);
+
+                            aspRelativeBrowserUri = uri.IsAbsoluteUri
+                                ? uri.PathAndQuery
+                                : launchUri;
+                        }
+                        catch
+                        {
+                            // We'll fall back to "/" for any URI parsing errors.
+                            aspRelativeBrowserUri = "/";
+                        }
+
+                        return aspRelativeBrowserUri;
                     }
                 }
             }
 
             // Get the target Raspberry from the debug settings.
-
-            var projects            = PackageHelper.ReadRaspberryProjects(solution);
-            var projectSettings     = projects[project.UniqueName];
-            var debugEnabled        = projectSettings.EnableRemoteDebugging;
+            var projects = PackageHelper.ReadRaspberryProjects(solution);
+            var projectSettings = projects[project.UniqueName];
+            var debugEnabled = projectSettings.EnableRemoteDebugging;
             var debugConnectionName = projectSettings.RemoteDebugTarget;
 
             // Determine whether the referenced .NET Core SDK is currently supported.
-
-            var sdk = sdkName == null ? null : PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName) && item.Architecture == SdkArchitecture.ARM32);
+            // The bitness is not important for this - we need only the SDK version
+            var sdk = sdkName == null
+                ? null
+                : PackageHelper.SdkCatalog.Items.Find(item =>
+                    SemanticVersion.Parse(item.Name) == SemanticVersion.Parse(sdkName));
 
             var isSupportedSdkVersion = sdk != null;
 
             // Determine whether the project is Raspberry compatible.
-
             var isRaspberryCompatible = isNetCore &&
                                         outputType == 1 && // 1=EXE
                                         isSupportedSdkVersion;
 
             // We need to jump through some hoops to obtain the project GUID.
-
             var solutionService = RaspberryDebuggerPackage.Instance.SolutionService;
 
             Covenant.Assert(solutionService.GetProjectOfUniqueName(project.UniqueName, out var hierarchy) == VSConstants.S_OK);
             Covenant.Assert(solutionService.GetGuidOfProject(hierarchy, out var projectGuid) == VSConstants.S_OK);
 
             // Return the properties.
-
             return new ProjectProperties()
             {
                 Name                  = project.Name,
@@ -322,7 +292,7 @@ namespace RaspberryDebugger
                 Guid                  = projectGuid,
                 Configuration         = project.ConfigurationManager.ActiveConfiguration.ConfigurationName,
                 IsNetCore             = isNetCore,
-                SdkVersion            = sdk?.Version,
+                SdkVersion            = sdk?.Name,
                 OutputFolder          = Path.Combine(projectFolder, project.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString()),
                 OutputFileName        = (string)project.Properties.Item("OutputFileName").Value,
                 IsExecutable          = outputType == 1,     // 1=EXE
@@ -341,7 +311,7 @@ namespace RaspberryDebugger
         }
 
         /// <summary>
-        /// Parses command line arguments from a string, trying to handle things like 
+        /// Parses command line arguments from a string, trying to handle things like
         /// double and single quotes as well as escaped characters.
         /// </summary>
         /// <param name="commandLine">The source command line or <c>null</c>.</param>
@@ -456,7 +426,7 @@ namespace RaspberryDebugger
                     args.Add(Regex.Unescape(arg));
                 }
             }
-            
+
             return args;
         }
 
@@ -469,14 +439,14 @@ namespace RaspberryDebugger
         public string Name { get; private set; }
 
         /// <summary>
-        /// Returns the fullly qualfied path to the project file.
+        /// Returns the fully qualified path to the project file.
         /// </summary>
         public string FullPath { get; private set; }
 
         /// <summary>
         /// Returns the project's GUID.
         /// </summary>
-        public Guid Guid { get; private set; }
+        private Guid Guid { get; set; }
 
         /// <summary>
         /// Indicates that the project targets .NET Core rather than the .NET Framework.
@@ -506,7 +476,7 @@ namespace RaspberryDebugger
         public string OutputFolder { get; private set; }
 
         /// <summary>
-        /// Indicates that the program is an execuable as opposed to something
+        /// Indicates that the program is an executable as opposed to something
         /// else, like a DLL.
         /// </summary>
         public bool IsExecutable { get; private set; }
@@ -515,6 +485,11 @@ namespace RaspberryDebugger
         /// Returns the publish runtime.
         /// </summary>
         public string Runtime => "linux-arm";
+
+        /// <summary>
+        /// Returns the framework version.
+        /// </summary>
+        public string Framework => null;
 
         /// <summary>
         /// Returns the publication folder.
@@ -529,15 +504,15 @@ namespace RaspberryDebugger
         /// <summary>
         /// Returns the name of the output binary file.
         /// </summary>
-        public string OutputFileName { get; private set; }
+        private string OutputFileName { get; set; }
 
         /// <summary>
         /// Indicates whether Raspberry debugging is enabled for this project.
         /// </summary>
-        public bool DebugEnabled { get; private set; }
+        private bool DebugEnabled { get; set; }
 
         /// <summary>
-        /// Returns the connection name identifying the target Raspberry or <c>null</c> 
+        /// Returns the connection name identifying the target Raspberry or <c>null</c>
         /// when the default Raspberry connection should be used.
         /// </summary>
         public string DebugConnectionName { get; private set; }
@@ -577,6 +552,6 @@ namespace RaspberryDebugger
         /// Returns the relative URI to be displayed in the browser when
         /// <see cref="AspLaunchBrowser"/> is <c>true</c>.
         /// </summary>
-        public string AspRelativeBrowserUri { get; private set; }
+        public string AspRelativeBrowserUri { get; private set; } = string.Empty;
     }
 }

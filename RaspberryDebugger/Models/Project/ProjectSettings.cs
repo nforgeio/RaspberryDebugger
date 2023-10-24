@@ -14,16 +14,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-
 using Newtonsoft.Json;
+using System.ComponentModel;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.Project
 {
     /// <summary>
     /// Holds the Raspberry related settings for a project.
@@ -38,7 +32,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// Connection combo box item indicating that the default Raspberry connection should be used.
         /// </summary>
-        public const string DefaultConnectionName  = "[DEFAULT]";
+        public const string DefaultConnectionName = "[DEFAULT]";
 
         /// <summary>
         /// Default constructor that returns settings with remote debugging disabled.
@@ -46,7 +40,8 @@ namespace RaspberryDebugger
         public ProjectSettings()
         {
             EnableRemoteDebugging = false;
-            RemoteDebugTarget     = null;
+            RemoteDebugTarget = null;
+            UseWebServerProxy = true;
         }
 
         /// <summary>
@@ -56,7 +51,7 @@ namespace RaspberryDebugger
         public bool EnableRemoteDebugging { get; set; }
 
         /// <summary>
-        /// Specifes the name of the specific remote Raspberry connection to use or
+        /// Specifies the name of the specific remote Raspberry connection to use or
         /// <c>null</c> for the default connection.
         /// </summary>
         [JsonProperty(PropertyName = "RemoteDebugTarget", Required = Required.AllowNull)]
@@ -69,5 +64,9 @@ namespace RaspberryDebugger
         [JsonProperty(PropertyName = "TargetGroup", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         [DefaultValue("gpio")]
         public string TargetGroup { get; set; } = "gpio";
+
+        [JsonProperty(PropertyName = "UseWebServerProxy", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        [DefaultValue(true)]
+        public bool UseWebServerProxy { get; set; }
     }
 }

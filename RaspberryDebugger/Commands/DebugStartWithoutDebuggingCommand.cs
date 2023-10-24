@@ -16,39 +16,24 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using RaspberryDebugger.Dialogs;
+using System.Threading.Tasks;
 
-using EnvDTE;
-using EnvDTE80;
-
-using Neon.Common;
-using Neon.IO;
-using Neon.Windows;
-
-using Newtonsoft.Json.Linq;
-
-using Task = System.Threading.Tasks.Task;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Commands
 {
     /// <summary>
     /// Handles the <b>Start Without Debugging</b> command for Raspberry enabled projects.
     /// </summary>
     internal sealed class DebugStartWithoutDebuggingCommand
     {
-        private DTE2    dte;
+        // ReSharper disable once MemberCanBePrivate.Global
+        internal DTE2 Dte;
 
         /// <summary>
         /// Command ID.
@@ -59,11 +44,6 @@ namespace RaspberryDebugger
         /// Package command set ID.
         /// </summary>
         public static readonly Guid CommandSet = RaspberryDebuggerPackage.CommandSet;
-
-        /// <summary>
-        /// VS Package that provides this command, not null.
-        /// </summary>
-        private readonly AsyncPackage package;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugStartCommand"/> class.
@@ -78,24 +58,19 @@ namespace RaspberryDebugger
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.package = package;
-            this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            this.Dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
-            var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem      = new MenuCommand(this.Execute, menuCommandID);
+            var menuCommandId = new CommandID(CommandSet, CommandId);
+            var menuItem      = new MenuCommand(this.Execute, menuCommandId);
              
-            commandService.AddCommand(menuItem);
+            commandService?.AddCommand(menuItem);
         }
 
         /// <summary>
         /// Returns the command instance.
         /// </summary>
-        public static DebugStartWithoutDebuggingCommand Instance { get; private set; }
-
-        /// <summary>
-        /// Gets the service provider from the owner package.
-        /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider => this.package;
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        private static DebugStartWithoutDebuggingCommand Instance { get; set; }
 
         /// <summary>
         /// Initializes the singleton instance of the command.

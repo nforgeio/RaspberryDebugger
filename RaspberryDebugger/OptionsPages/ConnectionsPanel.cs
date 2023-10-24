@@ -17,37 +17,29 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
-using Microsoft.VisualStudio.Threading;
-
 using BrightIdeasSoftware;
-using Neon.Common;
+using RaspberryDebugger.Dialogs;
+using RaspberryDebugger.Models.Connection;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.OptionsPages
 {
     /// <summary>
     /// Implements the debug connections options panel.
     /// </summary>
     internal partial class ConnectionsPanel : UserControl
     {
-        private const int spacing       = 8;
+        private const int Spacing       = 8;
 
-        private const int defaultColumn = 1;
-        private const int hostColumn    = 2;
-        private const int portColumn    = 3;
-        private const int userColumn    = 4;
-        private const int authColumn    = 5;
-        private const int blankColumn   = 6;
+        private const int DefaultColumn = 1;
+        private const int HostColumn    = 2;
+        private const int PortColumn    = 3;
+        private const int UserColumn    = 4;
+        private const int AuthColumn    = 5;
+        private const int BlankColumn   = 6;
 
-        private bool                    isInitialized = false;
+        private bool                    isInitialized;
         private List<ConnectionInfo>    connections;
 
         /// <summary>
@@ -67,7 +59,7 @@ namespace RaspberryDebugger
         /// Returns the parent window to be used when displaying message boxes
         /// and dialogs.
         /// </summary>
-        private IWin32Window dialogParent => ConnectionsPage.PanelWindow;
+        private IWin32Window DialogParent => ConnectionsPage.PanelWindow;
 
         /// <summary>
         /// Returns the selected connection or <c>null</c>.
@@ -109,8 +101,8 @@ namespace RaspberryDebugger
                     new OLVColumn()
                     {
                         Name            = "Default",
-                        Text            = "Default",
-                        DisplayIndex    = defaultColumn,
+                        Text            = @"Default",
+                        DisplayIndex    = DefaultColumn,
                         Width           = 60,
                         HeaderTextAlign = HorizontalAlignment.Center,
                         TextAlign       = HorizontalAlignment.Center,
@@ -121,9 +113,9 @@ namespace RaspberryDebugger
                     new OLVColumn()
                     {
                         Name            = "Host",
-                        Text            = "Host",
+                        Text            = @"Host",
                         AspectName      = nameof(ConnectionInfo.Name),
-                        DisplayIndex    = hostColumn,
+                        DisplayIndex    = HostColumn,
                         Width           = 200,
                         HeaderTextAlign = HorizontalAlignment.Left,
                         TextAlign       = HorizontalAlignment.Left,
@@ -134,9 +126,9 @@ namespace RaspberryDebugger
                     new OLVColumn()
                     {
                         Name            = "Port",
-                        Text            = "Port",
+                        Text            = @"Port",
                         AspectName      = nameof(ConnectionInfo.Port),
-                        DisplayIndex    = portColumn,
+                        DisplayIndex    = PortColumn,
                         Width           = 60,
                         HeaderTextAlign = HorizontalAlignment.Center,
                         TextAlign       = HorizontalAlignment.Center,
@@ -147,9 +139,9 @@ namespace RaspberryDebugger
                     new OLVColumn()
                     {
                         Name            = "User",
-                        Text            = "User",
+                        Text            = @"User",
                         AspectName      = nameof(ConnectionInfo.User),
-                        DisplayIndex    = userColumn,
+                        DisplayIndex    = UserColumn,
                         FillsFreeSpace  = true,
                         MaximumWidth    = 500,
                         HeaderTextAlign = HorizontalAlignment.Left,
@@ -161,9 +153,9 @@ namespace RaspberryDebugger
                     new OLVColumn()
                     {
                         Name            = "Authentication",
-                        Text            = "Authentication",
+                        Text            = @"Authentication",
                         AspectName      = nameof(ConnectionInfo.Authentication),
-                        DisplayIndex    = authColumn,
+                        DisplayIndex    = AuthColumn,
                         Width           = 100,
                         HeaderTextAlign = HorizontalAlignment.Center,
                         TextAlign       = HorizontalAlignment.Center,
@@ -175,7 +167,7 @@ namespace RaspberryDebugger
                     {
                         Name            = "",
                         Text            = "",
-                        DisplayIndex    = blankColumn,
+                        DisplayIndex    = BlankColumn,
                         Width           = 0,
                         IsVisible       = false,
                         HeaderTextAlign = HorizontalAlignment.Left,
@@ -243,18 +235,18 @@ namespace RaspberryDebugger
         /// <param name="args">The arguments.</param>
         private void OptionsPanel_SizeChanged(object sender, EventArgs args)
         {
-            var buttonLeft = this.Width - addButton.Width - spacing;
+            var buttonLeft = this.Width - addButton.Width - Spacing;
 
             addButton.Left         = buttonLeft;
             editButton.Left        = buttonLeft;
             verifyButton.Left        = buttonLeft;
             removeButton.Left      = buttonLeft;
 
-            titleLabel.Left        = spacing;
+            titleLabel.Left        = Spacing;
 
-            connectionsView.Left   = spacing;
+            connectionsView.Left   = Spacing;
             connectionsView.Height = this.Height - connectionsView.Top;
-            connectionsView.Width  = this.Width - addButton.Width - 4 * spacing;
+            connectionsView.Width  = this.Width - addButton.Width - 4 * Spacing;
         }
 
         /// <summary>
@@ -340,7 +332,7 @@ namespace RaspberryDebugger
 
             var connectionDialog = new ConnectionDialog(newConnection, edit: false, connections);
 
-            if (connectionDialog.ShowDialog(dialogParent) == DialogResult.OK)
+            if (connectionDialog.ShowDialog(DialogParent) == DialogResult.OK)
             {
                 connections.Add(newConnection);
                 SaveConnections();
@@ -362,7 +354,7 @@ namespace RaspberryDebugger
 
             var connectionDialog = new ConnectionDialog(SelectedConnection, edit: true, connections);
 
-            if (connectionDialog.ShowDialog(dialogParent) == DialogResult.OK)
+            if (connectionDialog.ShowDialog(DialogParent) == DialogResult.OK)
             {
                 SaveConnections();
                 ReloadConnections();
@@ -392,7 +384,7 @@ namespace RaspberryDebugger
             {
                 try
                 {
-                    using (var connection = await Connection.ConnectAsync(currentConnection))
+                    using (await Connection.Connection.ConnectAsync(currentConnection))
                     {
                         exception = null;
                     }
@@ -412,16 +404,19 @@ namespace RaspberryDebugger
                 ReloadConnections();
 
                 MessageBox.Show(this,
-                                $"[{SelectedConnection.Name}] Connection is OK!",
-                                $"Success",
+                                $@"[{SelectedConnection.Name}] Connection is OK!",
+                                $@"Success",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Information);
             }
             else
             {
                 MessageBox.Show(this,
-                                $"Connection Failed:\r\n\r\n{exception.GetType().FullName}\r\n{exception.Message}\r\n\r\nView the Debug Output for more details.",
-                                $"Connection Failed",
+                                $@"Connection Failed:
+                                {exception.GetType().FullName}
+                                {exception.Message}
+                                View the Debug Output for more details.",
+                                $@"Connection Failed",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
             }

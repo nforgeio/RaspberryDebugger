@@ -1,10 +1,19 @@
-# Raspberry Debugger
+# Raspberry Debugger forked from nforgeio/RaspberryDebugger
 _A Visual Studio Extension for debugging .NET Core applications remotely on a Raspberry Pi_
 
 ---
+**IMPORTANT:** Can be ONLY used in Visual Studio 2022! Actually the LTS .NET versions (3.1 + 6.0) and the STS 7.0 (version 3.3) are supported.
 
-**IMPORTANT:** .NET 5.0 starting with the SDK 5.0.102 works now!
+For debugging set the runtime identifier project property to:
 
+```
+<PropertyGroup>
+   ...
+   <PlatformTarget>AnyCPU</PlatformTarget>
+   <RuntimeIdentifier>linux-arm</RuntimeIdentifier>
+</PropertyGroup>
+```
+https://docs.microsoft.com/de-de/dotnet/core/rid-catalog
 ---
 
 You can use Visual Studio Code to develop and debug .NET Core applications either directly on your Raspberry or remotely from another computer but until today, there's been no easy way to use regular Visual Studio to develop and debug applications for Raspberry.
@@ -13,16 +22,17 @@ The new **Raspberry Debugger** Visual Studio extension allows you to code your a
 
 ### Requirements
 
-* Windows 10
-* Visual Studio 2019 Community Edition (or better)
-* Raspberry Pi running 32-bit Raspberry Pi OS
+* Windows 10/11
+* Visual Studio 2022 Community Edition (or better)
+* Raspberry Pi running 32-bit or 64-bit Raspberry Pi OS - grab this source and feel free to test, please
 * Raspberry user allowed to `sudo`
 * [Windows Open SSH Client](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (installed automatically when required)
 
 ### Features
 
-* Supports Raspberry Pi 3+ devices
-* Raspberry Pi OS 32-bit (we haven't tested other operating systems)
+* Supports Raspberry Pi 3+ devices and Zero 2 W 
+* Take a Pi 4 (4/8GB) for development work with large-scale solutions
+* Raspberry Pi OS 32/64-bit (raspbian)
 * Console and ASPNET .NET applications supported
 * Configures SSH 2048-bit RSA key pair automatically
 * **F5/Run** debugging
@@ -125,6 +135,15 @@ When debugging .NET Core Console projects, you can pass command line arguments a
 
 When debugging ASPNET projects, you can pass command line arguments and environment variables to the remote program and you also have the option to start a browser on your workstation and have it display a page from your application.
 
+For Asp.NET debugging set the runtime identifier project property to:
+
+```
+<PropertyGroup>
+   ...
+   <RuntimeIdentifier>linux-arm</RuntimeIdentifier>
+</PropertyGroup>
+```
+
 Your web application will be deployed on your Raspberry on all network interfaces, using the port specified by the **App URL**.
 
 ![Screenshot](/Doc/Images/GettingStarted/AspNetProperties.png?raw=true)
@@ -162,11 +181,11 @@ The **Project/Raspberry Debug Settings** menu persists the settings to the new `
 ### Limitations
 
 * .NET Core is not supported on Raspberry 1, 2, or Zero cards
-* 64-bit Raspberry Pi OS is not supported
-* .NET Core SDKs older than 3.1 are not supported
+* 64-bit Raspberry Pi OS (Raspbian) is supported now
+* Only LTS .NET Core SDKs supported: LTS .NET versions (3.1 + 6.0) and latest STS 7.0 (debugger version 3.3)
 * **Start Without Debugging** or **Attach to Process...** are not supported (yet)
 * Raspberry debugging uses the default project debugging profile
-* HTTPS is not currently supported for ASPNET debugging
+* HTTPS is currently supported for ASPNET debugging (for reverse proxy and for Kestrel)
 * Program assembly names can't include spaces
 
 ### Disclosures

@@ -14,21 +14,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+// ReSharper disable UnusedAutoPropertyAccessor.Local
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Net;
-using Neon.Common;
-using Neon.Net;
-using Neon.SSH;
+using RaspberryDebugger.Models.Sdk;
 
-using Newtonsoft.Json;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Connection
 {
     /// <summary>
     /// Describes the current status of a remote Raspberry Pi.
@@ -38,51 +31,53 @@ namespace RaspberryDebugger
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="architecture">The chip architecture.</param>
+        /// <param name="processor">The chip architecture.</param>
         /// <param name="hasUnzip">Indicates whether <b>unzip</b> is installed.</param>
         /// <param name="hasDebugger">Indicates whether the debugger is installed.</param>
         /// <param name="installedSdks">The installed .NET Core SDKs.</param>
         /// <param name="path">The current value of the PATH environment variable.</param>
         /// <param name="model">The Raspberry board model.</param>
         /// <param name="revision">The Raspberry board revision.</param>
+        /// <param name="architecture">The Core SDK architecture</param>
         public Status(
-            string              architecture, 
+            string              processor, 
             string              path, 
             bool                hasUnzip, 
             bool                hasDebugger, 
             IEnumerable<Sdk>    installedSdks,
             string              model,
-            string              revision)
+            string              revision,
+            SdkArchitecture     architecture)
         {
-            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(architecture), nameof(architecture));
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(processor), nameof(processor));
             Covenant.Requires<ArgumentNullException>(path != null, nameof(path));
             Covenant.Requires<ArgumentNullException>(installedSdks != null, nameof(installedSdks));
 
-            this.Architecture      = architecture;
-            this.PATH              = path;
+            this.Processor         = processor;
+            this.Path              = path;
             this.HasUnzip          = hasUnzip;
             this.HasDebugger       = hasDebugger;
-            this.InstalledSdks     = installedSdks.ToList();
+            this.InstalledSdks     = installedSdks?.ToList();
             this.RaspberryModel    = model;
             this.RaspberryRevision = revision;
+            this.Architecture      = architecture;
         }
 
         /// <summary>
-        /// <summary>
         /// Returns the chip architecture (like <b>armv71</b>).
         /// </summary>
-        public string Architecture { get; private set; }
+        private string Processor { get; set; }
 
         /// <summary>
         /// Returns the current value of the <b>PATH</b> environment variable.
         /// </summary>
-        public string PATH { get; private set; }
+        private string Path { get; set; }
 
         /// <summary>
         /// Returns <c>true</c> if <b>unzip</b> is installed on the Raspberry Pi.
         /// This is required and will be installed automatically.
         /// </summary>
-        public bool HasUnzip { get; private set; }
+        private bool HasUnzip { get; set; }
 
         /// <summary>
         /// Indicates whether the <b>vsdbg</b> debugger is installed.
@@ -92,16 +87,21 @@ namespace RaspberryDebugger
         /// <summary>
         /// Returns information about the .NET Core SDKs installed.
         /// </summary>
-        public List<Sdk> InstalledSdks { get; private set; }
+        public List<Sdk> InstalledSdks { get; }
 
         /// <summary>
         /// Returns the Raspberry board model.
         /// </summary>
-        public string RaspberryModel { get; private set; }
+        public string RaspberryModel { get; }
 
         /// <summary>
         /// Returns the Raspberry board revision.
         /// </summary>
-        public string RaspberryRevision { get; private set; }
+        private string RaspberryRevision { get; set; }
+
+        /// <summary>
+        /// Returns the Raspberry architecture.
+        /// </summary>
+        public SdkArchitecture Architecture { get; }
     }
 }

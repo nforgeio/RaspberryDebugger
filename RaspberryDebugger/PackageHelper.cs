@@ -14,35 +14,35 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics.Contracts;
-using System.Drawing;
-using System.Data;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows.Forms;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Threading;
-using Microsoft.VisualStudio.Utilities;
 
 using EnvDTE;
 using EnvDTE80;
+using Microsoft.VisualStudio.Threading;
+using Neon.IO;
+using Neon.Common;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
-using Neon.Common;
-using Neon.IO;
-
-using Task = System.Threading.Tasks.Task;
+using RaspberryDebugger.Dialogs;
+using RaspberryDebugger.Extensions;
+using RaspberryDebugger.Models.Sdk;
+using RaspberryDebugger.Models.Connection;
+using RaspberryDebugger.Models.Project;
+using RaspberryDebugger.Models.VisualStudio;
+using VersionsService = RaspberryDebugger.Web;
 
 namespace RaspberryDebugger
 {
@@ -51,17 +51,7 @@ namespace RaspberryDebugger
     /// </summary>
     internal static class PackageHelper
     {
-        private static object               syncLock               = new object();
-        private static SdkCatalog           cachedSdkCatalog       = null;
-        private static SdkCatalog           cachedGoodSdkCatalog   = null;
-        private static RaspberryCatalog     cachedRaspberryCatalog = null;
-        private static List<Sdk>            cachedWorkstationSdks  = null;
-
-        /// <summary>
-        /// The path to the <b>%USERPROFILE%\.raspberry</b> folder where the package
-        /// will persist its settings and other files.
-        /// </summary>
-        public static readonly string SettingsFolder;
+        private static SdkCatalog _cachedSdkCatalog;
 
         /// <summary>
         /// The path to the folder holding the Raspberry SSH private keys.
@@ -71,7 +61,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// The path to the JSON file defining the Raspberry Pi connections.
         /// </summary>
-        public static readonly string ConnectionsPath;
+        private static readonly string ConnectionsPath;
 
         /// <summary>
         /// The name used to prefix logged output and status bar text.
@@ -100,14 +90,9 @@ namespace RaspberryDebugger
         public const string RemoteDebuggerPath = RemoteDebuggerFolder + "/vsdbg";
 
         /// <summary>
-        /// URI for the project's GitHub issues.
-        /// </summary>
-        public const string GitHubIssuesUri = "https://github.com/nforgeio/RaspberryDebugger/issues/";
-
-        /// <summary>
         /// Returns the root directory on the Raspberry Pi where the folder where 
         /// program binaries will be uploaded for the named user.  Each program will
-        /// have a subdirectory named for the program.
+        /// have a sub directory named for the program.
         /// </summary>
         public static string RemoteDebugBinaryRoot(string username)
         {
@@ -123,84 +108,80 @@ namespace RaspberryDebugger
         {
             get
             {
-                lock (syncLock)
+                if (_cachedSdkCatalog != null) return _cachedSdkCatalog;
+
+                // read newest .net sdks
+                if(!ReadSdkCatalogToCache())
                 {
-                    if (cachedSdkCatalog == null)
-                    {
-                        var assembly = Assembly.GetExecutingAssembly();
-
-                        using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json"))
-                        {
-                            var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
-
-                            cachedSdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
-                        }
-                    }
-
-                    return cachedSdkCatalog;
+                    // if no SDKs present show a message
+                    MessageBoxEx.Show(
+                        "Cannot find any SDK on page: https://dotnet.microsoft.com/en-us/download/dotnet",
+                        "No SDK found",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
+
+                return _cachedSdkCatalog;
             }
         }
 
         /// <summary>
-        /// Returns information about the known good .NET Core SDKs,
+        /// Read SDK links from hosted service
+        /// with fallback to sdk-catalog.json entries
         /// </summary>
-        public static SdkCatalog SdkGoodCatalog
+        /// <returns>true if SDKs present</returns>
+        private static bool ReadSdkCatalogToCache()
         {
-            get
+            using (new CursorWait())
             {
-                lock (syncLock)
+                try
                 {
-                    if (cachedGoodSdkCatalog == null)
-                    {
-                        var assembly = Assembly.GetExecutingAssembly();
-
-                        using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json"))
-                        {
-                            var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
-
-                            cachedGoodSdkCatalog = NeonHelper.JsonDeserialize<SdkCatalog>(catalogJson);
-
-                            // Remove any unusable SDKs from the catalog.
-
-                            foreach (var unusable in cachedGoodSdkCatalog.Items.Where(item => item.IsUnusable).ToArray())
-                            {
-                                cachedGoodSdkCatalog.Items.Remove(unusable);
-                            }
-                        }
-                    }
-
-                    return cachedGoodSdkCatalog;
+                    // try to get the catalog thru version feed service
+                    _cachedSdkCatalog = JsonConvert.DeserializeObject<SdkCatalog>(
+                        ThreadHelper.JoinableTaskFactory.Run(async () =>
+                            await new VersionsService.Feed()
+                                .ReadAsync()
+                                .WithTimeout(TimeSpan.FromSeconds(2))));
                 }
+                catch (Exception)
+                {
+                    _cachedSdkCatalog = new SdkCatalog();
+                }
+                
+                if (_cachedSdkCatalog?.Items.Any() == true) return true;
+
+                _cachedSdkCatalog = ReadIntegratedCatalog();
             }
+
+            return true;
         }
 
         /// <summary>
-        /// Returns information about the known Raspberry Pie models.
+        /// Read assembly integrated catalog json
         /// </summary>
-        public static RaspberryCatalog RaspberryCatalog
+        /// <returns>SdkCatalog with SDK items</returns>
+        private static SdkCatalog ReadIntegratedCatalog()
         {
-            get
+            try
             {
-                lock (syncLock)
-                {
-                    if (cachedRaspberryCatalog != null)
-                    {
-                        return cachedRaspberryCatalog;
-                    }
+                // try to get the catalog thru own fetch
+                using var catalogStream = Assembly
+                    .GetExecutingAssembly()
+                    .GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json");
 
-                    var assembly = Assembly.GetExecutingAssembly();
+                var jsonSerializerSettings = new JsonSerializerSettings();
+                jsonSerializerSettings.Converters.Add(new StringEnumConverter());
 
-                    using (var catalogStream = assembly.GetManifestResourceStream("RaspberryDebugger.raspberry-catalog.json"))
-                    {
-                        var catalogJson = Encoding.UTF8.GetString(catalogStream.ReadToEnd());
-
-                        cachedRaspberryCatalog = NeonHelper.JsonDeserialize<RaspberryCatalog>(catalogJson);
-                    }
-                }
-
-                return cachedRaspberryCatalog;
+                return JsonConvert.DeserializeObject<SdkCatalog>(
+                    new StreamReader(catalogStream!).ReadToEnd(),
+                    jsonSerializerSettings);
             }
+            catch (Exception)
+            {
+                _cachedSdkCatalog = new SdkCatalog();
+            }
+
+            return _cachedSdkCatalog;
         }
 
         /// <summary>
@@ -209,74 +190,21 @@ namespace RaspberryDebugger
         static PackageHelper()
         {
             // Initialize the settings path and folders.
+            var settingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".raspberry");
 
-            SettingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".raspberry");
-
-            if (!Directory.Exists(SettingsFolder))
+            if (!Directory.Exists(settingsFolder))
             {
-                Directory.CreateDirectory(SettingsFolder);
+                Directory.CreateDirectory(settingsFolder);
             }
 
-            KeysFolder = Path.Combine(SettingsFolder, "keys");
+            KeysFolder = Path.Combine(settingsFolder, "keys");
 
             if (!Directory.Exists(KeysFolder))
             {
                 Directory.CreateDirectory(KeysFolder);
             }
 
-            ConnectionsPath = Path.Combine(SettingsFolder, "connections.json");
-        }
-
-        /// <summary>
-        /// Returns the .NET SDKs currently installed on the workstation.
-        /// </summary>
-        public static List<Sdk> InstalledWorkstationSdks
-        {
-            get
-            {
-                lock (syncLock)
-                {
-                    if (cachedWorkstationSdks != null)
-                    {
-                        return cachedWorkstationSdks;
-                    }
-
-                    var response = NeonHelper.ExecuteCapture("dotnet", new object[] { "--list-sdks" });
-
-                    if (response.ExitCode != 0)
-                    {
-                        throw new Exception($"[dotnet --list-sdks] failed with exitcode={response.ExitCode}]");
-                    }
-
-                    // The output will look something like this:
-                    //
-                    //      2.1.403 [C:\Program Files\dotnet\sdk]
-                    //      3.0.100-preview9-014004 [C:\Program Files\dotnet\sdk]
-                    //      3.1.100 [C:\Program Files\dotnet\sdk]
-                    //      3.1.301 [C:\Program Files\dotnet\sdk]
-                    //      3.1.402 [C:\Program Files\dotnet\sdk]
-                    //
-                    // We'll just extract the SDK name (up to the separating space) and lookup the 
-                    // version from our catalog.  SDKs that aren't in our catalog will have a NULL
-                    // version.
-
-                    cachedWorkstationSdks = new List<Sdk>();
-
-                    using (var reader = new StringReader(response.OutputText))
-                    {
-                        foreach (var line in reader.Lines())
-                        {
-                            var name    = line.Split(' ').First().Trim();
-                            var sdkItem = PackageHelper.SdkGoodCatalog.Items.SingleOrDefault(item => item.Name == name && item.Architecture == SdkArchitecture.ARM32);
-                            var version = sdkItem?.Version;
-
-                            cachedWorkstationSdks.Add(new Sdk(name, version));
-                        }
-                    }
-
-                    return cachedWorkstationSdks;
-                }
-            }
+            ConnectionsPath = Path.Combine(settingsFolder, "connections.json");
         }
 
         /// <summary>
@@ -298,19 +226,16 @@ namespace RaspberryDebugger
                     return new List<ConnectionInfo>();
                 }
 
-                var connections = NeonHelper.JsonDeserialize<List<ConnectionInfo>>(File.ReadAllText(ConnectionsPath));
-
-                if (connections == null)
-                {
-                    connections = new List<ConnectionInfo>();
-                }
+                var connections = NeonHelper.JsonDeserialize<List<ConnectionInfo>>(File.ReadAllText(ConnectionsPath)) ?? 
+                                  new List<ConnectionInfo>();
 
                 // Ensure that at least one connection is marked as default.  We'll
                 // select the first one as sorted by name if necessary.
-
                 if (connections.Count > 0 && !connections.Any(connection => connection.IsDefault))
                 {
-                    connections.OrderBy(connection => connection.Name.ToLowerInvariant()).Single().IsDefault = true;
+                    connections.OrderBy(connection => connection.Name
+                        .ToLowerInvariant())
+                        .Single().IsDefault = true;
                 }
                 
                 return connections;
@@ -340,11 +265,10 @@ namespace RaspberryDebugger
 
             try
             {
-                connections = connections ?? new List<ConnectionInfo>();
+                connections ??= new List<ConnectionInfo>();
 
                 // Ensure that at least one connection is marked as default.  We'll
                 // select the first one as sorted by name if necessary.
-
                 if (connections.Count > 0 && !connections.Any(connection => connection.IsDefault))
                 {
                     connections.OrderBy(connection => connection.Name.ToLowerInvariant()).First().IsDefault = true;
@@ -354,34 +278,9 @@ namespace RaspberryDebugger
             }
             catch (Exception e)
             {
-                if (!disableLogging)
-                {
-                    Log.Exception(e);
-                }
+                if (!disableLogging) Log.Exception(e);
 
                 throw;
-            }
-        }
-
-        /// <summary>
-        /// Updates the Visual Studio user interface.  This is performed asynchronously
-        /// by default which will result in better performance.
-        /// </summary>
-        /// <param name="synchronously">
-        /// Optionally specifies that the update should be performed immediately,
-        /// before the method returns.
-        /// </param>
-        internal static void UpdateVisualStudioUI(bool synchronously = false)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var vsShell = (IVsUIShell)RaspberryDebuggerPackage.GetGlobalService(typeof(IVsUIShell));
-
-            if (vsShell != null)
-            {
-                var hr = vsShell.UpdateCommandUI(synchronously ? 1 : 0);
-
-                Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
             }
         }
 
@@ -418,7 +317,7 @@ namespace RaspberryDebugger
                 }
                 else if (project.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
                 {
-                    startupProject = FindInSubprojects(project, projectName);
+                    startupProject = FindInSubProjects(project, projectName);
                 }
 
                 if (startupProject != null)
@@ -433,7 +332,6 @@ namespace RaspberryDebugger
         /// <summary>
         /// Returns a solution's active project.
         /// </summary>
-        /// <param name="solution">The Visual Studio DTE.</param>
         /// <returns>The active <see cref="Project"/> or <c>null</c> for none.</returns>
         /// <remarks>
         /// <note>
@@ -443,38 +341,17 @@ namespace RaspberryDebugger
         /// document.
         /// </note>
         /// </remarks>
-        public static Project GetActiveProject(DTE2 dte)
+        private static Project GetActiveProject(DTE2 dte)
         {
             Covenant.Requires<ArgumentNullException>(dte != null, nameof(dte));
+            
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var activeSolutionProjects = (Array)dte.ActiveSolutionProjects;
+            var activeSolutionProjects = (Array)dte?.ActiveSolutionProjects;
 
-            if (activeSolutionProjects != null && activeSolutionProjects.Length > 0)
-            {
-                return (Project)activeSolutionProjects.GetValue(0);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a project is capable of being debugged on a Raspberry.
-        /// </summary>
-        /// <param name="solution">The solution.</param>
-        /// <param name="project">The project being tested.</param>
-        /// <returns><c>true</c> when the project may be debugged on a Raspberry.</returns>
-        public static bool IsProjectRaspberryCompatible(Solution solution, Project project)
-        {
-            Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
-            Covenant.Requires<ArgumentNullException>(project != null, nameof(project));
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            var projectProperties = ProjectProperties.CopyFrom(solution, project);
-
-            return projectProperties.IsRaspberryCompatible;
+            return activeSolutionProjects is { Length: > 0 }
+                ? (Project)activeSolutionProjects.GetValue(0)
+                : null;
         }
 
         /// <summary>
@@ -482,7 +359,7 @@ namespace RaspberryDebugger
         /// a Raspberry.  Currently, the project must target .NET Core 3.1 or
         /// greater and be an executable.
         /// </summary>
-        /// <param name="solution">The Visual Studio DTE.</param>
+        /// <param name="dte"></param>
         /// <returns>
         /// <c>true</c> if there's an active project and it satisfies the criterion.
         /// </returns>
@@ -498,18 +375,18 @@ namespace RaspberryDebugger
                 return false;
             }
 
-            var projectProperties = ProjectProperties.CopyFrom(dte.Solution, activeProject);
+            var projectProperties = ProjectProperties.CopyFrom(dte?.Solution, activeProject);
 
             return projectProperties.IsRaspberryCompatible;
         }
 
         /// <summary>
-        /// Searches a project's subprojects for a project matching a path.
+        /// Searches a project's sub project for a project matching a path.
         /// </summary>
         /// <param name="parentProject">The parent project.</param>
         /// <param name="projectName">The desired project name.</param>
         /// <returns>The <see cref="Project"/> or <c>null</c>.</returns>
-        public static Project FindInSubprojects(Project parentProject, string projectName)
+        private static Project FindInSubProjects(Project parentProject, string projectName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -523,24 +400,20 @@ namespace RaspberryDebugger
                 return parentProject;
             }
 
+            if (parentProject.Kind != EnvDTE.Constants.vsProjectKindSolutionItems) return null;
             var project = (Project)null;
 
-            if (parentProject.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
+            // The project is actually a solution folder so recursively
+            // search any sub projects.
+
+            foreach (ProjectItem projectItem in parentProject.ProjectItems)
             {
-                // The project is actually a solution folder so recursively
-                // search any subprojects.
+                if (projectItem.SubProject == null) continue;
+                project = FindInSubProjects(projectItem.SubProject, projectName);
 
-                foreach (ProjectItem projectItem in parentProject.ProjectItems)
+                if (project != null)
                 {
-                    if (projectItem.SubProject != null)
-                    {
-                        project = FindInSubprojects(projectItem.SubProject, projectName);
-
-                        if (project != null)
-                        {
-                            break;
-                        }
-                    }
+                    break;
                 }
             }
 
@@ -554,7 +427,7 @@ namespace RaspberryDebugger
         /// <param name="solutionProjects">The list where discovered projects will be added.</param>
         /// <param name="solution">The parent solution.</param>
         /// <param name="project">The project or solution folder.</param>
-        public static void GetSolutionProjects(List<Project> solutionProjects, Solution solution, Project project)
+        private static void GetSolutionProjects(List<Project> solutionProjects, Solution solution, Project project)
         {
             Covenant.Requires<ArgumentNullException>(solutionProjects != null, nameof(solutionProjects));
             Covenant.Requires<ArgumentNullException>(solution != null, nameof(solution));
@@ -562,7 +435,7 @@ namespace RaspberryDebugger
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (project.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
+            if (project?.Kind == EnvDTE.Constants.vsProjectKindSolutionItems)
             {
                 foreach (ProjectItem projectItem in project.ProjectItems)
                 {
@@ -575,7 +448,7 @@ namespace RaspberryDebugger
 
                 if (projectProperties.IsRaspberryCompatible)
                 {
-                    solutionProjects.Add(project);
+                    solutionProjects?.Add(project);
                 }
             }
         }
@@ -589,10 +462,9 @@ namespace RaspberryDebugger
         private static string GetRaspberryProjectsPath(Solution solution)
         {
             Covenant.Requires<ArgumentNullException>(solution != null);
-
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            return Path.Combine(Path.GetDirectoryName(solution.FullName), ".vs", "raspberry-projects.json");
+            return Path.Combine(Path.GetDirectoryName(solution?.FullName) ?? string.Empty, ".vs", "raspberry-projects.json");
         }
 
         /// <summary>
@@ -609,14 +481,9 @@ namespace RaspberryDebugger
 
             var path = GetRaspberryProjectsPath(solution);
 
-            if (File.Exists(path))
-            {
-                return NeonHelper.JsonDeserialize<RaspberryProjects>(File.ReadAllText(path));
-            }
-            else
-            {
-                return new RaspberryProjects();
-            }
+            return File.Exists(path) 
+                ? NeonHelper.JsonDeserialize<RaspberryProjects>(File.ReadAllText(path)) 
+                : new RaspberryProjects();
         }
 
         /// <summary>
@@ -634,12 +501,14 @@ namespace RaspberryDebugger
             // Prune any projects with GUIDs that are no longer present in
             // the solution so these don't accumulate.  Note that we need to
             // recurse into solution folders to look for any projects there.
-
             var solutionProjects = new List<Project>();
 
-            foreach (Project project in solution.Projects)
+            if (solution?.Projects != null)
             {
-                GetSolutionProjects(solutionProjects, solution, project);
+                foreach (Project project in solution.Projects)
+                {
+                    GetSolutionProjects(solutionProjects, solution, project);
+                }
             }
 
             var solutionProjectIds = new HashSet<string>();
@@ -650,24 +519,20 @@ namespace RaspberryDebugger
                 solutionProjectIds.Add(project.UniqueName);
             }
 
-            foreach (var projectid in projects.Keys)
+            if (projects?.Keys != null)
             {
-                if (!solutionProjectIds.Contains(projectid))
-                {
-                    delList.Add(projectid);
-                }
+                delList.AddRange((projects.Keys).Where(projectId => !solutionProjectIds.Contains(projectId)));
             }
 
             foreach (var projectId in delList)
             {
-                projects.Remove(projectId);
+                projects?.Remove(projectId);
             }
 
             // Write the file, ensuring that the parent directories exist.
-
             var path = GetRaspberryProjectsPath(solution);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path) ?? string.Empty);
             File.WriteAllText(path, NeonHelper.JsonSerialize(projects, Formatting.Indented));
         }
 
@@ -683,20 +548,18 @@ namespace RaspberryDebugger
             Covenant.Requires<ArgumentNullException>(project != null);
 
             ThreadHelper.ThrowIfNotOnUIThread();
-
             var raspberryProjects = ReadRaspberryProjects(solution);
 
-            return raspberryProjects[project.UniqueName];
+            return raspberryProjects[project?.UniqueName];
         }
 
         //---------------------------------------------------------------------
         // Progress related code
+        private const string ProgressCaption = "Raspberry Debugger";
 
-        private const string progressCaption = "Raspberry Debugger";
-
-        private static IVsThreadedWaitDialog2   progressDialog = null;
-        private static Stack<string>            operationStack = new Stack<string>();
-        private static string                   rootDescription;
+        private static IVsThreadedWaitDialog2 _progressDialog;
+        private static readonly Stack<string> OperationStack = new();
+        private static string                 _rootDescription;
 
         /// <summary>
         /// Executes an asynchronous action that does not return a result within the context of a 
@@ -713,41 +576,42 @@ namespace RaspberryDebugger
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (progressDialog == null)
+            if (_progressDialog == null)
             {
-                Covenant.Assert(operationStack.Count == 0);
+                Covenant.Assert(OperationStack.Count == 0);
 
-                rootDescription = description;
-                operationStack.Push(description);
+                _rootDescription = description;
+                OperationStack.Push(description);
 
-                var dialogFactory = (IVsThreadedWaitDialogFactory)RaspberryDebuggerPackage.GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
+                var dialogFactory = (IVsThreadedWaitDialogFactory)Package
+                    .GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
 
-                dialogFactory.CreateInstance(out progressDialog);
+                dialogFactory.CreateInstance(out _progressDialog);
 
-                progressDialog.StartWaitDialog(
-                    szWaitCaption:          progressCaption, 
-                    szWaitMessage:          description,
-                    szProgressText:         null, 
-                    varStatusBmpAnim:       null, 
-                    szStatusBarText:        null, 
-                    iDelayToShowDialog:     0,
-                    fIsCancelable:          false, 
-                    fShowMarqueeProgress:   true);
+                _progressDialog.StartWaitDialog(
+                    szWaitCaption:        ProgressCaption, 
+                    szWaitMessage:        description,
+                    szProgressText:       null, 
+                    varStatusBmpAnim:     null, 
+                    szStatusBarText:      null, 
+                    iDelayToShowDialog:   0,
+                    fIsCancelable:        false, 
+                    fShowMarqueeProgress: true);
             }
             else
             {
-                Covenant.Assert(operationStack.Count > 0);
+                Covenant.Assert(OperationStack.Count > 0);
 
-                operationStack.Push(description);
+                OperationStack.Push(description);
 
-                progressDialog.UpdateProgress(
-                    szUpdatedWaitMessage:   progressCaption,
-                    szProgressText:         description,
-                    szStatusBarText:        null,
-                    iCurrentStep:           0,
-                    iTotalSteps:            0,
-                    fDisableCancel:         true,
-                    pfCanceled:             out var cancelled);
+                _progressDialog.UpdateProgress(
+                    szUpdatedWaitMessage: ProgressCaption,
+                    szProgressText:       description,
+                    szStatusBarText:      null,
+                    iCurrentStep:         0,
+                    iTotalSteps:          0,
+                    fDisableCancel:       true,
+                    pfCanceled:           out _);
             }
 
             var orgCursor = Cursor.Current;
@@ -756,7 +620,7 @@ namespace RaspberryDebugger
             {
                 Cursor.Current = Cursors.WaitCursor;
 
-                await action().ConfigureAwait(false);
+                if (action != null) await action().ConfigureAwait(false);
             }
             finally
             {
@@ -764,25 +628,25 @@ namespace RaspberryDebugger
 
                 Cursor.Current = orgCursor;
 
-                var currentDescription = operationStack.Pop();
+                OperationStack.Pop();
 
-                if (operationStack.Count == 0)
+                if (OperationStack.Count == 0)
                 {
-                    progressDialog.EndWaitDialog(out var cancelled);
+                    _progressDialog.EndWaitDialog(out _);
 
-                    progressDialog  = null;
-                    rootDescription = null;
+                    _progressDialog  = null;
+                    _rootDescription = null;
                 }
                 else
                 {
-                    progressDialog.UpdateProgress(
-                        szUpdatedWaitMessage:   progressCaption,
-                        szProgressText:         description,
-                        szStatusBarText:        null,
-                        iCurrentStep:           0,
-                        iTotalSteps:            0,
-                        fDisableCancel:         true,
-                        pfCanceled:             out var cancelled);
+                    _progressDialog.UpdateProgress(
+                        szUpdatedWaitMessage: ProgressCaption,
+                        szProgressText:       description,
+                        szStatusBarText:      null,
+                        iCurrentStep:         0,
+                        iTotalSteps:          0,
+                        fDisableCancel:       true,
+                        pfCanceled:           out _);
                 }
             }
         }
@@ -803,41 +667,42 @@ namespace RaspberryDebugger
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (progressDialog == null)
+            if (_progressDialog == null)
             {
-                Covenant.Assert(operationStack.Count == 0);
+                Covenant.Assert(OperationStack.Count == 0);
 
-                rootDescription = description;
-                operationStack.Push(description);
+                _rootDescription = description;
+                OperationStack.Push(description);
 
-                var dialogFactory = (IVsThreadedWaitDialogFactory)RaspberryDebuggerPackage.GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
+                var dialogFactory = (IVsThreadedWaitDialogFactory)Package
+                    .GetGlobalService((typeof(SVsThreadedWaitDialogFactory)));
 
-                dialogFactory.CreateInstance(out progressDialog);
+                dialogFactory.CreateInstance(out _progressDialog);
 
-                progressDialog.StartWaitDialog(
-                    szWaitCaption:          progressCaption, 
-                    szWaitMessage:          description,
-                    szProgressText:         null, 
-                    varStatusBmpAnim:       null, 
-                    szStatusBarText:        $"[{LogName}]{description}", 
-                    iDelayToShowDialog:     0,
-                    fIsCancelable:          false, 
-                    fShowMarqueeProgress:   true);
+                _progressDialog.StartWaitDialog(
+                    szWaitCaption:        ProgressCaption, 
+                    szWaitMessage:        description,
+                    szProgressText:       null, 
+                    varStatusBmpAnim:     null, 
+                    szStatusBarText:      $"[{LogName}]{description}", 
+                    iDelayToShowDialog:   0,
+                    fIsCancelable:        false, 
+                    fShowMarqueeProgress: true);
             }
             else
             {
-                Covenant.Assert(operationStack.Count > 0);
+                Covenant.Assert(OperationStack.Count > 0);
 
-                operationStack.Push(description);
+                OperationStack.Push(description);
 
-                progressDialog.UpdateProgress(
-                    szUpdatedWaitMessage:   progressCaption,
-                    szProgressText:         description,
-                    szStatusBarText:        null,
-                    iCurrentStep:           0,
-                    iTotalSteps:            0,
-                    fDisableCancel:         true,
-                    pfCanceled:             out var cancelled);
+                _progressDialog.UpdateProgress(
+                    szUpdatedWaitMessage: ProgressCaption,
+                    szProgressText:       description,
+                    szStatusBarText:      null,
+                    iCurrentStep:         0,
+                    iTotalSteps:          0,
+                    fDisableCancel:       true,
+                    pfCanceled:           out _);
             }
 
             var orgCursor = Cursor.Current;
@@ -845,7 +710,7 @@ namespace RaspberryDebugger
             try
             {
                 Cursor.Current = Cursors.WaitCursor;
-
+                Debug.Assert(action != null, nameof(action) + " != null");
                 return await action().ConfigureAwait(false);
             }
             finally
@@ -854,25 +719,25 @@ namespace RaspberryDebugger
                 
                 Cursor.Current = orgCursor;
 
-                var currentDescription = operationStack.Pop();
+                var currentDescription = OperationStack.Pop();
 
-                if (operationStack.Count == 0)
+                if (OperationStack.Count == 0)
                 {
-                    progressDialog.EndWaitDialog(out var cancelled);
+                    _progressDialog.EndWaitDialog(out _);
 
-                    progressDialog = null;
-                    rootDescription = null;
+                    _progressDialog = null;
+                    _rootDescription = null;
                 }
                 else
                 {
-                    progressDialog.UpdateProgress(
-                        szUpdatedWaitMessage:   currentDescription,
-                        szProgressText:         null,
-                        szStatusBarText:        rootDescription,
-                        iCurrentStep:           0,
-                        iTotalSteps:            0,
-                        fDisableCancel:         true,
-                        pfCanceled:             out var cancelled);
+                    _progressDialog.UpdateProgress(
+                        szUpdatedWaitMessage: currentDescription,
+                        szProgressText:       null,
+                        szStatusBarText:      _rootDescription,
+                        iCurrentStep:         0,
+                        iTotalSteps:          0,
+                        fDisableCancel:       true,
+                        pfCanceled:           out _);
                 }
             }
         }

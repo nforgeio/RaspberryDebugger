@@ -14,22 +14,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.Contracts;
-using System.IO;
-using System.Linq;
-using System.Net;
+using RaspberryDebugger.Models.Sdk;
 
-using Neon.Common;
-using Neon.Net;
-using Neon.SSH;
-
-using Newtonsoft.Json;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Connection
 {
     /// <summary>
     /// Holds information about a .NET Core SDK installed on a Raspberry Pi.
@@ -40,23 +29,23 @@ namespace RaspberryDebugger
         /// Constructor.
         /// </summary>
         /// <param name="name">The SDK name.</param>
-        /// <param name="version">The SDK version.</param>
-        public Sdk(string name, string version)
+        /// <param name="architecture">The SDK bitness architecture.</param>
+        public Sdk(string name, SdkArchitecture architecture = SdkArchitecture.Arm32)
         {
             Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(name), nameof(name));
 
             this.Name    = name;
-            this.Version = version;
+            this.Architecture = architecture;
         }
 
         /// <summary>
         /// Returns the name of the SDK (like <b>3.1.402</b>).
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
-        /// Returns thge version of the SDK (like <b>3.1.8</b>).
+        /// The raspberry pi architecture
         /// </summary>
-        public string Version { get; private set; }
+        public SdkArchitecture Architecture { get; }
     }
 }

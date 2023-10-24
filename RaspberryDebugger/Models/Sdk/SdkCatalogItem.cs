@@ -14,25 +14,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-
-using Neon.Common;
-
 using Newtonsoft.Json;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.Sdk
 {
     /// <summary>
     /// Describes an .NET Core SDK download.
     /// </summary>
     internal class SdkCatalogItem
     {
-        private bool?   isStandAlone;
-
         /// <summary>
         /// The SDK name (like "3.1.402").
         /// </summary>
@@ -40,10 +30,10 @@ namespace RaspberryDebugger
         public string Name { get; set; }
 
         /// <summary>
-        /// The SDK Version (like "3.1.8").
+        /// The SDK Release (like "6.0.301").
         /// </summary>
-        [JsonProperty(PropertyName = "Version", Required = Required.Always)]
-        public string Version { get; set; }
+        [JsonProperty(PropertyName = "Release", Required = Required.Always)]
+        public string Release { get; set; }
 
         /// <summary>
         /// Specifies the 32-bit or 64-bit version of the SDK.
@@ -61,42 +51,23 @@ namespace RaspberryDebugger
         /// The SHA512 hash expected for the download.z
         /// </summary>
         [JsonProperty(PropertyName = "SHA512", Required = Required.Always)]
-        public string SHA512 { get; set; }
+        public string Sha512 { get; set; }
 
         /// <summary>
-        /// Indicates whether the SDK is actually usable or not.  This defaults
-        /// to <c>false</c>.  This is set for some early .NET 5.0 releases
-        /// that didn't work on ARM64.
+        /// SdkCatalog Item Constructor
         /// </summary>
-        [JsonProperty(PropertyName = "Unusable", Required = Required.Default, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
-        [DefaultValue(false)]
-        public bool IsUnusable { get; set; }
-
-        /// <summary>
-        /// Indicates that the SDK is usable.
-        /// </summary>
-        [JsonIgnore]
-        public bool IsUsable => !IsUnusable;
-
-        /// <summary>
-        /// Indicates that this is a standaloneg SDK vs. one integrated into Visual Studio;
-        /// </summary>
-        [JsonIgnore]
-        public bool IsStandalone
+        /// <param name="name">SDK Name </param>
+        /// <param name="release">SDK Release number</param>
+        /// <param name="sdk">SDK type</param>
+        /// <param name="link">Link for download</param>
+        /// <param name="sha512">Checksum for download</param>
+        public SdkCatalogItem(string name, string release, SdkArchitecture sdk, string link, string sha512)
         {
-            get
-            {
-                if (isStandAlone.HasValue)
-                {
-                    return isStandAlone.Value;
-                }
-
-                // Standalone SDKs seem to have name patch versions < 200.
-
-                isStandAlone = SemanticVersion.Parse(Name).Patch < 200;
-
-                return isStandAlone.Value;
-            }
+            Name = name;
+            Architecture = sdk;
+            Release = release;
+            Link = link;
+            Sha512 = sha512;
         }
     }
 }

@@ -16,12 +16,13 @@
 // limitations under the License.
 
 using System;
-using System.Windows.Forms;
-using System.Text;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Windows.Forms;
+// ReSharper disable IdentifierTypo
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Dialogs
 {
     // This class was adapted from:
     //
@@ -117,11 +118,11 @@ namespace RaspberryDebugger
 
         public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 
-        public delegate void TimerProc(IntPtr hWnd, uint uMsg, UIntPtr nIDEvent, uint dwTime);
+        public delegate void TimerProc(IntPtr hWnd, uint uMsg, UIntPtr nIdEvent, uint dwTime);
 
-        public const int WH_CALLWNDPROCRET = 12;
+        public const int WhCallwndprocret = 12;
 
-        public enum CbtHookAction : int
+        public enum CbtHookAction
         {
             HCBT_MOVESIZE = 0,
             HCBT_MINMAX = 1,
@@ -139,13 +140,13 @@ namespace RaspberryDebugger
         private static extern bool GetWindowRect(IntPtr hWnd, ref Rectangle lpRect);
 
         [DllImport("user32.dll")]
-        private static extern int MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+        private static extern int MoveWindow(IntPtr hWnd, int x, int y, int nWidth, int nHeight, bool bRepaint);
 
         [DllImport("User32.dll")]
-        public static extern UIntPtr SetTimer(IntPtr hWnd, UIntPtr nIDEvent, uint uElapse, TimerProc lpTimerFunc);
+        public static extern UIntPtr SetTimer(IntPtr hWnd, UIntPtr nIdEvent, uint uElapse, TimerProc lpTimerFunc);
 
         [DllImport("User32.dll")]
-        public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+        public static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("user32.dll")]
         public static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hInstance, int threadId);
@@ -166,7 +167,7 @@ namespace RaspberryDebugger
         public static extern int EndDialog(IntPtr hDlg, IntPtr nResult);
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CWPRETSTRUCT
+        public struct Cwpretstruct
         {
             public IntPtr   lResult;
             public IntPtr   lParam;
@@ -177,7 +178,7 @@ namespace RaspberryDebugger
 
         static MessageBoxEx()
         {
-            _hookProc = new HookProc(MessageBoxHookProc);
+            _hookProc = MessageBoxHookProc;
             _hHook    = IntPtr.Zero;
         }
 
@@ -191,7 +192,7 @@ namespace RaspberryDebugger
             if (_owner != null)
             {
 #pragma warning disable CS0618
-                _hHook = SetWindowsHookEx(WH_CALLWNDPROCRET, _hookProc, IntPtr.Zero, AppDomain.GetCurrentThreadId());
+                _hHook = SetWindowsHookEx(WhCallwndprocret, _hookProc, IntPtr.Zero, AppDomain.GetCurrentThreadId());
 #pragma warning restore CS0618
             }
         }
@@ -203,7 +204,7 @@ namespace RaspberryDebugger
                 return CallNextHookEx(_hHook, nCode, wParam, lParam);
             }
 
-            CWPRETSTRUCT    msg  = (CWPRETSTRUCT)Marshal.PtrToStructure(lParam, typeof(CWPRETSTRUCT));
+            Cwpretstruct    msg  = (Cwpretstruct)Marshal.PtrToStructure(lParam, typeof(Cwpretstruct));
             IntPtr          hook = _hHook;
 
             if (msg.message == (int)CbtHookAction.HCBT_ACTIVATE)

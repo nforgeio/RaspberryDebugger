@@ -15,31 +15,62 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
-using Newtonsoft.Json;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.Sdk
 {
     /// <summary>
     /// Enumerates the supported ARM architectures.
     /// </summary>
-    internal enum SdkArchitecture
+    public enum SdkArchitecture
     {
         /// <summary>
         /// 32-bit ARM
         /// </summary>
-        [EnumMember(Value = "ARM32")]
-        ARM32,
+        [EnumMember(Value = "Arm32")]
+        Arm32,
 
         /// <summary>
         /// 64-bit ARM
         /// </summary>
-        [EnumMember(Value = "ARM64")]
-        ARM64
+        [EnumMember(Value = "Arm64")]
+        Arm64,
+
+        /// <summary>
+        /// unknown 
+        /// </summary>
+        [EnumMember(Value = "Unknown")]
+        Unknown
+    }
+
+    /// <summary>
+    /// Enumerates the supported architecture bitness.
+    /// </summary>
+    public enum Platform
+    {
+        /// <summary>
+        /// 32-bit ARM
+        /// </summary>
+        [EnumMember(Value = "32")]
+        Bitness32,
+
+        /// <summary>
+        /// 64-bit ARM
+        /// </summary>
+        [EnumMember(Value = "64")]
+        Bitness64
+    }
+
+    /// <summary>
+    /// OperatingSystem bitness
+    /// </summary>
+    public static class OperatingSystem
+    {
+        public static List<string> Bitness32 { get; private set; } = 
+            new List<string>(new []{"armv3", "armv7"});
+
+        public static List<string> Bitness64 { get; private set; } = 
+            new List<string>(new []{"armv8", "aarch64"});
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace RaspberryDebugger
+﻿namespace RaspberryDebugger.Dialogs
 {
     partial class SettingsDialog
     {
@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsDialog));
             this.targetLabel = new System.Windows.Forms.Label();
             this.targetComboBox = new System.Windows.Forms.ComboBox();
@@ -36,12 +37,16 @@
             this.instructionsTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.targetGroup = new System.Windows.Forms.TextBox();
+            this.webServerProxyLabel = new System.Windows.Forms.Label();
+            this.webServerProxyCheck = new System.Windows.Forms.CheckBox();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.groupBox = new System.Windows.Forms.GroupBox();
             this.SuspendLayout();
             // 
             // targetLabel
             // 
             this.targetLabel.AutoSize = true;
-            this.targetLabel.Location = new System.Drawing.Point(12, 17);
+            this.targetLabel.Location = new System.Drawing.Point(13, 17);
             this.targetLabel.Name = "targetLabel";
             this.targetLabel.Size = new System.Drawing.Size(92, 13);
             this.targetLabel.TabIndex = 1;
@@ -50,14 +55,14 @@
             // targetComboBox
             // 
             this.targetComboBox.FormattingEnabled = true;
-            this.targetComboBox.Location = new System.Drawing.Point(106, 14);
+            this.targetComboBox.Location = new System.Drawing.Point(110, 14);
             this.targetComboBox.Name = "targetComboBox";
-            this.targetComboBox.Size = new System.Drawing.Size(239, 21);
+            this.targetComboBox.Size = new System.Drawing.Size(267, 21);
             this.targetComboBox.TabIndex = 2;
             // 
             // okButton
             // 
-            this.okButton.Location = new System.Drawing.Point(363, 13);
+            this.okButton.Location = new System.Drawing.Point(395, 13);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
             this.okButton.TabIndex = 6;
@@ -68,7 +73,7 @@
             // cancelButton
             // 
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(363, 44);
+            this.cancelButton.Location = new System.Drawing.Point(395, 44);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 7;
@@ -78,18 +83,18 @@
             // 
             // instructionsTextBox
             // 
-            this.instructionsTextBox.Location = new System.Drawing.Point(15, 86);
+            this.instructionsTextBox.Location = new System.Drawing.Point(16, 121);
             this.instructionsTextBox.Multiline = true;
             this.instructionsTextBox.Name = "instructionsTextBox";
             this.instructionsTextBox.ReadOnly = true;
-            this.instructionsTextBox.Size = new System.Drawing.Size(330, 85);
+            this.instructionsTextBox.Size = new System.Drawing.Size(454, 102);
             this.instructionsTextBox.TabIndex = 5;
             this.instructionsTextBox.Text = resources.GetString("instructionsTextBox.Text");
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(30, 49);
+            this.label1.Location = new System.Drawing.Point(32, 48);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(73, 13);
             this.label1.TabIndex = 3;
@@ -97,10 +102,42 @@
             // 
             // targetGroup
             // 
-            this.targetGroup.Location = new System.Drawing.Point(106, 46);
+            this.targetGroup.Location = new System.Drawing.Point(110, 44);
             this.targetGroup.Name = "targetGroup";
             this.targetGroup.Size = new System.Drawing.Size(100, 20);
             this.targetGroup.TabIndex = 4;
+            // 
+            // webServerProxyLabel
+            // 
+            this.webServerProxyLabel.AutoSize = true;
+            this.webServerProxyLabel.Location = new System.Drawing.Point(46, 91);
+            this.webServerProxyLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.webServerProxyLabel.Name = "webServerProxyLabel";
+            this.webServerProxyLabel.Size = new System.Drawing.Size(58, 13);
+            this.webServerProxyLabel.TabIndex = 8;
+            this.webServerProxyLabel.Text = "Use Proxy:";
+            this.toolTip.SetToolTip(this.webServerProxyLabel, "Use an own configured proxy for Asp.NET");
+            // 
+            // webServerProxyCheck
+            // 
+            this.webServerProxyCheck.AutoSize = true;
+            this.webServerProxyCheck.Location = new System.Drawing.Point(110, 92);
+            this.webServerProxyCheck.Margin = new System.Windows.Forms.Padding(2);
+            this.webServerProxyCheck.Name = "webServerProxyCheck";
+            this.webServerProxyCheck.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.webServerProxyCheck.Size = new System.Drawing.Size(15, 14);
+            this.webServerProxyCheck.TabIndex = 9;
+            this.toolTip.SetToolTip(this.webServerProxyCheck, "Use an own configured proxy for Asp.NET");
+            this.webServerProxyCheck.UseVisualStyleBackColor = true;
+            // 
+            // groupBox
+            // 
+            this.groupBox.Location = new System.Drawing.Point(15, 71);
+            this.groupBox.Name = "groupBox";
+            this.groupBox.Size = new System.Drawing.Size(455, 44);
+            this.groupBox.TabIndex = 10;
+            this.groupBox.TabStop = false;
+            this.groupBox.Text = "Asp.NET solution/project only setting";
             // 
             // SettingsDialog
             // 
@@ -108,7 +145,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(450, 187);
+            this.ClientSize = new System.Drawing.Size(482, 235);
+            this.Controls.Add(this.webServerProxyCheck);
+            this.Controls.Add(this.webServerProxyLabel);
             this.Controls.Add(this.targetGroup);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.instructionsTextBox);
@@ -116,6 +155,7 @@
             this.Controls.Add(this.okButton);
             this.Controls.Add(this.targetComboBox);
             this.Controls.Add(this.targetLabel);
+            this.Controls.Add(this.groupBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -137,5 +177,9 @@
         private System.Windows.Forms.TextBox instructionsTextBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox targetGroup;
+        private System.Windows.Forms.Label webServerProxyLabel;
+        private System.Windows.Forms.CheckBox webServerProxyCheck;
+        private System.Windows.Forms.ToolTip toolTip;
+        private System.Windows.Forms.GroupBox groupBox;
     }
 }

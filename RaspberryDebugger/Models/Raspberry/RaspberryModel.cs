@@ -14,18 +14,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-
 using Newtonsoft.Json;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.Raspberry
 {
     /// <summary>
-    /// Describes a specific Raspberry board as described <a href="https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md">here</a>.
+    /// Describes a specific Raspberry board as described
+    /// <a href="https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md">here</a>.
     /// </summary>
     internal class RaspberryModel
     {

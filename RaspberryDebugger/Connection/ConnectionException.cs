@@ -14,21 +14,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics.Contracts;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-
-using Neon.Common;
-using Neon.Net;
 using Neon.SSH;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Connection
 {
     /// <summary>
     /// Used to report connection issues.
@@ -44,10 +33,9 @@ namespace RaspberryDebugger
         /// <param name="connection">The offending connection.</param>
         /// <param name="error">The error message.</param>
         /// <returns>The exception message.</returns>
-        private static string GetMessage(Connection connection, string error)
+        private static string GetMessage(LinuxSshProxy connection, string error)
         {
             var name = connection?.Name ?? "????";
-            
             error = error ?? "unspecified error";
 
             return $"[{name}]: {error}";

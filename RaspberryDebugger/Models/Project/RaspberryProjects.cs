@@ -14,17 +14,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
 
-using Newtonsoft.Json;
-
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Models.Project
 {
     /// <summary>
     /// Holds the Raspberry related settings for projects in a solution.  This is
@@ -39,30 +31,29 @@ namespace RaspberryDebugger
         /// <summary>
         /// Accesses the project settings for a project based on its GUID.
         /// </summary>
-        /// <param name="projectUnqueName">The project's unique name.</param>
+        /// <param name="projectUniqueName">The project's unique name.</param>
         /// <returns>
         /// The <see cref="ProjectSettings"/> for the project, initializing default 
         /// (disabled) settings if when the project doesn't exist.
         /// </returns>
-        public new ProjectSettings this[string projectUnqueName]
+        public new ProjectSettings this[string projectUniqueName]
         {
             get
             {
-                if (base.TryGetValue(projectUnqueName, out var settings))
+                if (TryGetValue(projectUniqueName, out var settings))
                 {
                     return settings;
                 }
                 else
                 {
                     settings = new ProjectSettings();
-
-                    this[projectUnqueName] = settings;
+                    this[projectUniqueName] = settings;
 
                     return settings;
                 }
             }
 
-            set => base[projectUnqueName] = value;
+            set => base[projectUniqueName] = value;
         }
     }
 }

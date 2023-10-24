@@ -14,25 +14,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
 using EnvDTE;
 using EnvDTE80;
-
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-
-using Neon.Common;
-using Neon.Diagnostics;
-
+using RaspberryDebugger.Commands;
+using RaspberryDebugger.Models.Project;
+using RaspberryDebugger.Models.VisualStudio;
+using RaspberryDebugger.OptionsPages;
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger
@@ -41,7 +37,6 @@ namespace RaspberryDebugger
     /// Implements a VSIX package that automates debugging C# .NET Core applications remotely
     /// on Raspberry Pi OS.
     /// </summary>
-    /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
@@ -57,7 +52,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// Unique package ID.
         /// </summary>
-        public const string PackageGuidString = "fed3a92c-c8e2-40a3-a38f-ce7d35088ea5";
+        private const string PackageGuidString = "fed3a92c-c8e2-40a3-a38f-ce7d35088ea5";
 
         /// <summary>
         /// Command set ID for the package.
@@ -70,9 +65,9 @@ namespace RaspberryDebugger
         public const int DebugStartWithoutDebuggingCommandId = 0x0201;
         public const int DebugAttachToProcessCommandId = 0x0202;
 
-        private static object debugSyncLock = new object();
-        private static IVsOutputWindowPane debugPane = null;
-        private static Queue<string> debugLogQueue = new Queue<string>();
+        private static IVsOutputWindowPane _debugPane;
+        private static readonly object DebugSyncLock = new object();
+        private static readonly Queue<string> DebugLogQueue = new Queue<string>();
 
         /// <summary>
         /// Returns the package instance.
@@ -85,15 +80,8 @@ namespace RaspberryDebugger
         /// <param name="text">The output text.</param>
         public static void Log(string text)
         {
-            if (Instance == null || debugPane == null)
-            {
-                return;     // Logging hasn't been initialized yet.
-            }
-
-            if (string.IsNullOrEmpty(text))
-            {
-                return;     // Nothing to log
-            }
+            if (Instance == null || _debugPane == null) return;     // Logging hasn't been initialized yet.
+            if (string.IsNullOrEmpty(text)) return;                 // Nothing to log
 
             // We're going to queue log messages in the current thread and 
             // then execute a fire-and-forget action on the UI thread to
@@ -105,32 +93,31 @@ namespace RaspberryDebugger
             // happens on the UI thread in addition to not using a 
             // [Task.Run(...).Wait()] which would probably result in
             // background thread exhaustion.
-
-            lock (debugSyncLock)
+            lock (DebugSyncLock)
             {
-                debugLogQueue.Enqueue(text);
+                DebugLogQueue.Enqueue(text);
             }
 
-            Instance.JoinableTaskFactory.RunAsync(
+            _ = Instance.JoinableTaskFactory.RunAsync(
                 async () =>
                 {
                     await Task.Yield();     // Get off of the callers stack
                     await Instance.JoinableTaskFactory.SwitchToMainThreadAsync(Instance.DisposalToken);
 
-                    lock (debugSyncLock)
+                    lock (DebugSyncLock)
                     {
-                        if (debugLogQueue.Count == 0)
+                        if (DebugLogQueue.Count == 0)
                         {
                             return;     // Nothing to do
                         }
 
-                        debugPane.Activate();
+                        _debugPane.Activate();
 
                         // Log any queued messages.
 
-                        while (debugLogQueue.Count > 0)
+                        while (DebugLogQueue.Count > 0)
                         {
-                            debugPane.OutputString(debugLogQueue.Dequeue());
+                            _ = _debugPane.OutputStringThreadSafe(DebugLogQueue.Dequeue());
                         }
                     }
                 });
@@ -144,7 +131,9 @@ namespace RaspberryDebugger
         private CommandEvents debugStartWithoutDebuggingCommandEvent;
         private CommandEvents debugAttachToProcessCommandEvent;
         private CommandEvents debugRestartCommandEvent;
-        private bool debugMode = false;
+#pragma warning disable IDE0051 // Remove unused private members
+        private readonly bool debugMode = false;
+#pragma warning restore IDE0051 // Remove unused private members
 
         /// <summary>
         /// Initializes the package.
@@ -174,17 +163,15 @@ namespace RaspberryDebugger
             }
 
             // Initialize the log panel.
-
             var debugWindow     = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
             var generalPaneGuid = VSConstants.GUID_OutWindowDebugPane;
 
-            debugWindow.GetPane(ref generalPaneGuid, out debugPane);
+            debugWindow?.GetPane(ref generalPaneGuid, out _debugPane);
 
             // Intercept the debugger commands and quickly decide whether the startup project is enabled
             // for Raspberry remote debugging so we can invoke our custom commands instead.  We'll just
             // let the default command implementations do their thing when we're not doing Raspberry
             // debugging.
-
             debugStartCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0127];
             debugStartWithoutDebuggingCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0170];
             debugAttachToProcessCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x00d5];
@@ -196,7 +183,6 @@ namespace RaspberryDebugger
             debugRestartCommandEvent.BeforeExecute += DebugRestartCommandEvent_BeforeExecute;
 
             // Initialize the new commands.
-
             await SettingsCommand.InitializeAsync(this);
             await DebugStartCommand.InitializeAsync(this);
             await DebugStartWithoutDebuggingCommand.InitializeAsync(this);
@@ -222,17 +208,15 @@ namespace RaspberryDebugger
         /// </summary>
         /// <param name="commandSet">The command set GUID.</param>
         /// <param name="commandId">The command ID.</param>
-        /// <param name="arg">Optionall command argument.</param>
+        /// <param name="arg">Argument</param>
         /// <returns>The command result.</returns>
-        private object ExecuteCommand(Guid commandSet, int commandId, object arg = null)
+        private void ExecuteCommand(Guid commandSet, int commandId, object arg = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var result = (object)null;
 
             dte.Commands.Raise(commandSet.ToString(), commandId, ref arg, ref result);
-
-            return result;
         }
 
         /// <summary>
@@ -282,7 +266,7 @@ namespace RaspberryDebugger
         /// <summary>
         /// Debug.Start
         /// </summary>
-        private void DebugStartCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        private void DebugStartCommandEvent_BeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -298,14 +282,14 @@ namespace RaspberryDebugger
                 return;
             }
 
-            CancelDefault = true;
+            cancelDefault = true;
             ExecuteCommand(DebugStartCommand.CommandSet, DebugStartCommand.CommandId); 
         }
 
         /// <summary>
         /// Debug.StartWithoutDebugging
         /// </summary>
-        private void DebugStartWithoutDebuggingCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        private void DebugStartWithoutDebuggingCommandEvent_BeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -316,14 +300,14 @@ namespace RaspberryDebugger
                 return;
             }
 
-            CancelDefault = true;
+            cancelDefault = true;
             ExecuteCommand(DebugStartWithoutDebuggingCommand.CommandSet, DebugStartWithoutDebuggingCommand.CommandId);
         }
 
         /// <summary>
         /// Debug.AttachToProcess
         /// </summary>
-        private void AttachToProcessCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        private void AttachToProcessCommandEvent_BeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -334,14 +318,14 @@ namespace RaspberryDebugger
                 return;
             }
 
-            CancelDefault = true;
+            cancelDefault = true;
             ExecuteCommand(DebugAttachToProcessCommand.CommandSet, DebugAttachToProcessCommand.CommandId);
         }
 
         /// <summary>
         /// Debug.Restart
         /// </summary>
-        private void DebugRestartCommandEvent_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        private void DebugRestartCommandEvent_BeforeExecute(string guid, int id, object customIn, object customOut, ref bool cancelDefault)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -352,7 +336,7 @@ namespace RaspberryDebugger
                 return;
             }
 
-            CancelDefault = true;
+            cancelDefault = true;
             ExecuteCommand(DebugAttachToProcessCommand.CommandSet, DebugAttachToProcessCommand.CommandId);
         }
     }

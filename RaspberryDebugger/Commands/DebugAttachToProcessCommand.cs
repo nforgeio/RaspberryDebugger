@@ -16,39 +16,24 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-
-using EnvDTE;
-using EnvDTE80;
-
-using Neon.Common;
-using Neon.IO;
-using Neon.Windows;
-
-using Newtonsoft.Json.Linq;
-
+using RaspberryDebugger.Dialogs;
 using Task = System.Threading.Tasks.Task;
 
-namespace RaspberryDebugger
+namespace RaspberryDebugger.Commands
 {
     /// <summary>
     /// Handles the <b>Attach to Process...</b> command for Raspberry enabled projects.
     /// </summary>
     internal sealed class DebugAttachToProcessCommand
     {
-        private DTE2    dte;
+        // ReSharper disable once NotAccessedField.Local
+        private readonly DTE2 dte;
 
         /// <summary>
         /// Command ID.
@@ -81,21 +66,23 @@ namespace RaspberryDebugger
             this.package = package;
             this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
-            var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem      = new MenuCommand(this.Execute, menuCommandID);
+            var menuCommandId = new CommandID(CommandSet, CommandId);
+            var menuItem      = new MenuCommand(this.Execute, menuCommandId);
              
-            commandService.AddCommand(menuItem);
+            commandService?.AddCommand(menuItem);
         }
 
         /// <summary>
         /// Returns the command instance.
         /// </summary>
-        public static DebugAttachToProcessCommand Instance { get; private set; }
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        private static DebugAttachToProcessCommand Instance { get; set; }
 
         /// <summary>
         /// Gets the service provider from the owner package.
         /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider => this.package;
+        // ReSharper disable once UnusedMember.Local
+        private IAsyncServiceProvider ServiceProvider => this.package;
 
         /// <summary>
         /// Initializes the singleton instance of the command.
@@ -104,9 +91,7 @@ namespace RaspberryDebugger
         public static async Task InitializeAsync(AsyncPackage package)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
-
             var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
-
             DebugAttachToProcessCommand.Instance = new DebugAttachToProcessCommand(package, commandService);
         }
 
