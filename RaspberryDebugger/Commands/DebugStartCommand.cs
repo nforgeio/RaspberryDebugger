@@ -246,7 +246,7 @@ fi
         }
 
         /// <summary>
-        /// Creates the temporary launch settings file we'll use starting <b>vsdbg</b> on
+        /// Creates the temporary launch settings file we'll use for starting <b>vsdbg</b> on
         /// the Raspberry for this command.
         /// </summary>
         /// <param name="connectionInfo">The connection information.</param>
