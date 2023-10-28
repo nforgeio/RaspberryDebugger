@@ -22,18 +22,24 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using EnvDTE;
 using EnvDTE80;
+
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+
 using Neon.Common;
 using Neon.IO;
 using Neon.SSH;
+
 using Newtonsoft.Json.Linq;
+
 using RaspberryDebugger.Extensions;
 using RaspberryDebugger.Models.Connection;
 using RaspberryDebugger.Models.Project;
 using RaspberryDebugger.Models.VisualStudio;
+
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger.Commands

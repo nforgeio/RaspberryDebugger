@@ -19,10 +19,14 @@ using System;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
 using System.Windows.Forms;
+
 using EnvDTE80;
+
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+
 using RaspberryDebugger.Dialogs;
+
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger.Commands

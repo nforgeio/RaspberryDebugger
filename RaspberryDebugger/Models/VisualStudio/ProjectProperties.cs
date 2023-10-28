@@ -15,18 +15,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ReSharper disable UnusedAutoPropertyAccessor.Local
-using EnvDTE;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell;
-using Neon.Common;
-using Neon.Net;
-using Newtonsoft.Json.Linq;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+
+using EnvDTE;
+
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+
+using Neon.Common;
+using Neon.Net;
+
+using Newtonsoft.Json.Linq;
 
 namespace RaspberryDebugger.Models.VisualStudio
 {

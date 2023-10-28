@@ -14,6 +14,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -22,13 +23,16 @@ using System.Threading;
 
 using EnvDTE;
 using EnvDTE80;
+
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+
 using RaspberryDebugger.Commands;
 using RaspberryDebugger.Models.Project;
 using RaspberryDebugger.Models.VisualStudio;
 using RaspberryDebugger.OptionsPages;
+
 using Task = System.Threading.Tasks.Task;
 
 namespace RaspberryDebugger

@@ -5,19 +5,25 @@
         <DisplayName>Raspberry Debugger</DisplayName>
         <Description xml:space="preserve">The Raspberry Debugger extension provides an easy way to debug applications on a real Raspberry Pi using Visual Studio 2022.
 Supporting 32 and 64 bit raspbian operating system versions.
-Raspberry Debugger forked from nforgeio/RaspberryDebugger</Description>
+</Description>
         <MoreInfo>https://github.com/StanDeMan/RaspberryDebugger</MoreInfo>
         <License>license.txt</License>
         <GettingStartedGuide>https://github.com/StanDeMan/RaspberryDebugger</GettingStartedGuide>
         <ReleaseNotes>https://github.com/StanDeMan/RaspberryDebugger</ReleaseNotes>
         <Icon>packageicon.png</Icon>
-        <Tags>raspberry pi debugger for visual studio 2022</Tags>
+        <Tags>raspberry pi debugger visual studio 2022</Tags>
     </Metadata>
     <Installation>
-        <InstallationTarget Version="[17.4,18.0)" Id="Microsoft.VisualStudio.Community">
+        <InstallationTarget  Version="[17.0, 18.0)" Id="Microsoft.VisualStudio.Community">
             <ProductArchitecture>amd64</ProductArchitecture>
         </InstallationTarget>
         <InstallationTarget Version="[17.4,18.0)" Id="Microsoft.VisualStudio.Pro">
+            <ProductArchitecture>amd64</ProductArchitecture>
+        </InstallationTarget>
+        <InstallationTarget Version="[17.4,18.0)" Id="Microsoft.VisualStudio.Premium">
+            <ProductArchitecture>amd64</ProductArchitecture>
+        </InstallationTarget>
+        <InstallationTarget Version="[17.4,18.0)" Id="Microsoft.VisualStudio.Ultimate">
             <ProductArchitecture>amd64</ProductArchitecture>
         </InstallationTarget>
     </Installation>

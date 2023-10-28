@@ -18,12 +18,15 @@
 using System;
 using System.ComponentModel.Design;
 using System.Diagnostics.Contracts;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using EnvDTE80;
+
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+
 using RaspberryDebugger.Dialogs;
-using System.Threading.Tasks;
 
 namespace RaspberryDebugger.Commands
 {
