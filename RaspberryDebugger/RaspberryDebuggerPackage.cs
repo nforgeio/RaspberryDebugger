@@ -64,14 +64,15 @@ namespace RaspberryDebugger
         public static readonly Guid CommandSet = new Guid("3e88353d-7372-44fb-a34f-502ec7453200");
 
         // Command IDs:
-        public const int SettingsCommandId = 0x0100;
-        public const int DebugStartCommandId = 0x0200;
-        public const int DebugStartWithoutDebuggingCommandId = 0x0201;
-        public const int DebugAttachToProcessCommandId = 0x0202;
 
-        private static IVsOutputWindowPane _debugPane;
-        private static readonly object DebugSyncLock = new object();
-        private static readonly Queue<string> DebugLogQueue = new Queue<string>();
+        public const int SettingsCommandId                   = 0x0100;
+        public const int DebugStartCommandId                 = 0x0200;
+        public const int DebugStartWithoutDebuggingCommandId = 0x0201;
+        public const int DebugAttachToProcessCommandId       = 0x0202;
+
+        private static IVsOutputWindowPane      _debugPane;
+        private static readonly object          DebugSyncLock = new object();
+        private static readonly Queue<string>   DebugLogQueue = new Queue<string>();
 
         /// <summary>
         /// Returns the package instance.
@@ -84,8 +85,15 @@ namespace RaspberryDebugger
         /// <param name="text">The output text.</param>
         public static void Log(string text)
         {
-            if (Instance == null || _debugPane == null) return;     // Logging hasn't been initialized yet.
-            if (string.IsNullOrEmpty(text)) return;                 // Nothing to log
+            if (Instance == null || _debugPane == null)
+            {
+                return;     // Logging hasn't been initialized yet.
+            }
+
+            if (string.IsNullOrEmpty(text))
+            {
+                return;     // Nothing to log
+            }
 
             // We're going to queue log messages in the current thread and 
             // then execute a fire-and-forget action on the UI thread to
@@ -97,6 +105,7 @@ namespace RaspberryDebugger
             // happens on the UI thread in addition to not using a 
             // [Task.Run(...).Wait()] which would probably result in
             // background thread exhaustion.
+
             lock (DebugSyncLock)
             {
                 DebugLogQueue.Enqueue(text);
@@ -130,13 +139,13 @@ namespace RaspberryDebugger
         //---------------------------------------------------------------------
         // Instance members
 
-        private DTE2 dte;
-        private CommandEvents debugStartCommandEvent;
-        private CommandEvents debugStartWithoutDebuggingCommandEvent;
-        private CommandEvents debugAttachToProcessCommandEvent;
-        private CommandEvents debugRestartCommandEvent;
+        private DTE2            dte;
+        private CommandEvents   debugStartCommandEvent;
+        private CommandEvents   debugStartWithoutDebuggingCommandEvent;
+        private CommandEvents   debugAttachToProcessCommandEvent;
+        private CommandEvents   debugRestartCommandEvent;
 #pragma warning disable IDE0051 // Remove unused private members
-        private readonly bool debugMode = false;
+        private readonly bool   debugMode = false;
 #pragma warning restore IDE0051 // Remove unused private members
 
         /// <summary>
@@ -167,6 +176,7 @@ namespace RaspberryDebugger
             }
 
             // Initialize the log panel.
+
             var debugWindow     = Package.GetGlobalService(typeof(SVsOutputWindow)) as IVsOutputWindow;
             var generalPaneGuid = VSConstants.GUID_OutWindowDebugPane;
 
@@ -176,17 +186,19 @@ namespace RaspberryDebugger
             // for Raspberry remote debugging so we can invoke our custom commands instead.  We'll just
             // let the default command implementations do their thing when we're not doing Raspberry
             // debugging.
-            debugStartCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0127];
-            debugStartWithoutDebuggingCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0170];
-            debugAttachToProcessCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x00d5];
-            debugRestartCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0128];
 
-            debugStartCommandEvent.BeforeExecute += DebugStartCommandEvent_BeforeExecute;
+            debugStartCommandEvent                 = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0127];
+            debugStartWithoutDebuggingCommandEvent = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0170];
+            debugAttachToProcessCommandEvent       = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x00d5];
+            debugRestartCommandEvent               = dte.Events.CommandEvents["{5EFC7975-14BC-11CF-9B2B-00AA00573819}", 0x0128];
+
+            debugStartCommandEvent.BeforeExecute                 += DebugStartCommandEvent_BeforeExecute;
             debugStartWithoutDebuggingCommandEvent.BeforeExecute += DebugStartWithoutDebuggingCommandEvent_BeforeExecute;
-            debugAttachToProcessCommandEvent.BeforeExecute += AttachToProcessCommandEvent_BeforeExecute;
-            debugRestartCommandEvent.BeforeExecute += DebugRestartCommandEvent_BeforeExecute;
+            debugAttachToProcessCommandEvent.BeforeExecute       += AttachToProcessCommandEvent_BeforeExecute;
+            debugRestartCommandEvent.BeforeExecute               += DebugRestartCommandEvent_BeforeExecute;
 
             // Initialize the new commands.
+
             await SettingsCommand.InitializeAsync(this);
             await DebugStartCommand.InitializeAsync(this);
             await DebugStartWithoutDebuggingCommand.InitializeAsync(this);

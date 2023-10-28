@@ -72,7 +72,7 @@ namespace RaspberryDebugger.Commands
 
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            this.dte     = (DTE2)Package.GetGlobalService(typeof(SDTE));
+            dte = (DTE2)Package.GetGlobalService(typeof(SDTE));
 
             var menuCommandId = new CommandID(CommandSet, CommandId);
             var menuItem      = new MenuCommand(Execute, menuCommandId);
@@ -98,7 +98,7 @@ namespace RaspberryDebugger.Commands
 
             var commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
 
-            DebugStartCommand.Instance = new DebugStartCommand(package, commandService);
+            Instance = new DebugStartCommand(package, commandService);
         }
 
         /// <summary>
@@ -143,7 +143,9 @@ namespace RaspberryDebugger.Commands
             }
 
             var projectSettings = PackageHelper.GetProjectSettings(dte.Solution, project);
+
             // Establish a Raspberry connection to handle some things before we start the debugger.
+
             var connection = await DebugHelper.InitializeConnectionAsync(
                 connectionInfo, 
                 projectProperties, 
@@ -157,6 +159,7 @@ namespace RaspberryDebugger.Commands
             using (connection)
             {
                 // Generate a temporary [launch.json] file and launch the debugger.
+
                 using (var tempFile = await CreateLaunchSettingsAsync(connectionInfo, projectProperties, projectSettings))
                 {
                     try
@@ -172,13 +175,15 @@ namespace RaspberryDebugger.Commands
                 // Launch the browser for ASPNET apps if requested.  Note that we're going to do this
                 // on a background task to poll the Raspberry, waiting for the app to create the create
                 // the LISTENING socket.
+
                 if (!projectProperties.IsAspNet || !projectProperties.AspLaunchBrowser)
                     return;
                 
-                var launchReady = false;
+                var launchReady    = false;
                 var foundWebServer = WebServer.None;
 
-                await NeonHelper.WaitForAsync(async () =>
+                await NeonHelper.WaitForAsync(
+                    async () =>
                     {
                         // The developer must have stopped debugging before the 
                         // ASPNET application was able to begin servicing requests.
@@ -192,11 +197,13 @@ namespace RaspberryDebugger.Commands
                                     await SearchForRunningWebServerAsync(projectProperties, projectSettings, connection);
 
                                 // web server not found
+
                                 if (!found) return false;
 
                                 // take the found web server
+
                                 foundWebServer = webServer;
-                                launchReady = true;
+                                launchReady    = true;
 
                                 return true;
                             }
@@ -206,7 +213,7 @@ namespace RaspberryDebugger.Commands
                             }
                         }
                     },
-                    timeout: TimeSpan.FromSeconds(60),
+                    timeout:      TimeSpan.FromSeconds(60),
                     pollInterval: TimeSpan.FromSeconds(0.5));
 
                 if (!launchReady) return;
@@ -221,13 +228,12 @@ namespace RaspberryDebugger.Commands
         /// <param name="projectProperties">Related project properties</param>
         /// <param name="foundWebServer">Active WebServer: Kestrel or Other (NGiNX, Apache, etc.)</param>
         /// <param name="connection">LinuxSshProxy connection</param>
-        private static void OpenWebBrowser(
-            ProjectProperties projectProperties, 
-            WebServer foundWebServer, 
-            LinuxSshProxy connection)
+        private static void OpenWebBrowser(ProjectProperties projectProperties, WebServer foundWebServer, LinuxSshProxy connection)
         {
             // only '/' present or full relative uri
+
             const int fullRelativeUri = 2;
+
             var baseUri = $"http://{connection.Name}.local";
 
             var relativeBrowserUri = projectProperties.AspRelativeBrowserUri.FirstOrDefault() == '/'
@@ -264,12 +270,14 @@ namespace RaspberryDebugger.Commands
         /// <param name="projectSettings"></param>
         /// <param name="connection">LinuxSshProxy</param>
         /// <returns>true if running</returns>
-        private static async Task<(bool, WebServer)> SearchForRunningWebServerAsync(ProjectProperties projectProperties,
-            ProjectSettings projectSettings,
-            LinuxSshProxy connection)
+        private static async Task<(bool, WebServer)> SearchForRunningWebServerAsync(
+            ProjectProperties   projectProperties,
+            ProjectSettings     projectSettings,
+            LinuxSshProxy       connection)
         {
             // Wait just a bit longer to give the application a 
             // chance to perform any additional initialization.
+
             await Task.Delay(TimeSpan.FromMilliseconds(125));
 
             return projectSettings.UseWebServerProxy
@@ -285,8 +293,9 @@ namespace RaspberryDebugger.Commands
         /// <param name="projectProperties">The project properties.</param>
         /// <param name="projectSettings"></param>
         /// <returns>The <see cref="TempFile"/> referencing the created launch file.</returns>
-        private async Task<TempFile> CreateLaunchSettingsAsync(ConnectionInfo connectionInfo,
-            ProjectProperties projectProperties, ProjectSettings projectSettings)
+        private async Task<TempFile> CreateLaunchSettingsAsync(
+            ConnectionInfo                                          connectionInfo,
+            ProjectProperties projectProperties, ProjectSettings    projectSettings)
         {
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
             Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
@@ -308,6 +317,7 @@ namespace RaspberryDebugger.Commands
             //
             // This means that we need add [program.dll] as the first argument, followed 
             // by the program arguments.
+
             var args = new JArray
             {
                 LinuxPath.Combine(debugFolder, projectProperties?.AssemblyName + ".dll")
@@ -335,6 +345,7 @@ namespace RaspberryDebugger.Commands
             // to [http://0.0.0.0:PORT] so that the app running on the Raspberry will
             // be reachable from the development workstation.  Note that we don't
             // support HTTPS at this time.
+
             if (projectProperties?.IsAspNet == true)
             {
                 if (projectSettings.UseWebServerProxy)
