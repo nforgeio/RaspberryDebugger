@@ -111,7 +111,7 @@
       <IDSymbol name="DebugAttachToProcessCommandId" value="0x0202" />
     </GuidSymbol>
 
-    <GuidSymbol name="RaspberryImagesGuid" value="{6D6A228C-B30A-40DE-B8C5-AA8A5EC590DA}" >
+    <GuidSymbol name="RaspberryImagesGuid" value="{6d6a228c-b30a-40de-b8c5-aa8a5ec590da}" >
       <IDSymbol name="RaspberryImageId" value="1" />
     </GuidSymbol>
   </Symbols>
