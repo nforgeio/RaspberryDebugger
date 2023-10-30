@@ -94,7 +94,7 @@ namespace RaspberryDebugger.Dialogs
                 return;
             }
 
-            if (!IPAddress.TryParse(hostText, out _) && !NetHelper.IsValidHost(hostText))
+            if (!IPAddress.TryParse(hostText, out _) && !NetHelper.IsValidDnsHost(hostText))
             {
                 portTextBox.Focus();
                 portTextBox.SelectAll();

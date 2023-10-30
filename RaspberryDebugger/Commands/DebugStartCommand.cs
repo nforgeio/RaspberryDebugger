@@ -294,8 +294,9 @@ namespace RaspberryDebugger.Commands
         /// <param name="projectSettings"></param>
         /// <returns>The <see cref="TempFile"/> referencing the created launch file.</returns>
         private async Task<TempFile> CreateLaunchSettingsAsync(
-            ConnectionInfo                                          connectionInfo,
-            ProjectProperties projectProperties, ProjectSettings    projectSettings)
+            ConnectionInfo      connectionInfo,
+            ProjectProperties   projectProperties, 
+            ProjectSettings     projectSettings)
         {
             Covenant.Requires<ArgumentNullException>(connectionInfo != null, nameof(connectionInfo));
             Covenant.Requires<ArgumentNullException>(projectProperties != null, nameof(projectProperties));
@@ -368,7 +369,7 @@ namespace RaspberryDebugger.Commands
 
             engineLogging = $"--engineLogging={debugFolder}/__vsdbg-log.txt";
 #endif
-            var settings = 
+            var settings =
                 new JObject
                 (
                     new JProperty("version", "0.2.1"),
@@ -395,8 +396,10 @@ namespace RaspberryDebugger.Commands
 
             var tempFile = new TempFile(".launch.json");
 
-            using var stream = new FileStream(tempFile.Path, FileMode.CreateNew, FileAccess.ReadWrite);
-            await stream.WriteAsync(Encoding.UTF8.GetBytes(settings.ToString()));
+            using (var stream = new FileStream(tempFile.Path, FileMode.CreateNew, FileAccess.ReadWrite))
+            {
+                await stream.WriteAsync(Encoding.UTF8.GetBytes(settings.ToString()));
+            }
 
             return tempFile;
         }
