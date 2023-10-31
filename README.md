@@ -188,6 +188,10 @@ The **Project/Raspberry Debug Settings** menu persists the settings to the new `
 * HTTPS is currently supported for ASPNET debugging (for reverse proxy and for Kestrel)
 * Program assembly names can't include spaces
 
+# Maintainer Notes
+
+We used the [Command Exporer](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.CommandExplorer) (by Mads Kristenson) VS extension to discover the IDs for existing VS commands so we can insert our commands.
+
 ### Disclosures
 
 * _The Raspberry Debugger extension is compatible with Raspberry Pi_
