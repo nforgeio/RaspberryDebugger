@@ -49,6 +49,7 @@ namespace RaspberryDebugger.Dialogs
             this.existingConnections = existingConnections;
 
             // Initialize the controls on load.
+
             this.Load += (s, a) =>
             {
                 hostTextBox.Text             = connectionInfo.Host;

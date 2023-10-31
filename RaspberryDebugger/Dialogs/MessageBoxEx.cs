@@ -112,8 +112,7 @@ namespace RaspberryDebugger.Dialogs
         {
             _owner = owner;
             Initialize();
-            return MessageBox.Show(owner, text, caption, buttons, icon,
-                                   defButton, options);
+            return MessageBox.Show(owner, text, caption, buttons, icon, defButton, options);
         }
 
         public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
