@@ -1,7 +1,7 @@
 ﻿//-----------------------------------------------------------------------------
 // FILE:	    Log.cs
 // CONTRIBUTOR: Jeff Lill
-// COPYRIGHT:   Copyright (c) 2021 by neonFORGE, LLC.  All rights reserved.
+// COPYRIGHT:   Copyright (c) 2023 by neonFORGE, LLC.  All rights reserved.
 //
 // Obtained from a Microsoft samples project:
 //
