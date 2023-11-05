@@ -49,6 +49,9 @@ namespace RaspberryDebugger.Commands
     /// </summary>
     internal sealed class DebugStartCommand
     {
+        /// <summary>
+        /// Provides access to Visual Studio commands, etc.
+        /// </summary>
         private readonly DTE2 dte;
 
         /// <summary>
