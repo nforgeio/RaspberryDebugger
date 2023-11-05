@@ -362,7 +362,10 @@ namespace RaspberryDebugger.Commands
                 }
             }
 
-            // Construct the debug launch JSON file.
+            // Construct the debug launch JSON file.  Here's information about how this works:
+            //
+            //      https://github.com/Microsoft/MIEngine/wiki/Offroad-Debugging-of-.NET-Core-on-Linux---OSX-from-Visual-Studio
+            //      https://github.com/Microsoft/MIEngine/wiki/Offroad-Debugging-of-.NET-Core-on-Linux---OSX-from-Visual-Studio#create-launch-configuration-file
 
             var engineLogging = string.Empty;
 #if DISABLED
