@@ -1,7 +1,7 @@
 ﻿//-----------------------------------------------------------------------------
 // FILE:	    PackageHelper.cs
 // CONTRIBUTOR: Jeff Lill
-// COPYRIGHT:   Copyright (c) 2023 by neonFORGE, LLC.  All rights reserved.
+// COPYRIGHT:   Copyright (c) 2024 by neonFORGE, LLC.  All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -165,12 +165,14 @@ namespace RaspberryDebugger
         {
             try
             {
-                // try to get the catalog thru own fetch
+                // Try to get the catalog thru own fetch.
+
                 using var catalogStream = Assembly
                     .GetExecutingAssembly()
                     .GetManifestResourceStream("RaspberryDebugger.sdk-catalog.json");
 
                 var jsonSerializerSettings = new JsonSerializerSettings();
+
                 jsonSerializerSettings.Converters.Add(new StringEnumConverter());
 
                 return JsonConvert.DeserializeObject<SdkCatalog>(
@@ -191,6 +193,7 @@ namespace RaspberryDebugger
         static PackageHelper()
         {
             // Initialize the settings path and folders.
+
             var settingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".raspberry");
 
             if (!Directory.Exists(settingsFolder))
